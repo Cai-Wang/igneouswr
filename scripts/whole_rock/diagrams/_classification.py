@@ -121,11 +121,59 @@ def plot_qapf(gd, out_dir=None, save=True):
     return fig, ax
 
 # ────────────────────────────────────────────────────────────
+# ════════════════════════════════════════════════════════════
 # TAS 全碱-硅分类图（Le Bas et al., 1992）
-# ────────────────────────────────────────────────────────────
+# 多边形坐标源自 pyrolite TAS() classifier 提取
+# ════════════════════════════════════════════════════════════
+
+# 17 个分类区多边形顶点 (SiO₂, Na₂O+K₂O)
+_TAS_FIELDS = {
+    'Ba': [(45.00,5.00), (52.00,5.00), (45.00,2.00)],
+    'Bs': [(45.00,2.00), (52.00,5.00), (52.00,0.00), (45.00,0.00)],
+    'F':  [(35.00,9.00), (37.00,14.00), (52.50,18.00), (52.50,14.00),
+           (48.40,11.50), (45.00,9.40), (41.00,7.00), (41.00,3.00), (37.00,3.00)],
+    'O1': [(52.00,0.00), (52.00,5.00), (57.00,5.90), (57.00,0.00)],
+    'O2': [(57.00,0.00), (57.00,5.90), (63.00,7.00), (63.00,0.00)],
+    'O3': [(63.00,0.00), (63.00,7.00), (69.00,8.00), (77.30,0.00)],
+    'Pc': [(41.00,3.00), (45.00,3.00), (45.00,2.00), (45.00,0.00), (41.00,0.00)],
+    'Ph': [(52.50,14.00), (52.50,18.00), (57.00,18.00), (63.00,16.20),
+           (61.00,13.50), (57.60,11.70)],
+    'R':  [(69.00,8.00), (71.80,13.50), (85.90,6.80), (87.50,4.70), (77.30,0.00)],
+    'S1': [(45.00,5.00), (49.40,7.30), (52.00,5.00)],
+    'S2': [(49.40,7.30), (53.00,9.30), (57.00,5.90), (52.00,5.00)],
+    'S3': [(53.00,9.30), (57.60,11.70), (61.00,8.60), (63.00,7.00), (57.00,5.90)],
+    'T1': [(57.60,11.70), (61.00,13.50), (63.00,16.20), (71.80,13.50), (61.00,8.60)],
+    'T2': [(61.00,8.60), (71.80,13.50), (69.00,8.00), (63.00,7.00)],
+    'U1': [(41.00,3.00), (41.00,7.00), (45.00,9.40), (49.40,7.30), (45.00,5.00), (45.00,3.00)],
+    'U2': [(45.00,9.40), (48.40,11.50), (53.00,9.30), (49.40,7.30)],
+    'U3': [(48.40,11.50), (52.50,14.00), (57.60,11.70), (53.00,9.30)],
+}
+
+_TAS_LABELS = {
+    'Ba': 'Basanite',       'Bs': 'Basalt',
+    'F':  'Foidite',        'O1': 'Basaltic\nAndesite',
+    'O2': 'Andesite',       'O3': 'Dacite',
+    'Pc': 'Picrobasalt',    'Ph': 'Phonolite',
+    'R':  'Rhyolite',       'S1': 'Trachy-\nbasalt',
+    'S2': 'Basaltic\ntrachyandesite',  'S3': 'Trachy-\nandesite',
+    'T1': 'Trachyte\n(Q<20%)',         'T2': 'Trachyte\n(Q>20%)',
+    'U1': 'Tephrite\n(Ol<10%)',        'U2': 'Phono-\ntephrite',
+    'U3': 'Tephri-\nphonolite',
+}
+
+_TAS_FILLS = {
+    'Ba': '#B3D9FF', 'Bs': '#87CEEB', 'F':  '#FF6B6B',
+    'O1': '#FFE066', 'O2': '#F0E040', 'O3': '#FFD700',
+    'Pc': '#98D8C8', 'Ph': '#FF6EB4', 'R':  '#FF4500',
+    'S1': '#90EE90', 'S2': '#32CD32', 'S3': '#228B22',
+    'T1': '#DDA0DD', 'T2': '#BA55D3', 'U1': '#B0C4DE',
+    'U2': '#778899', 'U3': '#708090',
+}
+
 
 def plot_tas(gd, out_dir=None, save=True):
     """TAS 全碱-硅分类图（Le Bas et al., 1992）
+    多边形坐标源自 pyrolite TAS classifier（已去除 pyrolite 依赖）
     所需元素: SiO2, Na2O, K2O
     """
     missing = gd.check_elements('SiO2', 'Na2O', 'K2O', strict=True)
@@ -134,13 +182,44 @@ def plot_tas(gd, out_dir=None, save=True):
     sio2 = gd.get('SiO2'); na2o = gd.get('Na2O'); k2o = gd.get('K2O')
     alk = na2o + k2o
     labels = gd.labels
+
     fig, ax = plt.subplots(figsize=(10, 7))
-    xs = np.array([41, 45, 48, 52, 57, 63, 69, 71, 75, 78])
-    ys = np.array([0, 3, 4, 5, 7, 9, 11, 12, 13, 14])
-    ax.plot(xs, ys, 'k-', lw=1.2, zorder=1)
+
+    # 绘制分类多边形
+    for name, poly in _TAS_FIELDS.items():
+        xs = [p[0] for p in poly]
+        ys = [p[1] for p in poly]
+        fc = _TAS_FILLS.get(name, '#D8D8D8')
+        ax.fill(xs, ys, facecolor=fc, edgecolor='#555555',
+                lw=0.5, alpha=0.35, zorder=1)
+
+    # 绘制唯一边界线（避免重复描边）
+    segments = set()
+    for name, poly in _TAS_FIELDS.items():
+        n = len(poly)
+        for i in range(n):
+            seg = tuple(sorted([poly[i], poly[(i+1) % n]]))
+            segments.add(seg)
+    for seg in segments:
+        ax.plot([seg[0][0], seg[1][0]], [seg[0][1], seg[1][1]],
+                'k-', lw=0.6, zorder=2)
+
+    # 碱性/亚碱性分界线
+    ax.plot([45, 52], [2, 5], 'k--', lw=1.2, zorder=3)
+
+    # 分类区标签（多边形质心）
+    for name, poly in _TAS_FIELDS.items():
+        cx = sum(p[0] for p in poly) / len(poly)
+        cy = sum(p[1] for p in poly) / len(poly)
+        label = _TAS_LABELS.get(name, name)
+        ax.text(cx, cy, label, ha='center', va='center',
+                fontsize=6.5, fontweight='bold', color='#333333', zorder=5)
+
+    # 样品点
     _style.scatter_samples(ax, sio2, alk, labels, groups=gd.groups)
     _style.add_legend(ax)
-    ax.set_xlim(38, 82); ax.set_ylim(0, 18)
+
+    ax.set_xlim(35, 90); ax.set_ylim(0, 18)
     _style.style_ax(ax, r'SiO$_2$ (wt.%)', r'Na$_2$O+K$_2$O (wt.%)')
     plt.tight_layout(pad=0.3)
     if save:

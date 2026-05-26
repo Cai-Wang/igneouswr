@@ -69,7 +69,8 @@ class DiagramSpec:
 DIAGRAM_REGISTRY = [
     # ── 📋 岩石系列 / 分类 ─────────────────────────────
     DiagramSpec(plot_tas,      "TAS.png",            "TAS 全碱-硅分类图",                         ('SiO2', 'Na2O', 'K2O'), None,                        ("mafic",),
-                review_status="verified", source_ref="Middlemost 1994; Le Maitre 2002"),
+                review_status="verified", source_ref="Le Bas et al. 1992 (pyrolite coordinates)",
+                review_note="17 个分类区多边形+碱性/亚碱性虚线, 无 pyrolite 依赖"),
     DiagramSpec(plot_k2o_sio2, "K2O_SiO2_PT76.png",  "K₂O–SiO₂ 钾系列分类图",                      ('SiO2', 'K2O'),        None,                        ("mafic", "felsic"),
                 review_status="verified", source_ref="Peccerillo & Taylor 1976"),
     DiagramSpec(plot_afm,      "AFM_IB1971.png",      "AFM 钙碱性-拉斑系列判别",                    ('Na2O', 'K2O', 'MgO'), ('FeO', 'TFe2O3'),           ("mafic",),
