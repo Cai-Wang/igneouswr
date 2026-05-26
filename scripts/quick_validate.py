@@ -52,10 +52,10 @@ QUICK_MODE = _bootstrap()[1]
 from whole_rock_core import (
     GeochemData, normalize,
     plot_tas, plot_k2o_sio2, plot_ree,
-    set_out_dir, set_style,
     recommended_diagrams, plot_recommended,
     MAFIC_DIAGRAMS, FELSIC_DIAGRAMS,
 )
+import _style  # noqa: E402 — for set_out_dir/set_style access via module
 
 # ── 辅助函数 ──────────────────────────────────────────────
 _PASS = 0
@@ -246,8 +246,7 @@ def test_normalize():
 def test_set_out_dir():
     print("\n[6] 输出目录设置")
     tmp = tempfile.mkdtemp()
-    set_out_dir(tmp)
-    import _style
+    _style.set_out_dir(tmp)
     test("set_out_dir 设置成功", _style._OUT_DIR == tmp, f"got {_style._OUT_DIR}")
 
 
@@ -255,10 +254,10 @@ def test_set_style():
     print("\n[7] 风格定制")
     import _style
     original = _style.MK_SIZE_SINGLE
-    set_style(MK_SIZE_SINGLE=99)
+    _style.set_style(MK_SIZE_SINGLE=99)
     test("set_style 影响 _style.MK_SIZE_SINGLE", _style.MK_SIZE_SINGLE == 99, f"got {_style.MK_SIZE_SINGLE}")
     # 重置
-    set_style(MK_SIZE_SINGLE=original)
+    _style.set_style(MK_SIZE_SINGLE=original)
 
 
 def test_plot_smoke():
