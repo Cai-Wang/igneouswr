@@ -459,20 +459,32 @@ from _normalize import (CHONDRITE, REE_ORDER,
                          PRIMITIVE_MANTLE, SPIDER_ORDER,
                          normalize)
 
-# ── 从 diagram 模块 re-export 绘图函数 ──────────────────────
-from whole_rock.diagrams._classification import plot_tas, plot_k2o_sio2, plot_afm, plot_shand, plot_winchester_floyd, plot_co_th, plot_an_ab_or, plot_qapf, plot_cabanis, plot_mullen, plot_jensen, plot_oconnor_volc, plot_ohta_arai, plot_pearce1977
-from whole_rock.diagrams._source import plot_ree, plot_spider, plot_pearce_2008, plot_u_th_zr_nb, plot_pearce_1983, plot_sm_yb_la_sm, plot_sc_v, plot_ba_th_la_sm, plot_zr_y_zr, plot_gdyb_dydystar, plot_dyyb_layb, plot_nb_la_th_la
-from whole_rock.diagrams._evolution import plot_harker, plot_miyashiro, plot_mgno, plot_zr_covariance
-from whole_rock.diagrams._tectonic import plot_meschede, plot_wood, plot_pearce_cann, plot_4panel, plot_shervais, plot_saccani_2015, plot_harris, plot_muller_kternary
-from whole_rock.diagrams._xy_diagrams import (plot_tasmiddlemostplut, plot_tasmiddlemostvolc,
-    plot_coxplut, plot_coxvolc, plot_pearcenorry, plot_pearce1982,
-    plot_pearcegranite, plot_pearcenbthyb, plot_pearcenbtiyb,
-    plot_frost, plot_whalen1, plot_whalen2, plot_whalen3, plot_sylvester,
-    plot_villaseca, plot_debonba, plot_debonpq, plot_schandl, plot_batchelor,
-    plot_mullerkbinary, plot_hollocher1, plot_hollocher2,
-    plot_hastie, plot_maniar, plot_agrawal, plot_verma,
-    plot_larocheplut, plot_larochevolc, plot_middlemostplut,
-    plot_pecetaylor, plot_layb, plot_ross)
+# ── 从注册表引入所有 plot_* + 注册表数据（并 re-export） ──
+from igneous_geochem.diagrams.registry import (
+    DiagramSpec,
+    DIAGRAM_REGISTRY,
+    MAFIC_DIAGRAMS,
+    FELSIC_DIAGRAMS,
+    FILENAME_MAP as _FILENAME_MAP,
+    # 所有绘图函数
+    plot_tas, plot_k2o_sio2, plot_afm, plot_shand, plot_winchester_floyd,
+    plot_cabanis, plot_mullen, plot_jensen, plot_oconnor_volc,
+    plot_ohta_arai, plot_pearce1977,
+    plot_ree, plot_spider, plot_pearce_2008,
+    plot_harker, plot_miyashiro, plot_mgno, plot_zr_covariance,
+    plot_meschede, plot_wood, plot_pearce_cann, plot_4panel, plot_shervais,
+    plot_co_th, plot_u_th_zr_nb, plot_pearce_1983, plot_sm_yb_la_sm,
+    plot_saccani_2015, plot_sc_v, plot_ba_th_la_sm, plot_zr_y_zr,
+    plot_gdyb_dydystar, plot_dyyb_layb,
+    plot_an_ab_or, plot_qapf, plot_nb_la_th_la, plot_harris, plot_muller_kternary,
+    plot_tasmiddlemostplut, plot_tasmiddlemostvolc, plot_coxplut, plot_coxvolc,
+    plot_pearcenorry, plot_pearce1982, plot_pearcegranite, plot_pearcenbthyb,
+    plot_pearcenbtiyb, plot_frost, plot_whalen1, plot_whalen2, plot_whalen3,
+    plot_sylvester, plot_villaseca, plot_debonba, plot_debonpq, plot_schandl,
+    plot_batchelor, plot_mullerkbinary, plot_hollocher1, plot_hollocher2,
+    plot_hastie, plot_maniar, plot_agrawal, plot_verma, plot_larocheplut,
+    plot_larochevolc, plot_middlemostplut, plot_pecetaylor, plot_layb, plot_ross,
+)
 
 # ============================================================
 # 推荐图件调度
