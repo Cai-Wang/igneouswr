@@ -489,182 +489,8 @@ from igneous_geochem.diagrams.registry import (
 # ============================================================
 # 推荐图件调度
 # ============================================================
-#
-# ==== 图件注册表 ====
-# 所有图件的元信息集中在一张表 DIAGRAM_REGISTRY 中。
-# MAFIC_DIAGRAMS / FELSIC_DIAGRAMS 从注册表派生，保持向后兼容。
-# 新增图件只需：写绘图函数 + 在 DIAGRAM_REGISTRY 加一条记录。
-
-@dataclass(frozen=True)
-class DiagramSpec:
-    """图件规格。"""
-    fn: object          # 绘图函数（如 plot_tas）
-    filename: str       # 输出文件名（如 "TAS.png"）
-    desc: str           # 中文描述（如 "TAS 全碱-硅分类图"）
-    needed: tuple       # 必需元素（AND），全部存在才推荐
-    any_of: tuple | None    # OR 条件（如 ('FeO', 'TFe2O3')），至少一个存在即可
-    rock_types: tuple   # 适用岩性：("mafic",) / ("felsic",) / ("mafic", "common")
-
-
-DIAGRAM_REGISTRY = [
-    # ── 📋 岩石系列 / 分类 ─────────────────────────────
-    DiagramSpec(plot_tas,      "TAS.png",            "TAS 全碱-硅分类图",                         ('SiO2', 'Na2O', 'K2O'), None,                        ("mafic",)),
-    DiagramSpec(plot_k2o_sio2, "K2O_SiO2_PT76.png",  "K₂O–SiO₂ 钾系列分类图",                      ('SiO2', 'K2O'),        None,                        ("mafic", "felsic")),
-    DiagramSpec(plot_afm,      "AFM_IB1971.png",      "AFM 钙碱性-拉斑系列判别",                    ('Na2O', 'K2O', 'MgO'), ('FeO', 'TFe2O3'),           ("mafic",)),
-    DiagramSpec(plot_shand,    "Shand_ACNK_ANK.png",  "Shand A/CNK–A/NK 铝质分类图",               ('Al2O3', 'CaO', 'Na2O', 'K2O'), None,                ("felsic",)),
-    DiagramSpec(plot_winchester_floyd, "Winchester_Floyd1977_NbY_ZrTiO2.png",
-                "Winchester & Floyd Zr/TiO2–Nb/Y 分类图", ('Zr', 'TiO2', 'Nb', 'Y'), None,      ("mafic", "felsic")),
-
-    # ── 🔬 源区性质 ──────────────────────────────────
-    DiagramSpec(plot_ree,      "REE_chondrite.png",   "REE 球粒陨石标准化配分图",
-                ('La','Ce','Pr','Nd','Sm','Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu'), None,    ("mafic", "felsic")),
-    DiagramSpec(plot_spider,   "Spider_PM.png",       "原始地幔标准化蛛网图",
-                ('Rb','Ba','Th','U','Nb','Ta','La','Ce','Pb','Pr','Nd','Sr','Sm','Zr','Hf','Eu','Ti','Gd','Tb','Dy','Ho','Y','Er','Tm','Yb','Lu'), None, ("mafic", "felsic")),
-    DiagramSpec(plot_pearce_2008, "Pearce2008_ThYb_NbYb.png",
-                "Pearce Th/Yb–Nb/Yb 源区判别图", ('Th', 'Nb', 'Yb'), None,            ("mafic",)),
-
-    # ── 🧬 岩浆演化过程 ───────────────────────────────
-    DiagramSpec(plot_harker,   "Harker_6panel.png",    "Harker 六合一协变图",                       ('SiO2','MgO','Al2O3','CaO','Na2O','TiO2'), ('FeO', 'TFe2O3'),      ("mafic", "felsic")),
-    DiagramSpec(plot_miyashiro,"Miyashiro1974_FeOtMgO_SiO2.png", "Miyashiro FeOt/MgO–SiO₂ 构造判别", ('SiO2', 'MgO'), ('FeO', 'TFe2O3'),                    ("mafic",)),
-    DiagramSpec(plot_mgno,     "MgNo_vs_SiO2.png",    "Mg# vs SiO₂ 演化图",                        ('SiO2', 'MgO'),        ('FeO', 'TFe2O3'),          ("mafic", "felsic")),
-    DiagramSpec(plot_zr_covariance, "Zr_covariance.png", "Zr 协变 3×3 图",                        ('Zr', 'Nb', 'Hf', 'Th', 'Y', 'Yb', 'La', 'Sm', 'Ba', 'Sr'),                None,                        ("mafic", "felsic")),
-
-    # ── 🌍 构造环境判别 ──────────────────────────────
-    DiagramSpec(plot_meschede,   "Meschede1986_ternary.png",      "Meschede Nb–Zr–Y 构造判别",        ('Nb', 'Zr', 'Y'),  None,                           ("mafic",)),
-    DiagramSpec(plot_wood,       "Wood1980_Hf3_Th_Ta.png",         "Wood Hf/3–Th–Ta 构造判别",          ('Hf', 'Th', 'Ta'), None,                           ("mafic",)),
-    DiagramSpec(plot_pearce_cann,"PearceCann1973_TiZrY.png",      "Pearce & Cann Ti–Zr–Y 构造判别",    ('Ti', 'Zr', 'Y'),  None,                           ("mafic",)),
-    DiagramSpec(plot_4panel,     "V_Ti_Sc_ThNb_BaTh_4panel.png",  "四联比值构造判别图",                 ('Ti', 'V', 'Sc', 'Nb', 'Yb', 'Th', 'La', 'Sm', 'Ba'), None, ("mafic",)),
-    DiagramSpec(plot_shervais,   "Shervais1982_Ti_V.png",         "Shervais Ti-V 构造判别图",           ('Ti', 'V'),            None,                           ("mafic",)),
-
-    # -- 新加源区/分类图 (2026-05-09) -------------------
-    DiagramSpec(plot_co_th,      "Co_Th_Hastie2007.png",          "Co-Th (Hastie) 系列判别图",          ('Co', 'Th'),           None,                        ("mafic",)),
-    DiagramSpec(plot_u_th_zr_nb, "UTh_ZrNb_Stern2006.png",        "U/Th-Zr/Nb (Stern) 源区判别",        ('U', 'Th', 'Zr', 'Nb'), None,                        ("mafic",)),
-    DiagramSpec(plot_pearce_1983, "ThYb_TaYb_Pearce1983.png",     "Th/Yb-Ta/Yb (Pearce 1983) 构造判别", ('Th', 'Ta', 'Yb'),     None,                        ("mafic",)),
-    DiagramSpec(plot_sm_yb_la_sm, "SmYb_LaSm_partial_melting.png","(Sm/Yb)PM-(La/Sm)PM 部分熔融图",    ('La', 'Sm', 'Yb'),     None,                        ("mafic",)),
-    DiagramSpec(plot_saccani_2015,"NbN_ThN_Saccani2015.png",      "NbN-ThN (Saccani) 构造判别",         ('Nb', 'Th'),           None,                        ("mafic",)),
-    DiagramSpec(plot_sc_v,     "Sc_V_HickeyVargas2018.png",    "Sc-V (Hickey-Vargas) 氧化条件判别",  ('Sc', 'V'),            None,                        ("mafic",)),
-    DiagramSpec(plot_ba_th_la_sm, "BaTh_LaSm_PearceRobinson2010.png", "Ba/Th-La/Sm 流体vs熔体判别",('Ba', 'Th', 'La', 'Sm'), None,                      ("mafic",)),
-    DiagramSpec(plot_zr_y_zr,  "ZrY_Zr_Xia2014.png",           "Zr/Y vs Zr 岛弧vs大陆弧判别",        ('Zr', 'Y'),            None,                        ("mafic",)),
-
-    # -- 新增 (2026-05-16): 新图件 ----------------------------
-    DiagramSpec(plot_gdyb_dydystar, "GdYb_DyDystar_Davidson2013.png",
-                "Gd/Yb vs Dy/Dy* 稀土分馏模式 (Davidson 2013)",   ('La', 'Gd', 'Tb', 'Dy', 'Ho', 'Yb'),  None,  ("mafic", "felsic")),
-    DiagramSpec(plot_dyyb_layb,  "DyYb_LaYb_garnet_depth.png",
-                "Dy/Yb vs La/Yb 石榴石源区深度判别 (Zhang 2018)", ('La', 'Dy', 'Yb'),              None,  ("mafic", "felsic")),
-    DiagramSpec(plot_an_ab_or,   "An_Ab_Or_OConnor1965.png",
-                "An-Ab-Or 长石分类三元图 (O'Connor 1965)",        ('Na2O', 'K2O', 'CaO', 'Al2O3', 'SiO2'), None, ("felsic",)),
-    DiagramSpec(plot_qapf,       "QAPF_Streckeisen1976.png",
-                "Q-A-PF 深成岩分类三元图 (Streckeisen 1976)",     ('SiO2', 'Na2O', 'K2O', 'CaO', 'Al2O3'), None, ("felsic",)),
-    DiagramSpec(plot_nb_la_th_la,"NbLa_ThLa_Cabanis1986.png",
-                "Nb/La vs Th/La 构造判别 (Cabanis & Lemelle 1986)", ('Nb', 'Th', 'La'),               None,  ("mafic",)),
-
-    # -- RockPlot SVG 三角图 (2026-05-25) ---------------------
-    DiagramSpec(plot_cabanis,    "Cabanis1986_LaY_Nb_ternary.png",
-                "Cabanis La/10-Y/15-Nb/8 基性岩三角图",             ('La', 'Y', 'Nb'),                None,  ("mafic",)),
-    DiagramSpec(plot_mullen,     "Mullen1983_TiO2_MnO_P2O5.png",
-                "Mullen TiO2-MnO-P2O5 基性岩三角图",                ('TiO2', 'MnO', 'P2O5'),         None,  ("mafic",)),
-    DiagramSpec(plot_jensen,     "Jensen1976_cation_ternary.png",
-                "Jensen FeOt+TiO2-Al2O3-MgO 阳离子三角图",          ('MgO', 'Al2O3', 'TiO2'),                 ('FeO', 'TFe2O3'), ("mafic",)),
-    DiagramSpec(plot_oconnor_volc,"OConnor_Volc_An_Ab_Or.png",
-                "O'Connor An-Ab-Or 火山岩三角图",                   ('Na2O', 'K2O', 'CaO'),          None,  ("felsic",)),
-    DiagramSpec(plot_ohta_arai,  "Ohta_Arai2007_MFW.png",
-                "Ohta & Arai M-F-W 俯冲带源区三角图",               ('La', 'Sm', 'Nb', 'Ce', 'Zr', 'Y'),   None,  ("mafic",)),
-    DiagramSpec(plot_pearce1977, "Pearce1977_FeOt_MgO_Al2O3.png",
-                "Pearce FeOt-MgO-Al2O3 基性岩构造三角图",           ('MgO', 'Al2O3'),                 ('FeO', 'TFe2O3'), ("mafic",)),
-    DiagramSpec(plot_harris,     "Harris1986_Rb30_Hf_3Ta.png",
-                "Harris Rb/30-Hf-3Ta 花岗岩构造判别三角图",         ('Rb', 'Hf', 'Ta'),               None,  ("felsic",)),
-    DiagramSpec(plot_muller_kternary, "Muller2000_Kternary.png",
-                "Muller Th-Ta-Hf 三子图等边三元构造判别图",         ('Th', 'Ta', 'Hf'),              None,  ("mafic",)),
-
-    # -- XY 二元图 (2026-05-26) ---------------------------------
-    DiagramSpec(plot_tasmiddlemostplut, "TAS_Middlemost1994_Plutonic.png",
-                "TAS 深成岩全碱-硅分类 (Middlemost 1994)",         ('SiO2', 'Na2O', 'K2O'),           None,  ("felsic",)),
-    DiagramSpec(plot_tasmiddlemostvolc, "TAS_Middlemost1994_Volcanic.png",
-                "TAS 火山岩全碱-硅分类 (Middlemost 1994)",         ('SiO2', 'Na2O', 'K2O'),           None,  ("mafic",)),
-    DiagramSpec(plot_coxplut,    "TAS_Cox1979_Plutonic.png",
-                "TAS 深成岩分类 (Cox 1979)",                      ('SiO2', 'Na2O', 'K2O'),           None,  ("felsic",)),
-    DiagramSpec(plot_coxvolc,    "TAS_Cox1979_Volcanic.png",
-                "TAS 火山岩分类 (Cox 1979)",                      ('SiO2', 'Na2O', 'K2O'),           None,  ("mafic",)),
-    DiagramSpec(plot_pearcenorry,"Pearce_Norry1979_ZrY_Zr.png",
-                "Pearce & Norry Zr/Y–Zr WPB/MORB/IAB 构造判别",               ('Zr', 'Y'),                       None,  ("mafic",)),
-    DiagramSpec(plot_pearce1982, "Pearce1982_ZrY_Zr.png",
-                "Pearce (1982) Zr/Y–Zr + Ti/Nb/Sr 多元素判别",                  ('Zr', 'Y', 'Ti', 'Nb', 'Sr'),                       None,  ("mafic",)),
-    DiagramSpec(plot_pearcegranite, "Pearce1984_Granite_Rb_YNb.png",
-                "Pearce Rb–Y+Nb 花岗岩构造判别",                  ('Rb', 'Y', 'Nb'),                 None,  ("felsic",)),
-    DiagramSpec(plot_pearcenbthyb, "Pearce1995_NbYb_ThYb.png",
-                "Pearce Nb/Yb–Th/Yb 源区判别",                   ('Nb', 'Th', 'Yb'),                None,  ("mafic",)),
-    DiagramSpec(plot_pearcenbtiyb, "Pearce1995_TiYb_NbYb.png",
-                "Pearce Ti/Yb–Nb/Yb 源区判别",                   ('Ti', 'Nb', 'Yb'),                None,  ("mafic",)),
-    DiagramSpec(plot_frost,      "Frost2001_Fenum_SiO2.png",
-                "Frost Fe-number vs SiO₂ 铁质-镁质分类",          ('SiO2', 'MgO'),                   ('FeO', 'TFe2O3'), ("felsic",)),
-    DiagramSpec(plot_whalen1,    "Whalen1987_GaAl_Zr.png",
-                "Whalen 10000×Ga/Al–Zr A型花岗岩判别",           ('Ga', 'Al2O3', 'Zr'),             None,  ("felsic",)),
-    DiagramSpec(plot_whalen2,    "Whalen1987_GaAl_Nb.png",
-                "Whalen 10000×Ga/Al–Nb A型花岗岩判别",           ('Ga', 'Al2O3', 'Nb'),             None,  ("felsic",)),
-    DiagramSpec(plot_whalen3,    "Whalen1987_GaAl_CeYZr.png",
-                "Whalen 10000×Ga/Al–Ce+Y+Zr A型花岗岩判别",      ('Ga', 'Al2O3', 'Ce', 'Y', 'Zr'),  None,  ("felsic",)),
-    DiagramSpec(plot_sylvester,  "Sylvester1989_CaONa2O_Al2O3.png",
-                "Sylvester CaO/Na₂O–Al₂O₃ 花岗岩源区判别",       ('CaO', 'Na2O', 'Al2O3'),           None,  ("felsic",)),
-    DiagramSpec(plot_villaseca,  "Villaseca1998_ASI_FMM.png",
-                "Villaseca ASI–FMM 花岗岩源区分类",              ('Al2O3', 'CaO', 'Na2O', 'K2O', 'MgO', 'TiO2'),
-                                                                  ('FeO', 'TFe2O3'),                       ("felsic",)),
-    DiagramSpec(plot_debonba,    "Debon1983_BA_diagram.png",
-                "Debon B-A 花岗岩矿物分类图",                    ('Al2O3', 'K2O', 'Na2O', 'CaO', 'MgO', 'TiO2'),
-                                                                  ('FeO', 'TFe2O3'),                       ("felsic",)),
-    DiagramSpec(plot_debonpq,    "Debon1983_PQ_diagram.png",
-                "Debon P-Q 花岗岩矿物分类图",                    ('SiO2', 'Al2O3', 'K2O', 'Na2O', 'CaO', 'MgO', 'TiO2'),
-                                                                  ('FeO', 'TFe2O3'),                       ("felsic",)),
-    DiagramSpec(plot_schandl,    "Schandl2004_Y_Zr.png",
-                "Schandl Y–Zr 花岗岩构造判别图",                 ('Y', 'Zr'),                        None,  ("felsic",)),
-    DiagramSpec(plot_batchelor,  "Batchelor1985_R1_R2.png",
-                "Batchelor & Bowden R1-R2 花岗岩构造判别",       ('SiO2', 'Al2O3', 'K2O', 'Na2O', 'CaO', 'MgO', 'TiO2'),
-                                                                  ('FeO', 'TFe2O3'),                       ("felsic",)),
-    DiagramSpec(plot_mullerkbinary, "Muller1992_K2O_SiO2.png",
-                "Muller K₂O–SiO₂ 岩浆系列判别",                 ('SiO2', 'K2O'),                    None,  ("mafic",)),
-    DiagramSpec(plot_hollocher1, "Hollocher2012_VSc.png",
-                "Hollocher V/Sc–V+Sc 弧岩浆氧化条件判别",        ('V', 'Sc'),                        None,  ("mafic",)),
-    DiagramSpec(plot_hollocher2, "Hollocher2012_VSc_ZrCe.png",
-                "Hollocher Zr/Ce–V/Sc 弧岩浆分类",              ('V', 'Sc', 'Zr', 'Ce'),            None,  ("mafic",)),
-    DiagramSpec(plot_hastie,     "Hastie2007_Th_Co.png",
-                "Hastie Th–Co 弧岩浆系列分类",                   ('Th', 'Co'),                       None,  ("mafic",)),
-    DiagramSpec(plot_maniar,     "Maniar1989_Granite_disc.png",
-                "Maniar & Piccoli 花岗岩构造判别",               ('SiO2', 'Al2O3', 'MgO', 'CaO', 'Na2O', 'K2O', 'TiO2'),
-                                                                  ('FeO', 'TFe2O3'),                       ("felsic",)),
-    DiagramSpec(plot_agrawal,    "Agrawal2004_DF1_DF2.png",
-                "Agrawal DF1-DF2 基性岩构造判别",               ('TiO2', 'Al2O3', 'MgO', 'CaO', 'Na2O', 'K2O', 'MnO', 'P2O5', 'SiO2'),
-                                                                  ('FeO', 'TFe2O3'),                       ("mafic",)),
-    DiagramSpec(plot_verma,      "Verma_discriminant_DF1_DF2.png",
-                "Verma 判别函数 基性岩构造判别",                 ('TiO2', 'Al2O3', 'MgO', 'CaO', 'Na2O', 'K2O', 'MnO', 'P2O5', 'SiO2'),
-                                                                  ('FeO', 'TFe2O3'),                       ("mafic",)),
-    DiagramSpec(plot_larocheplut,"LaRoche1980_R1_R2_plutonic.png",
-                "La Roche R1-R2 侵入岩分类图",                  ('SiO2', 'Al2O3', 'K2O', 'Na2O', 'CaO', 'MgO', 'TiO2'),
-                                                                  ('FeO', 'TFe2O3'),                       ("felsic",)),
-    DiagramSpec(plot_larochevolc,"LaRoche1980_R1_R2_volcanic.png",
-                "La Roche R1-R2 火山岩分类图",                  ('SiO2', 'Al2O3', 'K2O', 'Na2O', 'CaO', 'MgO', 'TiO2'),
-                                                                  ('FeO', 'TFe2O3'),                       ("mafic",)),
-    DiagramSpec(plot_middlemostplut, "Middlemost1991_Plutonic.png",
-                "Middlemost Na₂O+K₂O–SiO₂ 深成岩分类",           ('SiO2', 'Na2O', 'K2O'),            None,  ("felsic",)),
-    DiagramSpec(plot_pecetaylor,  "Peccerillo_Taylor1976_K2O_SiO2.png",
-                "Peccerillo & Taylor K₂O–SiO₂ 岩浆系列判别",     ('SiO2', 'K2O'),                    None,  ("mafic",)),
-    DiagramSpec(plot_layb,       "LaYb_vs_Yb.png",
-                "La/Yb vs Yb 源区部分熔融判别",                 ('La', 'Yb'),                        None,  ("mafic", "felsic")),
-    DiagramSpec(plot_ross,       "Ross2009_LaSm_LaYb.png",
-                "Ross & Bédard La/Sm–La/Yb 岩浆过程判别",        ('La', 'Sm', 'Yb'),                  None,  ("mafic", "felsic")),
-]
-
-# 从注册表派生 MAFIC_DIAGRAMS / FELSIC_DIAGRAMS（保持向后兼容）
-# 每个 spec → (fn, desc, needed, any_of) 四元组
-def _is_mafic(d: DiagramSpec) -> bool:
-    return "mafic" in d.rock_types
-
-def _is_felsic(d: DiagramSpec) -> bool:
-    return "felsic" in d.rock_types
-
-MAFIC_DIAGRAMS = [(d.fn, d.desc, d.needed, d.any_of) for d in DIAGRAM_REGISTRY if _is_mafic(d)]
-FELSIC_DIAGRAMS = [(d.fn, d.desc, d.needed, d.any_of) for d in DIAGRAM_REGISTRY if _is_felsic(d)]
-
-# 从注册表派生文件名映射（plot_recommended 中不再需要硬编码 name_map）
-_FILENAME_MAP = {d.fn.__name__: d.filename for d in DIAGRAM_REGISTRY}
+# DIAGRAM_REGISTRY / DiagramSpec / MAFIC_DIAGRAMS / FELSIC_DIAGRAMS
+# 已迁移到 igneous_geochem.diagrams.registry（由行 463 的 import 引入）
 
 
 
@@ -697,6 +523,14 @@ def recommended_diagrams(gd, rock_type='auto'):
     results = []
     skipped = []
     for fn, desc, needed, any_of in pool:
+        # 从全量注册表查找 review 状态
+        spec = _registry_lookup(fn)
+        review_tag = ""
+        if spec:
+            if spec.review_status == "experimental":
+                review_tag = " [实验性]"
+            elif spec.review_status == "needs_review":
+                review_tag = " [未校正]"
         missing = [e for e in needed if e not in gd._elem_data]
         if missing:
             skipped.append((desc, missing))
@@ -707,18 +541,24 @@ def recommended_diagrams(gd, rock_type='auto'):
             if not any_present:
                 skipped.append((desc, f"any_of {any_of} 全部缺失"))
                 continue
-        results.append((fn, desc))
+        results.append((fn, desc, review_tag))
 
     print(f"[whole_rock] 岩性判定: {type_name}")
     print(f"[whole_rock] 推荐图件: {len(results)} 张")
-    for fn, desc in results:
-        print(f"   ✓ {fn.__name__:28s} — {desc}")
+    for fn, desc, tag in results:
+        print(f"   ✓ {fn.__name__:28s} — {desc}{tag}")
     if skipped:
         print(f"[whole_rock] 因缺元素跳过: {len(skipped)} 张")
         for desc, missing in skipped:
             print(f"   ✗ 缺 {missing}  → 跳过 {desc}")
 
     return results, skipped
+
+
+# 辅助：从 DIAGRAM_REGISTRY 按 fn 快速查找
+_registry_by_fn = {d.fn: d for d in DIAGRAM_REGISTRY}
+def _registry_lookup(fn):
+    return _registry_by_fn.get(fn)
 
 
 def plot_recommended(gd, out_dir=None, rock_type='auto'):
@@ -744,7 +584,10 @@ def plot_recommended(gd, out_dir=None, rock_type='auto'):
     skipped = list(skipped_pre)
 
     # diagrams 已是 recommended_diagrams 过滤后的结果，不再需要缺元素检查
-    for fn, desc in diagrams:
+    for item in diagrams:
+        # 兼容三元组 (fn, desc, review_tag) 和旧二元组 (fn, desc)
+        fn = item[0]
+        desc = item[1]
         try:
             fig_result = fn(gd, out_dir=final_dir)
             # 一些图缺元素时返回 (None, None) 而非 raise

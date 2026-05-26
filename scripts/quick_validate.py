@@ -353,7 +353,7 @@ def test_any_of_or_condition():
 
     # 确认 AFM/Miyashiro/Mg# 被推荐（它们依赖 FeO/TFe2O3 的 any_of）
     diags, _ = recommended_diagrams(gd, rock_type='mafic')
-    fn_names = {fn.__name__ for fn, _ in diags}
+    fn_names = {item[0].__name__ for item in diags}
     test("AFM 在推荐列表中 (有 FeO)", 'plot_afm' in fn_names, f"got {fn_names}")
     test("Miyashiro 在推荐列表中", 'plot_miyashiro' in fn_names)
     test("Mg# 在推荐列表中", 'plot_mgno' in fn_names)
@@ -365,7 +365,7 @@ def test_any_of_or_condition():
             del gd._elem_data[k]
 
     diags2, _ = recommended_diagrams(gd, rock_type='mafic')
-    fn_names2 = {fn.__name__ for fn, _ in diags2}
+    fn_names2 = {item[0].__name__ for item in diags2}
     test("FeO+TFe2O3 都缺时 AFM 被跳过", 'plot_afm' not in fn_names2, f"got {fn_names2}")
     test("FeO+TFe2O3 都缺时 Miyashiro 被跳过", 'plot_miyashiro' not in fn_names2)
     test("FeO+TFe2O3 都缺时 Mg# 被跳过", 'plot_mgno' not in fn_names2)
@@ -375,8 +375,27 @@ def test_any_of_or_condition():
     os.unlink(path)
 
 
+def test_registry_review_status_counts():
+    """注册表校正状态统计"""
+    from collections import Counter
+    from whole_rock_core import DIAGRAM_REGISTRY
+    c = Counter(d.review_status for d in DIAGRAM_REGISTRY)
+    total = sum(c.values())
+    verified = c.get('verified', 0)
+    experimental = c.get('experimental', 0)
+    needs_review = c.get('needs_review', 0)
+    deprecated = c.get('deprecated', 0)
+    print(f"\n[14] 注册表校正状态统计")
+    print(f"  verified: {verified} | experimental: {experimental} | "
+          f"needs_review: {needs_review} | deprecated: {deprecated} | 总计: {total}")
+    test("注册表总数=70", total == 70, f"got {total}")
+    test("状态分布总和正确",
+         verified + experimental + needs_review + deprecated == total,
+         f"got {verified}+{experimental}+{needs_review}+{deprecated} = {verified+experimental+needs_review+deprecated}")
+    print(f"  ✅ 状态分布完整: v={verified} e={experimental} n={needs_review} d={deprecated}")
+
+
 def test_registry_self_consistency():
-    """检查注册表内部自洽性：每个 spec 的 fn 有 __name__，文件名不重复。"""
     print("\n[13] 注册表内部自洽性")
     from whole_rock_core import DIAGRAM_REGISTRY
 
@@ -436,7 +455,7 @@ def main():
     if not QUICK_MODE:
         tests.append(test_plot_recommended)
     tests += [test_any_of_or_condition, test_diagram_tuples_four_fields,
-              test_registry_self_consistency]
+              test_registry_self_consistency, test_registry_review_status_counts]
 
     for test_fn in tests:
         try:
