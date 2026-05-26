@@ -1,3 +1,9 @@
+"""
+_classification.py — 岩石系列 / 分类图（15 个绘图函数）
+  原有: TAS, K2O-SiO2, AFM, Shand, W&F, Co-Th, An-Ab-Or, QAPF
+  新增 RockPlot SVG: Cabanis, Mullen, Jensen, OConnorVolc, OhtaArai, Pearce1977
+"""
+
 import os
 import numpy as np
 import matplotlib
@@ -12,12 +18,6 @@ from _ternary import (
     draw_ternary_frame, draw_ternary_grid,
     draw_ternary_ticks, label_ternary_vertices,
 )
-
-"""
-_classification.py — 岩石系列 / 分类图（15 个绘图函数）
-  原有: TAS, K2O-SiO2, AFM, Shand, W&F, Co-Th, An-Ab-Or, QAPF
-  新增 RockPlot SVG: Cabanis, Mullen, Jensen, OConnorVolc, OhtaArai, Pearce1977
-"""
 
 
 # ────────────────────────────────────────────────────────────
