@@ -55,13 +55,6 @@ from whole_rock_core import (
     MAFIC_DIAGRAMS, FELSIC_DIAGRAMS,
 )
 
-try:
-    import pyrolite
-    HAS_PYROLITE = True
-except ImportError:
-    HAS_PYROLITE = False
-
-
 # ── 辅助函数 ──────────────────────────────────────────────
 _PASS = 0
 _FAIL = 0
@@ -292,17 +285,14 @@ def test_plot_smoke():
     except Exception as e:
         test("REE 出图", False, str(e))
 
-    # TAS（需要 pyrolite）
-    if HAS_PYROLITE:
-        try:
-            fig3, ax3 = plot_tas(gd, out_dir=out)
-            test("TAS 出图", fig3 is not None)
-            if fig3:
-                plt.close(fig3)
-        except Exception as e:
-            test("TAS 出图", False, str(e))
-    else:
-        skip("TAS 出图", "pyrolite 未安装")
+    # TAS（不依赖 pyrolite，纯 matplotlib 实现）
+    try:
+        fig3, ax3 = plot_tas(gd, out_dir=out)
+        test("TAS 出图", fig3 is not None)
+        if fig3:
+            plt.close(fig3)
+    except Exception as e:
+        test("TAS 出图", False, str(e))
 
     os.unlink(path)
 
@@ -421,8 +411,6 @@ def main():
     print(f"🔬 whole_rock_core 验证 — SKILL_DIR={SKILL_DIR}")
     if QUICK_MODE:
         print("   ⚡ Quick 模式：跳过出图，仅做 import/registry 检查")
-    if not HAS_PYROLITE:
-        print("   ⚠️  pyrolite 未安装 — TAS 测试将跳过")
 
     tests = [test_data_loading, test_transpose_loading,
              test_detection_limit, test_sample_filter,
