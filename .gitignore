@@ -8,6 +8,9 @@ build/
 
 # Output
 whole_rock_output/
+runs/
+geochem_output/
+*_output/
 *.png
 *.html
 

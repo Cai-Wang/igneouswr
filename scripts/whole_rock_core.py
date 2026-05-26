@@ -512,10 +512,10 @@ DIAGRAM_REGISTRY = [
                 "Pearce Th/Yb–Nb/Yb 源区判别图", ('Th', 'Nb', 'Yb'), None,            ("mafic",)),
 
     # ── 🧬 岩浆演化过程 ───────────────────────────────
-    DiagramSpec(plot_harker,   "Harker_6panel.png",    "Harker 六合一协变图",                       ('SiO2','MgO','Al2O3','CaO','Na2O','TiO2'), None,      ("mafic", "felsic")),
+    DiagramSpec(plot_harker,   "Harker_6panel.png",    "Harker 六合一协变图",                       ('SiO2','MgO','Al2O3','CaO','Na2O','TiO2'), ('FeO', 'TFe2O3'),      ("mafic", "felsic")),
     DiagramSpec(plot_miyashiro,"Miyashiro1974_FeOtMgO_SiO2.png", "Miyashiro FeOt/MgO–SiO₂ 构造判别", ('SiO2', 'MgO'), ('FeO', 'TFe2O3'),                    ("mafic",)),
     DiagramSpec(plot_mgno,     "MgNo_vs_SiO2.png",    "Mg# vs SiO₂ 演化图",                        ('SiO2', 'MgO'),        ('FeO', 'TFe2O3'),          ("mafic", "felsic")),
-    DiagramSpec(plot_zr_covariance, "Zr_covariance.png", "Zr 协变 3×3 图",                        ('Zr',),                None,                        ("mafic", "felsic")),
+    DiagramSpec(plot_zr_covariance, "Zr_covariance.png", "Zr 协变 3×3 图",                        ('Zr', 'Nb', 'Hf', 'Th', 'Y', 'Yb', 'La', 'Sm', 'Ba', 'Sr'),                None,                        ("mafic", "felsic")),
 
     # ── 🌍 构造环境判别 ──────────────────────────────
     DiagramSpec(plot_meschede,   "Meschede1986_ternary.png",      "Meschede Nb–Zr–Y 构造判别",        ('Nb', 'Zr', 'Y'),  None,                           ("mafic",)),
@@ -536,7 +536,7 @@ DIAGRAM_REGISTRY = [
 
     # -- 新增 (2026-05-16): 新图件 ----------------------------
     DiagramSpec(plot_gdyb_dydystar, "GdYb_DyDystar_Davidson2013.png",
-                "Gd/Yb vs Dy/Dy* 稀土分馏模式 (Davidson 2013)",   ('La', 'Tb', 'Dy', 'Ho', 'Yb'),  None,  ("mafic", "felsic")),
+                "Gd/Yb vs Dy/Dy* 稀土分馏模式 (Davidson 2013)",   ('La', 'Gd', 'Tb', 'Dy', 'Ho', 'Yb'),  None,  ("mafic", "felsic")),
     DiagramSpec(plot_dyyb_layb,  "DyYb_LaYb_garnet_depth.png",
                 "Dy/Yb vs La/Yb 石榴石源区深度判别 (Zhang 2018)", ('La', 'Dy', 'Yb'),              None,  ("mafic", "felsic")),
     DiagramSpec(plot_an_ab_or,   "An_Ab_Or_OConnor1965.png",
@@ -552,11 +552,11 @@ DIAGRAM_REGISTRY = [
     DiagramSpec(plot_mullen,     "Mullen1983_TiO2_MnO_P2O5.png",
                 "Mullen TiO2-MnO-P2O5 基性岩三角图",                ('TiO2', 'MnO', 'P2O5'),         None,  ("mafic",)),
     DiagramSpec(plot_jensen,     "Jensen1976_cation_ternary.png",
-                "Jensen FeOt+TiO2-Al2O3-MgO 阳离子三角图",          ('MgO', 'Al2O3'),                 ('FeO', 'TFe2O3'), ("mafic",)),
+                "Jensen FeOt+TiO2-Al2O3-MgO 阳离子三角图",          ('MgO', 'Al2O3', 'TiO2'),                 ('FeO', 'TFe2O3'), ("mafic",)),
     DiagramSpec(plot_oconnor_volc,"OConnor_Volc_An_Ab_Or.png",
                 "O'Connor An-Ab-Or 火山岩三角图",                   ('Na2O', 'K2O', 'CaO'),          None,  ("felsic",)),
     DiagramSpec(plot_ohta_arai,  "Ohta_Arai2007_MFW.png",
-                "Ohta & Arai M-F-W 俯冲带源区三角图",               ('La', 'Nb', 'Ce', 'Zr', 'Y'),   None,  ("mafic",)),
+                "Ohta & Arai M-F-W 俯冲带源区三角图",               ('La', 'Sm', 'Nb', 'Ce', 'Zr', 'Y'),   None,  ("mafic",)),
     DiagramSpec(plot_pearce1977, "Pearce1977_FeOt_MgO_Al2O3.png",
                 "Pearce FeOt-MgO-Al2O3 基性岩构造三角图",           ('MgO', 'Al2O3'),                 ('FeO', 'TFe2O3'), ("mafic",)),
     DiagramSpec(plot_harris,     "Harris1986_Rb30_Hf_3Ta.png",
@@ -576,7 +576,7 @@ DIAGRAM_REGISTRY = [
     DiagramSpec(plot_pearcenorry,"Pearce_Norry1979_ZrY_Zr.png",
                 "Pearce & Norry Zr/Y–Zr WPB/MORB/IAB 构造判别",               ('Zr', 'Y'),                       None,  ("mafic",)),
     DiagramSpec(plot_pearce1982, "Pearce1982_ZrY_Zr.png",
-                "Pearce (1982) Zr/Y–Zr + Ti/Nb/Sr 多元素判别",                  ('Zr', 'Y'),                       None,  ("mafic",)),
+                "Pearce (1982) Zr/Y–Zr + Ti/Nb/Sr 多元素判别",                  ('Zr', 'Y', 'Ti', 'Nb', 'Sr'),                       None,  ("mafic",)),
     DiagramSpec(plot_pearcegranite, "Pearce1984_Granite_Rb_YNb.png",
                 "Pearce Rb–Y+Nb 花岗岩构造判别",                  ('Rb', 'Y', 'Nb'),                 None,  ("felsic",)),
     DiagramSpec(plot_pearcenbthyb, "Pearce1995_NbYb_ThYb.png",

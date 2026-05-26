@@ -123,7 +123,7 @@ def get_group_colors(groups):
 
 
 # ── 输出路径 ───────────────────────────────────────────────
-DEFAULT_OUT_DIR = 'whole_rock_output'
+DEFAULT_OUT_DIR = '../runs/default'      # 项目化后输出到项目 runs/
 _OUT_DIR = None
 
 

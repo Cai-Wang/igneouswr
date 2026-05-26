@@ -1,0 +1,7 @@
+# igneous-geochemistry — 全岩地球化学数据绘图引擎
+# Python >= 3.10
+numpy>=1.24
+matplotlib>=3.7
+scipy>=1.10
+openpyxl>=3.1
+dataclasses  # stdlib since 3.7

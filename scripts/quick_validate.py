@@ -8,6 +8,8 @@ quick_validate.py — 地球化学绘图 skill 轻量验证
 
 选项：
   --quick    仅做 import / registry 检查，跳过真实出图（秒级回归）
+
+环境预检：Python >= 3.10, numpy, matplotlib, scipy, openpyxl
 """
 
 import sys, os, tempfile
@@ -411,6 +413,20 @@ def main():
     print(f"🔬 whole_rock_core 验证 — SKILL_DIR={SKILL_DIR}")
     if QUICK_MODE:
         print("   ⚡ Quick 模式：跳过出图，仅做 import/registry 检查")
+
+    # ── 环境预检 ──
+    try:
+        import importlib.metadata as ilm
+        REQS = {'numpy': '1.24', 'matplotlib': '3.6', 'scipy': '1.10', 'openpyxl': '3.1'}
+        for pkg, min_ver in REQS.items():
+            ver = ilm.version(pkg)
+            test(f"依赖 {pkg}>={min_ver}", list(map(int, ver.split('.'))) >= list(map(int, min_ver.split('.'))),
+                 f"已安装 {ver}")
+    except ImportError as e:
+        test("依赖检查", False, str(e))
+
+    pyok = sys.version_info >= (3, 10)
+    test("Python >= 3.10", pyok, f"当前 {sys.version}")
 
     tests = [test_data_loading, test_transpose_loading,
              test_detection_limit, test_sample_filter,
