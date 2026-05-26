@@ -1,0 +1,12 @@
+# Git 属性 — 强制 LF 行尾
+# Python / Markdown / YAML / JSON / shell 统一 LF
+*.py       text eol=lf
+*.md       text eol=lf
+*.yaml     text eol=lf
+*.yml      text eol=lf
+*.json     text eol=lf
+*.sh       text eol=lf
+*.txt      text eol=lf
+*.csv      text eol=lf
+*.xlsx     binary
+*.png      binary
