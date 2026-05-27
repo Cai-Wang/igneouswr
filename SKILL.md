@@ -240,6 +240,7 @@ references/
     rockplot-diagram-catalog.md          # RockPlot 55张图的完整对照清单
     rockplot-coordinate-inventory.md          # SVG 坐标提取现状与待办清单
     batch-output-workflow.md                  # 批量出图完整工作流（plot_recommended + 手动补全）
+    batch-background-workflow.md              # 批量底图生成（dummy data + patch scatter）
     svg-boundary-extraction.md           # SVG 底图数据提取通用方法
     ternary-coordinate-bug-pattern.md    # 三元图坐标映射常见错误
     classification-file-status.md        # _classification.py 损坏与恢复记录
