@@ -220,6 +220,7 @@ def plot_tas(gd, out_dir=None, save=True):
     _style.add_legend(ax)
 
     ax.set_xlim(35, 90); ax.set_ylim(0, 18)
+    ax.set_xticks(range(35, 95, 5))
     _style.style_ax(ax, r'SiO$_2$ (wt.%)', r'Na$_2$O+K$_2$O (wt.%)')
     plt.tight_layout(pad=0.3)
     if save:
@@ -263,6 +264,7 @@ def plot_k2o_sio2(gd, out_dir=None, save=True):
 def plot_afm(gd, out_dir=None, save=True):
     """AFM 三角图（Irvine & Baragar, 1971）
     A=Na₂O+K₂O, F=FeO*, M=MgO
+    标准布局：F 顶角，A 左下，M 右下
     所需元素: Na2O, K2O, MgO, (FeO / TFe2O3)
     """
     missing = gd.check_elements('Na2O', 'K2O', 'MgO', strict=True)
@@ -277,16 +279,19 @@ def plot_afm(gd, out_dir=None, save=True):
     a_p = np.where(valid, a/total*100, 0)
     f_p = np.where(valid, f/total*100, 0)
     m_p = np.where(valid, m/total*100, 0)
-    x_d = np.where(valid, ternary_to_xy(a_p, f_p, m_p)[0], np.nan)
-    y_d = np.where(valid, ternary_to_xy(a_p, f_p, m_p)[1], np.nan)
+    # F 顶角，A 左下，M 右下 → ternary_to_xy(f_p, a_p, m_p)
+    x_d = np.where(valid, ternary_to_xy(f_p, a_p, m_p)[0], np.nan)
+    y_d = np.where(valid, ternary_to_xy(f_p, a_p, m_p)[1], np.nan)
     fig, ax = plt.subplots(figsize=(10, 9))
     corners = ternary_corners()
     draw_ternary_frame(ax, corners); draw_ternary_grid(ax); draw_ternary_ticks(ax)
+    # Irvine & Baragar 边界：(ib_x=A%, ib_y=F%)
     ib_x = np.array([20, 32, 41, 56, 75])
     ib_y = np.array([80, 68, 59, 44, 25])
-    th_x, th_y = ternary_to_xy(ib_x, ib_y, 100-ib_x-ib_y)
+    # ternary_to_xy(top=F, left=A, right=M) → ternary_to_xy(ib_y, ib_x, 100-ib_x-ib_y)
+    th_x, th_y = ternary_to_xy(ib_y, ib_x, 100-ib_x-ib_y)
     ax.plot(th_x, th_y, 'k-', lw=1.5, zorder=4)
-    label_ternary_vertices(ax, r'Na$_2$O+K$_2$O', 'FeO*', 'MgO')
+    label_ternary_vertices(ax, 'FeO*', r'Na$_2$O+K$_2$O', 'MgO')
     _style.scatter_samples(ax, x_d, y_d, labels, groups=gd.groups)
     _style.add_legend(ax)
     ax.set_xlim(-0.05, 1.1); ax.set_ylim(-0.08, 0.95)

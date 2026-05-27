@@ -332,10 +332,10 @@ def plot_frost(gd, out_dir=None, save=True):
     所需元素: SiO2, MgO, FeO(T) 或 TFe2O3
     """
     missing = gd.check_elements('SiO2', 'MgO', strict=True)
-    if 'FeO' not in gd.data and 'TFe2O3' not in gd.data:
+    if 'FeO' not in gd._elem_data and 'TFe2O3' not in gd._elem_data:
         return None, None
     sio2 = gd.get('SiO2'); mgo = gd.get('MgO')
-    feo_t = feot_calc(gd)
+    feo_t = feot_calc(gd.get('FeO'), gd.get('TFe2O3'))
     labels = gd.labels
     denom = feo_t + mgo
     fe_num = np.where(denom > 0, feo_t / denom, np.nan)
@@ -506,16 +506,15 @@ def plot_villaseca(gd, out_dir=None, save=True):
     missing = gd.check_elements('Al2O3', 'CaO', 'Na2O', 'K2O', 'MgO', 'TiO2', strict=True)
     if missing:
         return None, None
-    if 'FeO' not in gd.data and 'TFe2O3' not in gd.data:
+    if 'FeO' not in gd._elem_data and 'TFe2O3' not in gd._elem_data:
         return None, None
     al2o3 = gd.get('Al2O3'); cao = gd.get('CaO')
     na2o = gd.get('Na2O'); k2o = gd.get('K2O')
     mgo = gd.get('MgO'); tio2 = gd.get('TiO2')
-    feo_t = feot_calc(gd)
+    feo_t = feot_calc(gd.get('FeO'), gd.get('TFe2O3'))
     labels = gd.labels
 
     # 摩尔比 ASI = Al2O3 / (CaO + Na2O + K2O)
-    from _chem import mol
     asi = (al2o3 / 101.96) / ((cao / 56.08) + (na2o / 61.98) + (k2o / 94.20))
     # FMM = (FeOt + MgO) / (TiO2 + Al2O3) × 100 (wt%)
     fmm = (feo_t + mgo) / (tio2 + al2o3) * 100
@@ -552,15 +551,14 @@ def plot_debonba(gd, out_dir=None, save=True):
     """
     needed = ('Al2O3', 'K2O', 'Na2O', 'CaO', 'MgO', 'TiO2')
     missing = gd.check_elements(*needed, strict=True)
-    if missing or ('FeO' not in gd.data and 'TFe2O3' not in gd.data):
+    if missing or ('FeO' not in gd._elem_data and 'TFe2O3' not in gd._elem_data):
         return None, None
     al2o3 = gd.get('Al2O3'); k2o = gd.get('K2O')
     na2o = gd.get('Na2O'); cao = gd.get('CaO')
     mgo = gd.get('MgO'); tio2 = gd.get('TiO2')
-    feo_t = feot_calc(gd)
+    feo_t = feot_calc(gd.get('FeO'), gd.get('TFe2O3'))
     labels = gd.labels
 
-    from _chem import mol
     # 原子数 (milliatoms/100g): Al = Al2O3*2000/101.96, K = K2O*2000/94.20, ...
     al = al2o3 * 2000 / 101.96
     k = k2o * 2000 / 94.20
@@ -601,12 +599,12 @@ def plot_debonpq(gd, out_dir=None, save=True):
     """
     needed = ('SiO2', 'Al2O3', 'K2O', 'Na2O', 'CaO', 'MgO', 'TiO2')
     missing = gd.check_elements(*needed, strict=True)
-    if missing or ('FeO' not in gd.data and 'TFe2O3' not in gd.data):
+    if missing or ('FeO' not in gd._elem_data and 'TFe2O3' not in gd._elem_data):
         return None, None
     sio2 = gd.get('SiO2'); al2o3 = gd.get('Al2O3')
     k2o = gd.get('K2O'); na2o = gd.get('Na2O'); cao = gd.get('CaO')
     mgo = gd.get('MgO'); tio2 = gd.get('TiO2')
-    feo_t = feot_calc(gd)
+    feo_t = feot_calc(gd.get('FeO'), gd.get('TFe2O3'))
     labels = gd.labels
 
     si = sio2 * 1000 / 60.08
@@ -673,15 +671,14 @@ def plot_batchelor(gd, out_dir=None, save=True):
     """
     needed = ('SiO2', 'Al2O3', 'K2O', 'Na2O', 'CaO', 'MgO', 'TiO2')
     missing = gd.check_elements(*needed, strict=True)
-    if missing or ('FeO' not in gd.data and 'TFe2O3' not in gd.data):
+    if missing or ('FeO' not in gd._elem_data and 'TFe2O3' not in gd._elem_data):
         return None, None
     sio2 = gd.get('SiO2'); al2o3 = gd.get('Al2O3')
     k2o = gd.get('K2O'); na2o = gd.get('Na2O'); cao = gd.get('CaO')
     mgo = gd.get('MgO'); tio2 = gd.get('TiO2')
-    feo_t = feot_calc(gd)
+    feo_t = feot_calc(gd.get('FeO'), gd.get('TFe2O3'))
     labels = gd.labels
 
-    from _chem import mol
     si = sio2 * 1000 / 60.08
     al = al2o3 * 2000 / 101.96
     k = k2o * 2000 / 94.20
@@ -847,16 +844,15 @@ def plot_maniar(gd, out_dir=None, save=True):
     """
     needed = ('SiO2', 'Al2O3', 'MgO', 'CaO', 'Na2O', 'K2O', 'TiO2')
     missing = gd.check_elements(*needed, strict=True)
-    if missing or ('FeO' not in gd.data and 'TFe2O3' not in gd.data):
+    if missing or ('FeO' not in gd._elem_data and 'TFe2O3' not in gd._elem_data):
         return None, None
     sio2 = gd.get('SiO2'); al2o3 = gd.get('Al2O3')
     mgo = gd.get('MgO'); cao = gd.get('CaO')
     na2o = gd.get('Na2O'); k2o = gd.get('K2O'); tio2 = gd.get('TiO2')
-    feo_t = feot_calc(gd)
+    feo_t = feot_calc(gd.get('FeO'), gd.get('TFe2O3'))
     labels = gd.labels
 
     # A/CNK vs Na2O+K2O
-    from _chem import mol
     acnk = al2o3 / 101.96 / (cao/56.08 + na2o/61.98 + k2o/94.20)
     alk = na2o + k2o
     fig, ax = plt.subplots(figsize=(9, 7))
@@ -886,14 +882,14 @@ def plot_agrawal(gd, out_dir=None, save=True):
     """
     needed = ('TiO2', 'Al2O3', 'MgO', 'CaO', 'Na2O', 'K2O', 'MnO', 'P2O5', 'SiO2')
     missing = gd.check_elements(*needed, strict=True)
-    if missing or ('FeO' not in gd.data and 'TFe2O3' not in gd.data):
+    if missing or ('FeO' not in gd._elem_data and 'TFe2O3' not in gd._elem_data):
         return None, None
     tio2 = gd.get('TiO2'); al2o3 = gd.get('Al2O3')
     mgo = gd.get('MgO'); cao = gd.get('CaO')
     na2o = gd.get('Na2O'); k2o = gd.get('K2O')
     mno = gd.get('MnO'); p2o5 = gd.get('P2O5')
     sio2 = gd.get('SiO2')
-    feo_t = feot_calc(gd)
+    feo_t = feot_calc(gd.get('FeO'), gd.get('TFe2O3'))
     labels = gd.labels
 
     # DF1 和 DF2 简化公式 (Agrawal 2004)
@@ -931,13 +927,13 @@ def plot_verma(gd, out_dir=None, save=True):
     """
     needed = ('TiO2', 'Al2O3', 'MgO', 'CaO', 'Na2O', 'K2O', 'MnO', 'P2O5', 'SiO2')
     missing = gd.check_elements(*needed, strict=True)
-    if missing or ('FeO' not in gd.data and 'TFe2O3' not in gd.data):
+    if missing or ('FeO' not in gd._elem_data and 'TFe2O3' not in gd._elem_data):
         return None, None
     tio2 = gd.get('TiO2'); al2o3 = gd.get('Al2O3')
     mgo = gd.get('MgO'); cao = gd.get('CaO')
     na2o = gd.get('Na2O'); k2o = gd.get('K2O')
     mno = gd.get('MnO'); p2o5 = gd.get('P2O5'); sio2 = gd.get('SiO2')
-    feo_t = feot_calc(gd)
+    feo_t = feot_calc(gd.get('FeO'), gd.get('TFe2O3'))
     labels = gd.labels
 
     df1 = (0.499*tio2 + 0.434*al2o3 - 0.120*feo_t + 0.124*mgo
@@ -973,12 +969,12 @@ def plot_larocheplut(gd, out_dir=None, save=True):
     """
     needed = ('SiO2', 'Al2O3', 'K2O', 'Na2O', 'CaO', 'MgO', 'TiO2')
     missing = gd.check_elements(*needed, strict=True)
-    if missing or ('FeO' not in gd.data and 'TFe2O3' not in gd.data):
+    if missing or ('FeO' not in gd._elem_data and 'TFe2O3' not in gd._elem_data):
         return None, None
     sio2 = gd.get('SiO2'); al2o3 = gd.get('Al2O3')
     k2o = gd.get('K2O'); na2o = gd.get('Na2O'); cao = gd.get('CaO')
     mgo = gd.get('MgO'); tio2 = gd.get('TiO2')
-    feo_t = feot_calc(gd)
+    feo_t = feot_calc(gd.get('FeO'), gd.get('TFe2O3'))
     labels = gd.labels
 
     si = sio2 * 1000 / 60.08
@@ -1014,12 +1010,12 @@ def plot_larochevolc(gd, out_dir=None, save=True):
     """
     needed = ('SiO2', 'Al2O3', 'K2O', 'Na2O', 'CaO', 'MgO', 'TiO2')
     missing = gd.check_elements(*needed, strict=True)
-    if missing or ('FeO' not in gd.data and 'TFe2O3' not in gd.data):
+    if missing or ('FeO' not in gd._elem_data and 'TFe2O3' not in gd._elem_data):
         return None, None
     sio2 = gd.get('SiO2'); al2o3 = gd.get('Al2O3')
     k2o = gd.get('K2O'); na2o = gd.get('Na2O'); cao = gd.get('CaO')
     mgo = gd.get('MgO'); tio2 = gd.get('TiO2')
-    feo_t = feot_calc(gd)
+    feo_t = feot_calc(gd.get('FeO'), gd.get('TFe2O3'))
     labels = gd.labels
 
     si = sio2 * 1000 / 60.08
