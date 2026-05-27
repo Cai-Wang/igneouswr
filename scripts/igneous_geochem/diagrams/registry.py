@@ -109,7 +109,7 @@ DIAGRAM_REGISTRY = [
                 review_status="experimental", source_ref="Hf/3-Th-Ta 三角图边界未逐点核对"),
     DiagramSpec(plot_pearce_cann,"TEC-03_PearceCann1973_TiZrY.png",       "Pearce & Cann Ti–Zr–Y 构造判别",    ('Ti', 'Zr', 'Y'),  None,                           ("mafic",),
                 review_status="experimental", source_ref="Ti-Zr-Y 三角图边界未逐点核对"),
-    DiagramSpec(plot_4panel,     "TEC-04_V_Ti_Sc_ThNb_BaTh_4panel.png",  "四联比值构造判别图",                 ('Ti', 'V', 'Sc', 'Th', 'Nb', 'Ba'),  None,           ("mafic",),
+    DiagramSpec(plot_4panel,     "TEC-04_V_Ti_Sc_ThNb_BaTh_4panel.png",  "四联比值构造判别图",                 ('Ti', 'V', 'Sc', 'Th', 'Nb', 'Ba', 'La', 'Sm', 'Yb'),  None,           ("mafic",),
                 review_status="experimental", source_ref="四联图多子图，交叉引用边界复杂"),
     DiagramSpec(plot_shervais,   "TEC-05_Shervais1982_Ti_V.png",         "Shervais Ti-V 构造判别图",           ('Ti', 'V'),        None,                           ("mafic",),
                 review_status="verified", source_ref="Shervais 1982"),
@@ -131,7 +131,7 @@ DIAGRAM_REGISTRY = [
 
     # ── 🧮 分类 / 三角图 + 判别函数（分类+构造混合） ─────────
     DiagramSpec(plot_an_ab_or,   "CLS-07_An_Ab_Or_OConnor1965.png",
-                "An-Ab-Or 斜长石三元图 (O'Connor 1965)",          ('Na2O', 'K2O', 'CaO'),               None,  ("felsic",),
+                "An-Ab-Or 斜长石三元图 (O'Connor 1965)",          ('Na2O', 'K2O', 'CaO', 'Al2O3', 'SiO2'),               None,  ("felsic",),
                 review_status="experimental", source_ref="斜长石三元（非标准地化图件）"),
     DiagramSpec(plot_qapf,       "CLS-08_QAPF_Streckeisen1976.png",
                 "Q-A-PF 深成岩分类三元图 (Streckeisen 1976)",     ('SiO2', 'Na2O', 'K2O', 'CaO', 'Al2O3'), None, ("felsic",)),

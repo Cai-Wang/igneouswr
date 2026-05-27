@@ -395,6 +395,148 @@ def test_registry_review_status_counts():
     print(f"  ✅ 状态分布完整: v={verified} e={experimental} n={needs_review} d={deprecated}")
 
 
+def test_element_dependency_integrity():
+    """元素依赖完整性扫描：比对各绘图函数中 gd.get() 实际使用的元素
+    与 DIAGRAM_REGISTRY 中 needed/any_of 是否对齐。
+
+    报告两种问题：
+      1. 代码中使用了但 registry 未声明的元素（漏补 needed）
+      2. registry 声明了但代码中从未 gd.get() 的元素（可能冗余或误声明）
+    """
+    import re
+    from whole_rock_core import DIAGRAM_REGISTRY
+
+    diagrams_dir = os.path.join(SKILL_DIR, 'scripts', 'whole_rock', 'diagrams')
+    if not os.path.isdir(diagrams_dir):
+        test("元素依赖完整性检查失败", False, f"目录不存在: {diagrams_dir}")
+        return
+
+    # 每个绘图函数 → (源文件名, 完整源码)
+    fn_to_file = {}
+    for fname in os.listdir(diagrams_dir):
+        if not fname.endswith('.py') or fname == '__init__.py':
+            continue
+        fpath = os.path.join(diagrams_dir, fname)
+        with open(fpath, 'r', encoding='utf-8') as f:
+            content = f.read()
+        funcs = re.findall(r'^def (plot_\w+)\(', content, re.MULTILINE)
+        for fn in funcs:
+            fn_to_file[fn] = (fname, content)
+
+    xy_path = os.path.join(SKILL_DIR, 'scripts', 'whole_rock', 'diagrams', '_xy_diagrams.py')
+    if os.path.isfile(xy_path):
+        with open(xy_path, 'r', encoding='utf-8') as f:
+            xy_content = f.read()
+        funcs_xy = re.findall(r'^def (plot_\w+)\(', xy_content, re.MULTILINE)
+        for fn in funcs_xy:
+            fn_to_file[fn] = ('_xy_diagrams.py', xy_content)
+
+    # 化学元素全集（用于过滤非化学元素名）
+    _CHEM_ELEMS = {
+        'SiO2','TiO2','Al2O3','Fe2O3','FeO','TFe2O3','FeOt','MnO','MgO',
+        'CaO','Na2O','K2O','P2O5','LOI','Total',
+        'Li','Be','Sc','V','Cr','Co','Ni','Cu','Zn','Ga',
+        'Rb','Sr','Y','Zr','Nb','Mo','Ag','Cd','In','Sn','Sb',
+        'Cs','Ba','La','Ce','Pr','Nd','Sm','Eu','Gd','Tb','Dy',
+        'Ho','Er','Tm','Yb','Lu','Hf','Ta','W','Re','Tl','Pb',
+        'Bi','Th','U',
+        'Ti','BaO',
+    }
+
+    print("\n[14] 元素依赖完整性扫描")
+    total_checks = 0
+    issues = []
+
+    for spec in DIAGRAM_REGISTRY:
+        fn_name = spec.fn.__name__
+        entry = fn_to_file.get(fn_name)
+        if entry is None:
+            test(f"[{spec.filename}] 未找到源文件", False, f"函数 {fn_name} 无对应源文件")
+            continue
+
+        source_fname, source_content = entry
+
+        # 定位该函数的函数体
+        fn_pattern = r"^def " + re.escape(fn_name) + r"\(.*?\):"
+        fn_match = re.search(fn_pattern, source_content, re.MULTILINE)
+        if not fn_match:
+            test(f"[{spec.filename}] 函数体未找到", False, f"无法定位 {fn_name}")
+            continue
+
+        fn_start = fn_match.start()
+        # 扫描从 fn_start 开始到下一个 def（或文件末尾）的源代码
+        rest = source_content[fn_start:]
+        next_def = re.search(r'\n\ndef ', rest)
+        if next_def:
+            fn_body = rest[:next_def.start()]
+        else:
+            fn_body = rest
+
+        # 提取 gd.get('Xxx')
+        get_elems = set(re.findall(r"gd\.get\(['\"]([A-Za-z0-9_]+)['\"]", fn_body))
+
+        # 提取 gd.check_elements('Xxx', ...)
+        check_matches = re.findall(r"gd\.check_elements\(([^)]+)\)", fn_body)
+        check_elems = set()
+        for cm in check_matches:
+            elems = re.findall(r"['\"]([A-Za-z0-9_]+)['\"]", cm)
+            check_elems.update(elems)
+
+        # 提取 gd.get_any('Xxx', ...)
+        get_any_matches = re.findall(r"gd\.get_any\(([^)]+)\)", fn_body)
+        get_any_elems = set()
+        for gm in get_any_matches:
+            elems = re.findall(r"['\"]([A-Za-z0-9_]+)['\"]", gm)
+            get_any_elems.update(elems)
+
+        actual_elems = get_elems | check_elems | get_any_elems
+        actual_elems = {e for e in actual_elems if e in _CHEM_ELEMS}
+
+        registered_elems = set(spec.needed)
+        if spec.any_of:
+            registered_elems.update(spec.any_of)
+
+        missing_in_registry = sorted(actual_elems - registered_elems)
+        unused_in_registry = sorted(registered_elems - actual_elems)
+
+        # 豁免：如果 unused 元素出现在函数体内的 list/tuple 定义中
+        # （如 REE_ORDER / SPIDER_ORDER 循环遍历情况）
+        list_elems = set()
+        for lst in re.findall(r"=\s*\[([^\]]*)\]", fn_body):
+            list_elems.update(re.findall(r"['\"]([A-Za-z0-9_]+)['\"]", lst))
+        for lst in re.findall(r"=\s*\(([^)]*)\)", fn_body):
+            list_elems.update(re.findall(r"['\"]([A-Za-z0-9_]+)['\"]", lst))
+
+        # 特殊豁免：REE/Spider 图，元素通过文件级 REE_ORDER/SPIDER_ORDER 循环遍历
+        _FILE_ORDER_TOLERANCE = {
+            'plot_ree': 'REE_ORDER',
+            'plot_spider': 'SPIDER_ORDER',
+        }
+        if unused_in_registry and fn_name in _FILE_ORDER_TOLERANCE:
+            order_name = _FILE_ORDER_TOLERANCE[fn_name]
+            if order_name in source_content:
+                remaining_unused = []
+            else:
+                remaining_unused = [e for e in unused_in_registry if e not in list_elems]
+        else:
+            remaining_unused = [e for e in unused_in_registry if e not in list_elems]
+
+        total_checks += 1
+
+        if missing_in_registry or remaining_unused:
+            parts = []
+            if missing_in_registry:
+                parts.append(f"代码多出: {missing_in_registry}")
+            if remaining_unused:
+                parts.append(f"registry冗余: {remaining_unused}")
+            issues.append(f"  {spec.filename} ({fn_name}): {'; '.join(parts)}")
+
+    for iss in issues:
+        print(f"  ⚠️ {iss}")
+    print(f"  扫描 {total_checks}/{len(DIAGRAM_REGISTRY)} 个绘图函数: "
+          f"{'✅ 全部对齐' if not issues else f'⚠️ {len(issues)} 处不一致'}")
+
+
 def test_registry_self_consistency():
     print("\n[13] 注册表内部自洽性")
     from whole_rock_core import DIAGRAM_REGISTRY
@@ -455,7 +597,8 @@ def main():
     if not QUICK_MODE:
         tests.append(test_plot_recommended)
     tests += [test_any_of_or_condition, test_diagram_tuples_four_fields,
-              test_registry_self_consistency, test_registry_review_status_counts]
+              test_registry_self_consistency, test_registry_review_status_counts,
+              test_element_dependency_integrity]
 
     for test_fn in tests:
         try:
