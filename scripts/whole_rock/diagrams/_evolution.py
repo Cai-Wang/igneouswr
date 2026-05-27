@@ -12,6 +12,7 @@ from _ternary import (
     draw_ternary_frame, draw_ternary_grid,
     draw_ternary_ticks, label_ternary_vertices,
 )
+from boundaries.core import load_boundary
 
 """
 _evolution.py — 演化图：Harker, Miyashiro, Mg#, Zr协变
@@ -242,3 +243,101 @@ def plot_zr_covariance(gd, out_dir=None, save=True):
     if save:
         _style.save_fig(fig, 'Zr_covariance.png', out_dir)
     return fig, axes
+
+
+def plot_hollocher1(gd, out_dir=None, save=True):
+    """Hollocher et al. (2012) V/Sc vs V+Sc 弧岩浆氧化条件判别
+    所需元素: V, Sc
+    """
+    missing = gd.check_elements('V', 'Sc', strict=True)
+    if missing:
+        return None, None
+    v = gd.get('V'); sc = gd.get('Sc')
+    labels = gd.labels
+    v_sc = np.where(sc > 0, v / sc, np.nan)
+    v_plus_sc = v + sc
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    ax.axhline(10, 0, 1, color='k', ls='--', lw=1.0, label='oxidized / reduced')
+    ax.text(200, 15, 'Oxidized arc', fontsize=9, ha='center', style='italic')
+    ax.text(200, 5, 'Reduced arc', fontsize=9, ha='center', style='italic')
+
+    _style.scatter_samples(ax, v_plus_sc, v_sc, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(50, 1000); ax.set_ylim(0, 40)
+    _style.style_ax(ax, 'V+Sc (ppm)', 'V/Sc')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Hollocher2012_VSc.png', out_dir)
+    return fig, ax
+
+
+# ── Hollocher (2012) V/Sc vs Zr/Ce ─────────────────────────
+
+
+def plot_hollocher2(gd, out_dir=None, save=True):
+    """Hollocher et al. (2012) Zr/Ce vs V/Sc 弧岩浆分类
+    所需元素: V, Sc, Zr, Ce
+    """
+    missing = gd.check_elements('V', 'Sc', 'Zr', 'Ce', strict=True)
+    if missing:
+        return None, None
+    v = gd.get('V'); sc = gd.get('Sc')
+    zr = gd.get('Zr'); ce = gd.get('Ce')
+    labels = gd.labels
+    v_sc = np.where(sc > 0, v / sc, np.nan)
+    zr_ce = np.where(ce > 0, zr / ce, np.nan)
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    _style.scatter_samples(ax, zr_ce, v_sc, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(0, 20); ax.set_ylim(0, 40)
+    _style.style_ax(ax, 'Zr/Ce', 'V/Sc')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Hollocher2012_VSc_ZrCe.png', out_dir)
+    return fig, ax
+
+
+# ════════════════════════════════════════════════════════════
+# 5. 其他专题图 — 分类 / 判别
+# ════════════════════════════════════════════════════════════
+
+# ── Hastie et al. (2007) Co-Th 系列判别（已有Co-Th参考）───
+
+
+def plot_mullerkbinary(gd, out_dir=None, save=True):
+    """Muller et al. (1992) K₂O vs SiO₂ 岩浆系列判别
+    所需元素: SiO2, K2O
+    """
+    missing = gd.check_elements('SiO2', 'K2O', strict=True)
+    if missing:
+        return None, None
+    sio2 = gd.get('SiO2'); k2o = gd.get('K2O')
+    labels = gd.labels
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    # Muller (1992) 分界: 低K/中K/高K
+    xs = np.linspace(45, 65, 30)
+    ax.plot(xs, 0.02*xs + 0.1, 'k-', lw=1.2, label='Low-K / Medium-K')
+    ax.plot(xs, 0.08*xs - 2.2, 'k--', lw=1.2, label='Medium-K / High-K')
+    ax.plot(xs, 0.12*xs - 3.8, 'k:', lw=1.0, label='High-K / Shoshonite')
+
+    ax.text(48, 0.3, 'Low-K\n(tholeiitic)', fontsize=8, ha='center')
+    ax.text(48, 0.9, 'Medium-K\n(calc-alkaline)', fontsize=8, ha='center')
+    ax.text(48, 1.8, 'High-K', fontsize=8, ha='center')
+    ax.text(48, 3.0, 'Shoshonite', fontsize=8, ha='center', rotation=10)
+
+    _style.scatter_samples(ax, sio2, k2o, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(45, 65); ax.set_ylim(0, 5)
+    _style.style_ax(ax, r'SiO$_2$ (wt.%)', r'K$_2$O (wt.%)')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Muller1992_K2O_SiO2.png', out_dir)
+    return fig, ax
+
+
+# ── Hollocher (2012) V/Sc vs V+Sc ─────────────────────────
+
+

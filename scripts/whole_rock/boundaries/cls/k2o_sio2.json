@@ -1,0 +1,73 @@
+{
+  "_meta": {
+    "name": "K2O-SiO2 (Middlemost 1975 / Le Maitre 2002)",
+    "type": "XY_lines",
+    "unit": "SiO2 wt%, K2O wt%"
+  },
+  "boundaries": [
+    {
+      "name": "Low-K / Medium-K",
+      "line_style": "-",
+      "points": [
+        [
+          45,
+          0.5
+        ],
+        [
+          75,
+          2.5
+        ]
+      ]
+    },
+    {
+      "name": "Medium-K / High-K",
+      "line_style": "--",
+      "points": [
+        [
+          50,
+          1.5
+        ],
+        [
+          75,
+          4.0
+        ]
+      ]
+    },
+    {
+      "name": "High-K / Shoshonitic",
+      "line_style": "-.",
+      "points": [
+        [
+          55,
+          2.5
+        ],
+        [
+          75,
+          6.0
+        ]
+      ]
+    }
+  ],
+  "fill_regions": [
+    {
+      "name": "Low-K Tholeiitic",
+      "color": "#fff9c4",
+      "alpha": 0.25
+    },
+    {
+      "name": "Medium-K Calc-alkaline",
+      "color": "#c8e6c9",
+      "alpha": 0.25
+    },
+    {
+      "name": "High-K Calc-alkaline",
+      "color": "#b3e5fc",
+      "alpha": 0.25
+    },
+    {
+      "name": "Shoshonitic",
+      "color": "#f8bbd0",
+      "alpha": 0.25
+    }
+  ]
+}

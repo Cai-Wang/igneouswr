@@ -14,6 +14,7 @@ from _ternary import (
     draw_ternary_ticks, label_ternary_vertices,
 )
 from _normalize import REE_ORDER, CHONDRITE, SPIDER_ORDER, PRIMITIVE_MANTLE, normalize
+from boundaries.core import load_boundary
 
 """
 _source.py — 源区图：REE, Spider, Pearce 系列, U/Th, Th/Yb-Ta/Yb, (Sm/Yb)-(La/Sm), Sc-V, Ba/Th-La/Sm, Nb/La-Th/La, Zr/Y-Zr, Gd/Yb-Dy/Dy*, Dy/Yb-La/Yb
@@ -804,3 +805,169 @@ def plot_nb_la_th_la(gd, out_dir=None, save=True):
     if save:
         _style.save_fig(fig, 'NbLa_ThLa_Cabanis1986.png', out_dir)
     return fig, ax
+
+
+def plot_pearcenbthyb(gd, out_dir=None, save=True):
+    """Pearce (1995) Nb/Yb vs Th/Yb + Th vs Nb (2in1 panel)
+    所需元素: Nb, Th, Yb
+    """
+    missing = gd.check_elements('Nb', 'Th', 'Yb', strict=True)
+    if missing:
+        return None, None
+    nb = gd.get('Nb'); th = gd.get('Th'); yb = gd.get('Yb')
+    labels = gd.labels
+    nb_yb = np.where(yb > 0, nb / yb, np.nan)
+    th_yb = np.where(yb > 0, th / yb, np.nan)
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    ax.plot([0.01, 50], [0.01*0.1, 50*0.1], 'k-', lw=1.5, label='N-MORB')
+    ax.plot([0.01, 50], [0.01*0.4, 50*0.4], 'k--', lw=0.8, label='E-MORB')
+    ax.plot([0.01, 50], [0.01*1.0, 50*1.0], 'k:', lw=0.8, label='OIB')
+
+    _style.scatter_samples(ax, nb_yb, th_yb, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xscale('log'); ax.set_yscale('log')
+    ax.set_xlim(0.01, 50); ax.set_ylim(0.001, 10)
+    _style.style_ax(ax, 'Nb/Yb', 'Th/Yb')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Pearce1995_NbYb_ThYb.png', out_dir)
+    return fig, ax
+
+
+# ── Pearce Nb-Ti-Yb ──────────────────────────────────────
+
+
+def plot_pearcenbtiyb(gd, out_dir=None, save=True):
+    """Pearce (1995) Ti/Yb vs Nb/Yb 判别图
+    所需元素: Ti, Nb, Yb
+    """
+    missing = gd.check_elements('Ti', 'Nb', 'Yb', strict=True)
+    if missing:
+        return None, None
+    ti = gd.get('Ti'); nb = gd.get('Nb'); yb = gd.get('Yb')
+    labels = gd.labels
+    ti_yb = np.where(yb > 0, ti / yb, np.nan)
+    nb_yb = np.where(yb > 0, nb / yb, np.nan)
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    # MORB-OIB 趋势线
+    xs = np.logspace(np.log10(0.01), np.log10(50), 50)
+    ax.plot(xs, 800 * xs, 'k-', lw=1.5, label='MORB-OIB array')
+    ax.plot(xs, 800 * xs * 0.5, 'k--', lw=0.8, label='×0.5')
+    ax.plot(xs, 800 * xs * 2, 'k--', lw=0.8, label='×2')
+
+    # 俯冲带影响标注
+    ax.fill_between([0.01, 50], [800*0.01, 800*50], [800*0.01*10, 800*50*10],
+                     alpha=0.08, color='brown')
+
+    _style.scatter_samples(ax, nb_yb, ti_yb, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xscale('log'); ax.set_yscale('log')
+    ax.set_xlim(0.01, 50); ax.set_ylim(10, 100000)
+    _style.style_ax(ax, 'Nb/Yb', 'Ti/Yb')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Pearce1995_TiYb_NbYb.png', out_dir)
+    return fig, ax
+
+
+# ════════════════════════════════════════════════════════════
+# 3. 构造/演化专题图
+# ════════════════════════════════════════════════════════════
+
+# ── Frost (2001) FeO/(FeO+MgO) vs SiO₂ ─────────────────
+
+
+def plot_sylvester(gd, out_dir=None, save=True):
+    """Sylvester (1989) CaO/Na2O vs Al2O3 花岗岩源区判别
+    所需元素: CaO, Na2O, Al2O3
+    """
+    missing = gd.check_elements('CaO', 'Na2O', 'Al2O3', strict=True)
+    if missing:
+        return None, None
+    cao = gd.get('CaO'); na2o = gd.get('Na2O'); al2o3 = gd.get('Al2O3')
+    labels = gd.labels
+    cao_na2o = np.where(na2o > 0, cao / na2o, np.nan)
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    # 分界：泥质源区 vs 砂屑质源区
+    ax.axhline(0.3, 0, 1, color='k', ls='--', lw=1.2)
+    # 高压熔融 vs 低压熔融
+    xs = np.linspace(10, 18, 30)
+    ax.plot(xs, 0.05 * xs, 'k:', lw=0.8)
+
+    ax.text(11, 0.8, 'Clay-rich\n(pelitic)', fontsize=9, ha='center', style='italic')
+    ax.text(11, 0.08, 'Clay-poor\n(psammitic)', fontsize=9, ha='center', style='italic')
+
+    _style.scatter_samples(ax, al2o3, cao_na2o, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(10, 18); ax.set_ylim(0.01, 2)
+    ax.set_yscale('log')
+    _style.style_ax(ax, r'Al$_2$O$_3$ (wt.%)', 'CaO/Na$_2$O')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Sylvester1989_CaONa2O_Al2O3.png', out_dir)
+    return fig, ax
+
+
+# ── Villaseca (1998) ASI vs FMM ───────────────────────────
+
+
+def plot_layb(gd, out_dir=None, save=True):
+    """La/Yb vs Yb 判别图 — 源区部分熔融趋势
+    所需元素: La, Yb
+    """
+    missing = gd.check_elements('La', 'Yb', strict=True)
+    if missing:
+        return None, None
+    la = gd.get('La'); yb = gd.get('Yb')
+    labels = gd.labels
+    la_yb = np.where(yb > 0, la / yb, np.nan)
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    # 部分熔融曲线示意
+    ax.plot([0, 10], [20, 0], 'k-', lw=1.0, alpha=0.5)
+    ax.axhline(5, 0, 1, color='k', ls='--', lw=0.8)
+    ax.text(4, 8, 'Garnet-bearing\nsource', fontsize=9, ha='center', style='italic')
+    ax.text(4, 2, 'Garnet-free\nsource', fontsize=9, ha='center', style='italic')
+
+    _style.scatter_samples(ax, yb, la_yb, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(0, 10); ax.set_ylim(0, 30)
+    _style.style_ax(ax, 'Yb (ppm)', 'La/Yb')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'LaYb_vs_Yb.png', out_dir)
+    return fig, ax
+
+
+# ── Ross & Bédard (2009) 判别 ─────────────────────────────
+
+
+def plot_ross(gd, out_dir=None, save=True):
+    """Ross & Bédard (2009) 岩浆过程判别图
+    所需元素: La, Sm, Yb
+    """
+    missing = gd.check_elements('La', 'Sm', 'Yb', strict=True)
+    if missing:
+        return None, None
+    la = gd.get('La'); sm = gd.get('Sm'); yb = gd.get('Yb')
+    labels = gd.labels
+    la_sm = np.where(sm > 0, la / sm, np.nan)
+    la_yb = np.where(yb > 0, la / yb, np.nan)
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    ax.plot([0, 15], [15, 0], 'k-', lw=1.0, alpha=0.5, label='Partial melting')
+    ax.text(5, 10, 'Partial\nmelting', fontsize=9, ha='center', style='italic')
+    ax.text(5, 3, 'Fractional\ncrystallization', fontsize=9, ha='center', style='italic')
+
+    _style.scatter_samples(ax, la_sm, la_yb, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(0, 12); ax.set_ylim(0, 25)
+    _style.style_ax(ax, 'La/Sm', 'La/Yb')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Ross2009_LaSm_LaYb.png', out_dir)
+    return fig, ax
+

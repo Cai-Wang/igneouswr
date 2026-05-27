@@ -13,6 +13,7 @@ from _ternary import (
     draw_ternary_frame, draw_ternary_grid,
     draw_ternary_ticks, label_ternary_vertices,
 )
+from boundaries.core import load_boundary
 
 """
 _tectonic.py — 构造判别图：Meschede, Wood, Pearce-Cann, 四联, Shervais Ti-V
@@ -485,19 +486,6 @@ def plot_saccani_2015(gd, out_dir=None, save=True):
 
 # ── Harris (1986) Rb/30-Hf-3Ta 构造判别 ──────────────────
 
-harr_0_a = np.array([76.7, 72.1, 50.8, 22.4, 19.5])
-harr_0_b = np.array([-0.0, 14.0, 26.7, 43.5, -0.2])
-harr_0_c = np.array([23.4, 14.0, 22.5, 34.1, 80.6])
-harr_0_xy = ternary_to_xy(harr_0_a, harr_0_b, harr_0_c)
-harr_1_a = np.array([50.8, 30.1]); harr_1_b = np.array([26.7, -0.1]); harr_1_c = np.array([22.5, 69.9])
-harr_1_xy = ternary_to_xy(harr_1_a, harr_1_b, harr_1_c)
-harr_2_a = np.array([6.2, 7.8, 15.2, 21.9, 25.6, 26.2])
-harr_2_b = np.array([71.4, 69.5, 60.1, 50.0, 42.7, 41.3])
-harr_2_c = np.array([22.4, 22.7, 24.6, 28.1, 31.7, 32.5])
-harr_2_xy = ternary_to_xy(harr_2_a, harr_2_b, harr_2_c)
-
-_harr_all = [harr_0_xy, harr_1_xy, harr_2_xy]
-
 
 def plot_harris(gd, out_dir=None, save=True):
     """Harris (1986) Rb/30-Hf-3Ta 花岗岩构造判别三角图
@@ -519,6 +507,15 @@ def plot_harris(gd, out_dir=None, save=True):
     fig, ax = plt.subplots(figsize=(10, 9))
     corners = ternary_corners()
     draw_ternary_frame(ax, corners); draw_ternary_grid(ax); draw_ternary_ticks(ax)
+
+    # 从 JSON 加载 Harris 边界
+    _harr_raw = load_boundary('tec', 'harris')
+    _harr_all = []
+    for key in sorted(_harr_raw['curves'].keys()):
+        c = _harr_raw['curves'][key]
+        xy = ternary_to_xy(np.array(c['a']), np.array(c['b']), np.array(c['c']))
+        _harr_all.append(xy)
+
     for xy in _harr_all:
         ax.plot(xy[0], xy[1], 'k-', lw=1.5, zorder=4)
     label_ternary_vertices(ax, 'Rb/30', 'Hf', '3Ta')
@@ -579,3 +576,358 @@ def plot_muller_kternary(gd, out_dir=None, save=True):
     if save:
         _style.save_fig(fig, 'Muller2000_Kternary.png', out_dir)
     return fig, axes
+
+
+def plot_pearcenorry(gd, out_dir=None, save=True):
+    """Pearce & Norry (1979) Zr/Y vs Zr 构造判别图
+    所需元素: Zr, Y
+    """
+    missing = gd.check_elements('Zr', 'Y', strict=True)
+    if missing:
+        return None, None
+    zr = gd.get('Zr'); y = gd.get('Y')
+    labels = gd.labels
+    zr_y = np.where(y > 0, zr / y, np.nan)
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    # WPB (板内玄武岩) / MORB (洋中脊) / IAB (岛弧) 分界
+    # Zr/Y = 3, Zr/Y = 7
+    ax.axhline(3, 0, 1, color='k', ls='--', lw=0.8)
+    ax.axhline(7, 0, 1, color='k', ls='--', lw=0.8)
+    # Zr = 150 分界
+    ax.axvline(150, 0, 1, color='k', ls=':', lw=0.8)
+
+    ax.text(10, 9, 'WPB', fontsize=10, ha='left', style='italic')
+    ax.text(10, 5, 'MORB', fontsize=10, ha='left', style='italic')
+    ax.text(10, 1.5, 'IAB', fontsize=10, ha='left', style='italic')
+
+    _style.scatter_samples(ax, zr, zr_y, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xscale('log')
+    ax.set_xlim(5, 2000); ax.set_ylim(0.5, 50)
+    _style.style_ax(ax, 'Zr (ppm)', 'Zr/Y')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Pearce_Norry1979_ZrY_Zr.png', out_dir)
+    return fig, ax
+
+
+# ── Pearce (1982) 判别图 ─────────────────────────────────
+
+
+def plot_pearce1982(gd, out_dir=None, save=True):
+    """Pearce (1982) 判别图
+    所需元素: Zr, Y, Ti, Nb, Sr
+    """
+    missing = gd.check_elements('Zr', 'Y', 'Ti', 'Nb', 'Sr', strict=True)
+    if missing:
+        return None, None
+    zr = gd.get('Zr'); y = gd.get('Y')
+    ti = gd.get('Ti'); nb = gd.get('Nb'); sr = gd.get('Sr')
+    labels = gd.labels
+    ti_yb_100 = np.where(y > 0, (ti / 1000) / y * 100, np.nan)
+    zr_y = np.where(y > 0, zr / y, np.nan)
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    # 分界 (Pearce 1982 simplified)
+    xs = np.linspace(0, 1000, 50)
+    ax.axhline(10, 0, 1, color='k', ls='--', lw=0.8)
+    ax.axvline(100, 0, 1, color='k', ls='--', lw=0.8)
+    # 对角线分界
+    ax.plot(xs, xs * 0.1, 'k-', lw=1.0, alpha=0.5)
+
+    _style.scatter_samples(ax, zr, zr_y, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(0, 500); ax.set_ylim(0, 50)
+    _style.style_ax(ax, 'Zr (ppm)', 'Zr/Y')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Pearce1982_ZrY_Zr.png', out_dir)
+    return fig, ax
+
+
+# ── Pearce Granite (1984) Rb vs Y+Nb ─────────────────────
+
+
+def plot_pearcegranite(gd, out_dir=None, save=True):
+    """Pearce et al. (1984) Rb vs Y+Nb 花岗岩构造判别图
+    所需元素: Rb, Y, Nb
+    """
+    missing = gd.check_elements('Rb', 'Y', 'Nb', strict=True)
+    if missing:
+        return None, None
+    rb = gd.get('Rb'); y = gd.get('Y'); nb = gd.get('Nb')
+    labels = gd.labels
+    y_nb = y + nb
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    # Pearce (1984) 花岗岩判别边界: VAG, syn-COLG, WPG, ORG
+    xs = np.logspace(np.log10(10), np.log10(5000), 100)
+    # VAG/syn-COLG 分界: Rb = 48 * exp(-(Y+Nb-30)/200) + 100
+    ax.plot(xs, 48 * np.exp(-(xs - 30) / 200) + 100, 'k-', lw=1.5)
+    # syn-COLG / WPG 分界: Rb = 100
+    ax.axhline(100, 0, 1, color='k', ls='--', lw=0.8)
+    # WPG / VAG 分界 (在 Y+Nb 较大端)
+    ax.axvline(250, 0, 1, color='k', ls='--', lw=0.8)
+    ax.axvline(50, 0, 1, color='k', ls=':', lw=0.8)
+
+    ax.text(15, 300, 'syn-COLG', fontsize=9, ha='left', rotation=35, style='italic')
+    ax.text(300, 300, 'WPG', fontsize=9, ha='center', style='italic')
+    ax.text(15, 10, 'VAG', fontsize=9, ha='left', style='italic')
+    ax.text(300, 10, 'ORG', fontsize=9, ha='center', style='italic')
+
+    _style.scatter_samples(ax, y_nb, rb, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xscale('log'); ax.set_yscale('log')
+    ax.set_xlim(5, 5000); ax.set_ylim(1, 1000)
+    _style.style_ax(ax, 'Y + Nb (ppm)', 'Rb (ppm)')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Pearce1984_Granite_Rb_YNb.png', out_dir)
+    return fig, ax
+
+
+# ── Pearce Nb-Th-Yb (1995) ───────────────────────────────
+
+
+def plot_batchelor(gd, out_dir=None, save=True):
+    """Batchelor & Bowden (1985) R1-R2 花岗岩构造判别图
+    R1 = 4Si - 11(Na+K) - 2(Fe+Ti)
+    R2 = Al + 2Mg + 6Ca
+    所需元素: SiO2, Al2O3, K2O, Na2O, CaO, FeO(T), MgO, TiO2
+    """
+    needed = ('SiO2', 'Al2O3', 'K2O', 'Na2O', 'CaO', 'MgO', 'TiO2')
+    missing = gd.check_elements(*needed, strict=True)
+    if missing or ('FeO' not in gd._elem_data and 'TFe2O3' not in gd._elem_data):
+        return None, None
+    sio2 = gd.get('SiO2'); al2o3 = gd.get('Al2O3')
+    k2o = gd.get('K2O'); na2o = gd.get('Na2O'); cao = gd.get('CaO')
+    mgo = gd.get('MgO'); tio2 = gd.get('TiO2')
+    feo_t = feot_calc(gd.get('FeO'), gd.get('TFe2O3'))
+    labels = gd.labels
+
+    si = sio2 * 1000 / 60.08
+    al = al2o3 * 2000 / 101.96
+    k = k2o * 2000 / 94.20
+    na = na2o * 2000 / 61.98
+    ca = cao * 2000 / 56.08
+    fe = feo_t * 2000 / 71.84
+    mg = mgo * 2000 / 40.30
+    ti = tio2 * 2000 / 79.87
+    r1_val = (4*si - 11*(na+k) - 2*(fe+ti)) / 100
+    r2_val = (al + 2*mg + 6*ca) / 100
+    fig, ax = plt.subplots(figsize=(10, 8))
+
+    # Batchelor 构造分区
+    ax.axhline(0, 0, 1, color='k', lw=0.5)
+    ax.axvline(0, 0, 1, color='k', lw=0.5)
+    # 分区标注
+    ax.text(-20, 30, 'Anorogenic', fontsize=9, ha='center', style='italic')
+    ax.text(20, 20, 'Syn-collision', fontsize=9, ha='center', style='italic')
+    ax.text(-20, -10, 'Late-orogenic', fontsize=9, ha='center', style='italic')
+    ax.text(20, -10, 'Post-orogenic', fontsize=9, ha='center', style='italic')
+
+    _style.scatter_samples(ax, r1_val, r2_val, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(-40, 40); ax.set_ylim(-20, 40)
+    _style.style_ax(ax, 'R1 = 4Si-11(Na+K)-2(Fe+Ti) (×10$^{-2}$)',
+                    'R2 = Al+2Mg+6Ca (×10$^{-2}$)')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Batchelor1985_R1_R2.png', out_dir)
+    return fig, ax
+
+
+# ── Muller (1992) K2O-SiO2 二元图 ─────────────────────────
+
+
+def plot_maniar(gd, out_dir=None, save=True):
+    """Maniar & Piccoli (1989) 花岗岩构造判别图
+    所需元素: SiO2, Al2O3, FeO(T), MgO, CaO, Na2O, K2O, TiO2, MnO, P2O5
+    """
+    needed = ('SiO2', 'Al2O3', 'MgO', 'CaO', 'Na2O', 'K2O', 'TiO2')
+    missing = gd.check_elements(*needed, strict=True)
+    if missing or ('FeO' not in gd._elem_data and 'TFe2O3' not in gd._elem_data):
+        return None, None
+    sio2 = gd.get('SiO2'); al2o3 = gd.get('Al2O3')
+    mgo = gd.get('MgO'); cao = gd.get('CaO')
+    na2o = gd.get('Na2O'); k2o = gd.get('K2O'); tio2 = gd.get('TiO2')
+    feo_t = feot_calc(gd.get('FeO'), gd.get('TFe2O3'))
+    labels = gd.labels
+
+    # A/CNK vs Na2O+K2O
+    acnk = al2o3 / 101.96 / (cao/56.08 + na2o/61.98 + k2o/94.20)
+    alk = na2o + k2o
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    ax.axhline(1.0, 0, 1, color='k', ls='--', lw=1.0)
+    ax.axvline(5, 0, 1, color='k', ls=':', lw=0.8)
+
+    ax.text(2, 1.4, 'Peraluminous', fontsize=9, ha='left', style='italic')
+    ax.text(2, 0.7, 'Metaluminous', fontsize=9, ha='left', style='italic')
+
+    _style.scatter_samples(ax, alk, acnk, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(0, 14); ax.set_ylim(0.5, 1.5)
+    _style.style_ax(ax, r'Na$_2$O+K$_2$O (wt.%)', 'A/CNK')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Maniar1989_Granite_disc.png', out_dir)
+    return fig, ax
+
+
+# ── Agrawal (2004) 判别函数图 ─────────────────────────────
+
+
+def plot_agrawal(gd, out_dir=None, save=True):
+    """Agrawal (2004) 判别函数 基性岩构造判别图
+    需选择三个判别函数之一 (简化版: DF1-DF2)
+    所需元素: TiO2, Al2O3, FeO(T), MgO, CaO, Na2O, K2O, MnO, P2O5, SiO2
+    """
+    needed = ('TiO2', 'Al2O3', 'MgO', 'CaO', 'Na2O', 'K2O', 'MnO', 'P2O5', 'SiO2')
+    missing = gd.check_elements(*needed, strict=True)
+    if missing or ('FeO' not in gd._elem_data and 'TFe2O3' not in gd._elem_data):
+        return None, None
+    tio2 = gd.get('TiO2'); al2o3 = gd.get('Al2O3')
+    mgo = gd.get('MgO'); cao = gd.get('CaO')
+    na2o = gd.get('Na2O'); k2o = gd.get('K2O')
+    mno = gd.get('MnO'); p2o5 = gd.get('P2O5')
+    sio2 = gd.get('SiO2')
+    feo_t = feot_calc(gd.get('FeO'), gd.get('TFe2O3'))
+    labels = gd.labels
+
+    # DF1 和 DF2 简化公式 (Agrawal 2004)
+    df1 = (0.553*tio2 + 0.105*al2o3 - 0.206*feo_t - 0.103*mgo
+           + 0.213*cao + 0.142*na2o - 4.382*k2o - 1.277*mno
+           + 0.083*p2o5 - 0.410*sio2 - 17.624)
+    df2 = (0.188*tio2 + 0.292*al2o3 - 0.293*feo_t + 0.011*mgo
+           - 0.153*cao - 0.510*na2o + 2.065*k2o - 3.025*mno
+           - 0.024*p2o5 + 0.020*sio2 - 8.532)
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    # 构造分区
+    ax.axhline(0, 0, 1, color='k', lw=0.5)
+    ax.axvline(0, 0, 1, color='k', lw=0.5)
+    ax.text(-2, 2, 'WPB', fontsize=9, ha='center', style='italic')
+    ax.text(2, 2, 'IAB', fontsize=9, ha='center', style='italic')
+    ax.text(-2, -2, 'MORB', fontsize=9, ha='center', style='italic')
+    ax.text(2, -2, 'IAB+MORB', fontsize=9, ha='center', style='italic')
+
+    _style.scatter_samples(ax, df1, df2, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(-4, 4); ax.set_ylim(-4, 4)
+    _style.style_ax(ax, 'DF1', 'DF2')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Agrawal2004_DF1_DF2.png', out_dir)
+    return fig, ax
+
+
+# ── Verma (2002, 2013) 判别图 ─────────────────────────────
+
+
+def plot_verma(gd, out_dir=None, save=True):
+    """Verma et al. 判别函数 基性岩构造判别图
+    所需元素: TiO2, Al2O3, FeO(T), MgO, CaO, Na2O, K2O, MnO, P2O5, SiO2
+    """
+    needed = ('TiO2', 'Al2O3', 'MgO', 'CaO', 'Na2O', 'K2O', 'MnO', 'P2O5', 'SiO2')
+    missing = gd.check_elements(*needed, strict=True)
+    if missing or ('FeO' not in gd._elem_data and 'TFe2O3' not in gd._elem_data):
+        return None, None
+    tio2 = gd.get('TiO2'); al2o3 = gd.get('Al2O3')
+    mgo = gd.get('MgO'); cao = gd.get('CaO')
+    na2o = gd.get('Na2O'); k2o = gd.get('K2O')
+    mno = gd.get('MnO'); p2o5 = gd.get('P2O5'); sio2 = gd.get('SiO2')
+    feo_t = feot_calc(gd.get('FeO'), gd.get('TFe2O3'))
+    labels = gd.labels
+
+    df1 = (0.499*tio2 + 0.434*al2o3 - 0.120*feo_t + 0.124*mgo
+           - 0.010*cao + 0.212*na2o - 0.904*k2o + 0.077*mno
+           + 0.324*p2o5 - 0.783*sio2 + 38.373)
+    df2 = (-0.552*tio2 + 0.188*al2o3 - 0.157*feo_t + 0.203*mgo
+           + 0.020*cao - 0.213*na2o - 0.472*k2o + 0.312*mno
+           + 0.193*p2o5 - 0.044*sio2 + 7.142)
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    ax.axhline(0, 0, 1, color='k', lw=0.5)
+    ax.axvline(0, 0, 1, color='k', lw=0.5)
+    ax.text(-2, 3, 'IA', fontsize=9, ha='center', style='italic')
+    ax.text(3, 2, 'MORB', fontsize=9, ha='center', style='italic')
+    ax.text(-2, -2, 'WPB', fontsize=9, ha='center', style='italic')
+    ax.text(2, -3, 'CA', fontsize=9, ha='center', style='italic')
+
+    _style.scatter_samples(ax, df1, df2, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(-4, 5); ax.set_ylim(-4, 4)
+    _style.style_ax(ax, 'DF1', 'DF2')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Verma_discriminant_DF1_DF2.png', out_dir)
+    return fig, ax
+
+
+# ── La Roche (1980) 侵入岩 R1-R2 ──────────────────────────
+
+
+def plot_schandl(gd, out_dir=None, save=True):
+    """Schandl et al. (2004) Y vs Zr 花岗岩构造判别图
+    所需元素: Y, Zr
+    """
+    missing = gd.check_elements('Y', 'Zr', strict=True)
+    if missing:
+        return None, None
+    y = gd.get('Y'); zr = gd.get('Zr')
+    labels = gd.labels
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    # Schandl 分界线
+    ax.plot([0, 200], [0, 500], 'k-', lw=1.0)
+    ax.axhline(100, 0, 1, color='k', ls='--', lw=0.8)
+    ax.axvline(150, 0, 1, color='k', ls=':', lw=0.8)
+
+    _style.scatter_samples(ax, zr, y, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(0, 500); ax.set_ylim(0, 300)
+    _style.style_ax(ax, 'Zr (ppm)', 'Y (ppm)')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Schandl2004_Y_Zr.png', out_dir)
+    return fig, ax
+
+
+# ── Batchelor & Bowden (1985) R1-R2 ────────────────────────
+
+
+def plot_hastie(gd, out_dir=None, save=True):
+    """Hastie et al. (2007) Th-Co 弧岩浆系列判别图
+    所需元素: Th, Co
+    """
+    missing = gd.check_elements('Th', 'Co', strict=True)
+    if missing:
+        return None, None
+    th = gd.get('Th'); co = gd.get('Co')
+    labels = gd.labels
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    xs = np.linspace(0, 100, 50)
+    # 分界线: 拉斑/钙碱, 钙碱/高K钙碱
+    ax.plot(xs, -0.5*xs + 30, 'k-', lw=1.2, label='Tholeiitic / Calc-alkaline')
+    ax.plot(xs, -0.3*xs + 35, 'k--', lw=0.8, label='CA / High-K CA')
+
+    ax.text(10, 5, 'Tholeiitic', fontsize=9, ha='center', style='italic')
+    ax.text(30, 15, 'Calc-alkaline', fontsize=9, ha='center', style='italic')
+    ax.text(10, 25, 'High-K CA', fontsize=9, ha='center', style='italic')
+
+    _style.scatter_samples(ax, th, co, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(0, 30); ax.set_ylim(0, 50)
+    _style.style_ax(ax, 'Th (ppm)', 'Co (ppm)')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Hastie2007_Th_Co.png', out_dir)
+    return fig, ax
+
+
+# ── Maniar & Piccoli (1989) 判别图 ────────────────────────
+
+

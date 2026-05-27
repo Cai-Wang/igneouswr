@@ -18,6 +18,7 @@ from _ternary import (
     draw_ternary_frame, draw_ternary_grid,
     draw_ternary_ticks, label_ternary_vertices,
 )
+from boundaries.core import load_boundary
 
 
 # ────────────────────────────────────────────────────────────
@@ -341,50 +342,6 @@ def plot_qapf(gd, out_dir=None, save=True):
 # ════════════════════════════════════════════════════════════
 
 # 17 个分类区多边形顶点 (SiO₂, Na₂O+K₂O)
-_TAS_FIELDS = {
-    'Ba': [(45.00,5.00), (52.00,5.00), (45.00,2.00)],
-    'Bs': [(45.00,2.00), (52.00,5.00), (52.00,0.00), (45.00,0.00)],
-    'F':  [(35.00,9.00), (37.00,14.00), (52.50,18.00), (52.50,14.00),
-           (48.40,11.50), (45.00,9.40), (41.00,7.00), (41.00,3.00), (37.00,3.00)],
-    'O1': [(52.00,0.00), (52.00,5.00), (57.00,5.90), (57.00,0.00)],
-    'O2': [(57.00,0.00), (57.00,5.90), (63.00,7.00), (63.00,0.00)],
-    'O3': [(63.00,0.00), (63.00,7.00), (69.00,8.00), (77.30,0.00)],
-    'Pc': [(41.00,3.00), (45.00,3.00), (45.00,2.00), (45.00,0.00), (41.00,0.00)],
-    'Ph': [(52.50,14.00), (52.50,18.00), (57.00,18.00), (63.00,16.20),
-           (61.00,13.50), (57.60,11.70)],
-    'R':  [(69.00,8.00), (71.80,13.50), (85.90,6.80), (87.50,4.70), (77.30,0.00)],
-    'S1': [(45.00,5.00), (49.40,7.30), (52.00,5.00)],
-    'S2': [(49.40,7.30), (53.00,9.30), (57.00,5.90), (52.00,5.00)],
-    'S3': [(53.00,9.30), (57.60,11.70), (61.00,8.60), (63.00,7.00), (57.00,5.90)],
-    'T1': [(57.60,11.70), (61.00,13.50), (63.00,16.20), (71.80,13.50), (61.00,8.60)],
-    'T2': [(61.00,8.60), (71.80,13.50), (69.00,8.00), (63.00,7.00)],
-    'U1': [(41.00,3.00), (41.00,7.00), (45.00,9.40), (49.40,7.30), (45.00,5.00), (45.00,3.00)],
-    'U2': [(45.00,9.40), (48.40,11.50), (53.00,9.30), (49.40,7.30)],
-    'U3': [(48.40,11.50), (52.50,14.00), (57.60,11.70), (53.00,9.30)],
-}
-
-_TAS_LABELS = {
-    'Ba': 'Basanite',       'Bs': 'Basalt',
-    'F':  'Foidite',        'O1': 'Basaltic\nAndesite',
-    'O2': 'Andesite',       'O3': 'Dacite',
-    'Pc': 'Picrobasalt',    'Ph': 'Phonolite',
-    'R':  'Rhyolite',       'S1': 'Trachy-\nbasalt',
-    'S2': 'Basaltic\ntrachyandesite',  'S3': 'Trachy-\nandesite',
-    'T1': 'Trachyte\n(Q<20%)',         'T2': 'Trachyte\n(Q>20%)',
-    'U1': 'Tephrite\n(Ol<10%)',        'U2': 'Phono-\ntephrite',
-    'U3': 'Tephri-\nphonolite',
-}
-
-_TAS_FILLS = {
-    'Ba': '#B3D9FF', 'Bs': '#87CEEB', 'F':  '#FF6B6B',
-    'O1': '#FFE066', 'O2': '#F0E040', 'O3': '#FFD700',
-    'Pc': '#98D8C8', 'Ph': '#FF6EB4', 'R':  '#FF4500',
-    'S1': '#90EE90', 'S2': '#32CD32', 'S3': '#228B22',
-    'T1': '#DDA0DD', 'T2': '#BA55D3', 'U1': '#B0C4DE',
-    'U2': '#778899', 'U3': '#708090',
-}
-
-
 def plot_tas(gd, out_dir=None, save=True):
     """TAS 全碱-硅分类图（Le Bas et al., 1992）
     多边形坐标源自 pyrolite TAS classifier（已去除 pyrolite 依赖）
@@ -398,6 +355,12 @@ def plot_tas(gd, out_dir=None, save=True):
     labels = gd.labels
 
     fig, ax = plt.subplots(figsize=(10, 7))
+
+    # 从 JSON 加载 TAS 分类边界
+    _tas_data = load_boundary('cls', 'tas')
+    _TAS_FIELDS = {k: [tuple(p) for p in v] for k, v in _tas_data['fields'].items()}
+    _TAS_LABELS = _tas_data['labels']
+    _TAS_FILLS = _tas_data['fills']
 
     # 绘制分类多边形
     for name, poly in _TAS_FIELDS.items():
@@ -552,22 +515,12 @@ def plot_afm(gd, out_dir=None, save=True):
     draw_ternary_frame(ax, corners); draw_ternary_grid(ax); draw_ternary_ticks(ax)
 
     # ── Irvine & Baragar (1971) 精确分界线 ──
-    # 数据点：%A=F% (顶角), %B=A% (左下), %C=M% (右下)
-    boundary_A = np.array([
-        32.90, 38.61, 44.51, 49.39, 52.69, 54.30, 54.43, 53.41,
-        51.57, 49.21, 46.69, 44.12, 41.78, 39.52, 37.50, 35.59,
-        33.69, 31.70
-    ])
-    boundary_B = np.array([
-        62.10, 53.38, 44.49, 36.61, 30.32, 25.70, 22.56, 20.59,
-        19.44, 18.79, 18.32, 17.86, 17.24, 16.46, 15.49, 14.42,
-        13.32, 12.31
-    ])
-    boundary_C = np.array([
-        5.00, 8.00, 11.00, 14.00, 17.00, 20.00, 23.01, 26.00,
-        28.99, 32.00, 34.99, 38.02, 40.98, 44.02, 47.01, 49.99,
-        52.98, 56.00
-    ])
+    # 从 JSON 加载 AFM 边界
+    _afm_data = load_boundary('cls', 'afm')
+    _afm_bdy = _afm_data['boundary']
+    boundary_A = np.array([p['a'] for p in _afm_bdy])
+    boundary_B = np.array([p['b'] for p in _afm_bdy])
+    boundary_C = np.array([p['c'] for p in _afm_bdy])
     b_x, b_y = ternary_to_xy(boundary_A, boundary_B, boundary_C)
     ax.plot(b_x, b_y, 'k-', lw=1.8, zorder=5)
 
@@ -687,62 +640,6 @@ def plot_shand(gd, out_dir=None, save=True):
 # ════════════════════════════════════════════════════════════
 
 # 67 个精心校准的节点坐标 (Nb/Y, Zr/TiO₂)
-_WF_NODES = {
-    1:  (9.675, 0.148),  2:  (7.980, 0.160),  3:  (6.590, 0.175),
-    4:  (5.440, 0.196),  5:  (4.490, 0.224),  6:  (3.710, 0.261),
-    7:  (3.250, 0.298),  8:  (2.790, 0.359),  9:  (2.446, 0.433),
-    10: (2.215, 0.522),  11: (2.073, 0.630),  12: (1.979, 0.760),
-    13: (1.760, 1.365),  14: (1.510, 3.022),  15: (1.451, 0.167),
-    16: (1.400, 0.137),  17: (1.318, 0.113),  18: (1.220, 0.095),
-    19: (0.950, 0.136),  20: (0.317, 0.704),  21: (0.680, 0.085),
-    22: (0.195, 0.119),  23: (0.665, 0.078),  24: (0.652, 0.069),
-    25: (0.652, 0.027),  26: (0.652, 0.002),  27: (0.652, 0.019),
-    28: (0.542, 0.026),  29: (0.450, 0.026),  30: (0.374, 0.026),
-    31: (0.311, 0.027),  32: (0.021, 0.061),  33: (0.568, 0.017),
-    34: (0.494, 0.015),  35: (0.405, 0.014),  36: (0.332, 0.013),
-    37: (0.273, 0.0124), 38: (0.239, 0.012),  39: (0.150, 0.012),
-    40: (0.095, 0.012),  41: (0.060, 0.012),  42: (0.412, 0.013),
-    43: (0.344, 0.011),  44: (0.287, 0.009),  45: (0.264, 0.0082),
-    46: (0.234, 0.007),  47: (0.211, 0.006),  48: (0.190, 0.005),
-    49: (0.029, 0.005),  50: (0.735, 0.020),  51: (0.827, 0.021),
-    52: (0.932, 0.022),  53: (1.050, 0.023),  54: (1.182, 0.024),
-    55: (1.332, 0.024),  56: (1.520, 0.024),  57: (1.735, 0.023),
-    58: (1.980, 0.0218), 59: (2.260, 0.020),  60: (2.579, 0.018),
-    61: (2.944, 0.016),  62: (3.637, 0.020),  63: (4.319, 0.0250),
-    64: (4.962, 0.031),  65: (5.516, 0.038),  66: (10.000, 0.039),
-    67: (2.867, 0.004),
-}
-
-# 9 条唯一边界边（节点索引列表）
-_WF_EDGES = [
-    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],                # L1 Phonolite
-    [13, 15, 16, 17, 18],                                              # L2 Comendite-Rhyolite
-    [19, 21, 23, 24, 25, 26],                                          # L3 Rhyodacite-Dacite
-    [21, 22],                                                           # L4 分叉
-    [25, 28, 29, 30, 31, 32],                                          # L5 Andesite upper
-    [41, 40, 39, 38, 37, 36, 35, 34, 33, 27, 50, 51, 52, 53, 54,     # L6 合并线
-     55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66],
-    [42, 43, 44, 45, 46, 47, 48, 49, 48, 47, 46, 45, 44, 43, 42, 34],# L7 底部U形
-    [61, 67],                                                           # L8 J-F向下分支
-    [65, 18, 19, 20],                                                   # L9 连接线
-]
-
-# 岩石类型分区标签 (Nb/Y, Zr/TiO₂, 文本, 字号)
-_WF_LABELS = [
-    (4.5,  0.8,   'Phonolite',             11),
-    (4.5,  0.08,  'Trachyte',              10),
-    (0.7,  0.5,   'Comendite',             10),
-    (0.32, 0.30,  'Rhyolite',              10),
-    (0.195, 0.050, 'Rhyodacite\nDacite',    9),
-    (1.5,  0.04,  'Trachyandesite',        10),
-    (0.095, 0.025, 'Andesite',             10),
-    (0.190, 0.002, 'Sub-alkaline\nbasalt',  9),
-    (0.095, 0.007, 'Andesite,\nBasalt',     8),
-    (1.18, 0.010, 'Alkali basalt',         10),
-    (7.0,  0.006, 'Basanite',              10),
-]
-
-
 def plot_winchester_floyd(gd, out_dir=None, save=True):
     """Winchester & Floyd (1977) Zr/TiO2–Nb/Y 火山岩分类图
     精细底图 v11 — 67 节点 × 9 条校正边界线
@@ -757,6 +654,12 @@ def plot_winchester_floyd(gd, out_dir=None, save=True):
     zr_tio2 = np.where(tio2 > 0, zr / tio2, np.nan)
     nb_yi = np.where(yi > 0, nb / yi, np.nan)
     fig, ax = plt.subplots(figsize=(10, 7))
+
+    # 从 JSON 加载 W&F 边界
+    _wf_data = load_boundary('cls', 'winchester_floyd')
+    _WF_NODES = {int(k): v for k, v in _wf_data['nodes'].items()}
+    _WF_EDGES = _wf_data['edges']
+    _WF_LABELS = _wf_data['labels']
 
     # v11 精细边界线
     for edge in _WF_EDGES:
@@ -786,11 +689,6 @@ def plot_winchester_floyd(gd, out_dir=None, save=True):
 
 # ── Cabanis (1989) La/10–Y/15–Nb/8 底部岩分类 ────────────
 
-cabanis_bd_a = np.array([0.0, 47.0, 57.0, 47.0, 54.0, 58.0, 54.0, 59.0, 67.0, 59.0, 80.0, 100.0, 80.0, 68.0, 76.5, 68.0, 27.5, 42.5, 27.5, 0.0])
-cabanis_bd_b = np.array([62.0, 32.9, 43.0, 32.9, 28.5, 19.5, 28.5, 25.4, 33.0, 25.4, 12.4, -0.0, 12.4, 16.2, -0.0, 16.2, 29.2, -0.0, 29.2, 38.0])
-cabanis_bd_c = np.array([38.0, 20.1, 0.0, 20.1, 17.5, 22.5, 17.5, 15.6, 0.0, 15.6, 7.6, 0.0, 7.6, 15.8, 23.5, 15.8, 43.3, 57.5, 43.3, 62.0])
-cabanis_bd_xy = ternary_to_xy(cabanis_bd_a, cabanis_bd_b, cabanis_bd_c)
-
 
 def plot_cabanis(gd, out_dir=None, save=True):
     """Cabanis (1989) La/10-Y/15-Nb/8 基性岩构造判别三角图
@@ -815,6 +713,14 @@ def plot_cabanis(gd, out_dir=None, save=True):
     fig, ax = plt.subplots(figsize=(10, 9))
     corners = ternary_corners()
     draw_ternary_frame(ax, corners); draw_ternary_grid(ax); draw_ternary_ticks(ax)
+
+    # 从 JSON 加载 Cabanis 边界
+    _cabanis_raw = load_boundary('cls', 'cabanis')
+    _cabanis_poly = _cabanis_raw['polygon']
+    cabanis_bd_a = np.array([p['a'] for p in _cabanis_poly])
+    cabanis_bd_b = np.array([p['b'] for p in _cabanis_poly])
+    cabanis_bd_c = np.array([p['c'] for p in _cabanis_poly])
+    cabanis_bd_xy = ternary_to_xy(cabanis_bd_a, cabanis_bd_b, cabanis_bd_c)
 
     # ── 分界线 ──
     ax.plot(cabanis_bd_xy[0], cabanis_bd_xy[1], 'k-', lw=1.2, zorder=4)
@@ -893,23 +799,6 @@ def plot_cabanis(gd, out_dir=None, save=True):
 
 # ── Mullen (1983) TiO2–10MnO–10P2O5 基性岩判别 ───────────
 
-mullen_0_a = np.array([59.0, 27.0, 27.0, 18.0, 0.0])
-mullen_0_b = np.array([41.0, 41.0, 28.0, 21.0, 8.0])
-mullen_0_c = np.array([0.0, 32.0, 45.0, 61.0, 92.0])
-mullen_0_xy = ternary_to_xy(mullen_0_a, mullen_0_b, mullen_0_c)
-mullen_1_a = np.array([77.0, 29.0, 27.0])
-mullen_1_b = np.array([23.0, 30.0, 28.0])
-mullen_1_c = np.array([0.0, 41.0, 45.0])
-mullen_1_xy = ternary_to_xy(mullen_1_a, mullen_1_b, mullen_1_c)
-mullen_2_a = np.array([39.0, 18.0, 18.0])
-mullen_2_b = np.array([61.0, 61.0, 21.0])
-mullen_2_c = np.array([0.0, 21.0, 61.0])
-mullen_2_xy = ternary_to_xy(mullen_2_a, mullen_2_b, mullen_2_c)
-mullen_3_a = np.array([27.0, 45.0])
-mullen_3_b = np.array([28.0, -0.0])
-mullen_3_c = np.array([45.0, 55.0])
-mullen_3_xy = ternary_to_xy(mullen_3_a, mullen_3_b, mullen_3_c)
-
 
 def plot_mullen(gd, out_dir=None, save=True):
     """Mullen (1983) TiO₂-10×MnO-10×P₂O₅ 基性岩构造判别三角图
@@ -933,6 +822,26 @@ def plot_mullen(gd, out_dir=None, save=True):
     fig, ax = plt.subplots(figsize=(10, 9))
     corners = ternary_corners()
     draw_ternary_frame(ax, corners); draw_ternary_grid(ax); draw_ternary_ticks(ax)
+
+    # 从 JSON 加载 Mullen 边界并计算 xy
+    _mullen_raw = load_boundary('cls', 'mullen')
+    _mullen_curves = _mullen_raw['curves']
+    mullen_0_xy = ternary_to_xy(
+        np.array(_mullen_curves['m0']['a']),
+        np.array(_mullen_curves['m0']['b']),
+        np.array(_mullen_curves['m0']['c']))
+    mullen_1_xy = ternary_to_xy(
+        np.array(_mullen_curves['m1']['a']),
+        np.array(_mullen_curves['m1']['b']),
+        np.array(_mullen_curves['m1']['c']))
+    mullen_2_xy = ternary_to_xy(
+        np.array(_mullen_curves['m2']['a']),
+        np.array(_mullen_curves['m2']['b']),
+        np.array(_mullen_curves['m2']['c']))
+    mullen_3_xy = ternary_to_xy(
+        np.array(_mullen_curves['m3']['a']),
+        np.array(_mullen_curves['m3']['b']),
+        np.array(_mullen_curves['m3']['c']))
 
     # ── 区域填充（Mullen 1983 标准分区）──
     # 三角图顶点
@@ -1021,62 +930,6 @@ def plot_mullen(gd, out_dir=None, save=True):
 
 # ── Jensen (1976) FeOt+TiO2–Al2O3–MgO 阳离子判别 ─────────
 
-jensen_0_a = np.array([10.0, 11.7, 19.3, 24.9, 28.0, 28.9, 28.8, 27.3, 24.6, 19.6, 13.7, 12.5])
-jensen_0_b = np.array([90.0, 86.7, 71.7, 60.6, 54.4, 52.5, 51.5, 50.6, 50.4, 50.8, 51.4, 51.5])
-jensen_0_c = np.array([0.0, 1.6, 9.0, 14.5, 17.5, 18.6, 19.7, 22.0, 25.0, 29.6, 34.9, 36.0])
-jensen_0_xy = ternary_to_xy(jensen_0_a, jensen_0_b, jensen_0_c)
-jensen_1_a = np.array([0.0, 55.0]); jensen_1_b = np.array([50.0, 22.5]); jensen_1_c = np.array([50.0, 22.5])
-jensen_1_xy = ternary_to_xy(jensen_1_a, jensen_1_b, jensen_1_c)
-jensen_2_a = np.array([0.0, 40.0]); jensen_2_b = np.array([40.0, -0.0]); jensen_2_c = np.array([60.0, 60.0])
-jensen_2_xy = ternary_to_xy(jensen_2_a, jensen_2_b, jensen_2_c)
-jensen_3_a = np.array([33.3, 25.0]); jensen_3_b = np.array([33.3, 50.0]); jensen_3_c = np.array([33.4, 25.0])
-jensen_3_xy = ternary_to_xy(jensen_3_a, jensen_3_b, jensen_3_c)
-jensen_4_a = np.array([50.0, 35.0, 33.5, 29.0]); jensen_4_b = np.array([50.0, 50.0, 50.0, 51.5]); jensen_4_c = np.array([0.0, 15.0, 16.5, 19.5])
-jensen_4_xy = ternary_to_xy(jensen_4_a, jensen_4_b, jensen_4_c)
-jensen_5_a = np.array([40.0, 10.0]); jensen_5_b = np.array([60.0, 60.0]); jensen_5_c = np.array([0.0, 30.0])
-jensen_5_xy = ternary_to_xy(jensen_5_a, jensen_5_b, jensen_5_c)
-jensen_6_a = np.array([30.0, 0.0]); jensen_6_b = np.array([70.0, 70.0]); jensen_6_c = np.array([0.0, 30.0])
-jensen_6_xy = ternary_to_xy(jensen_6_a, jensen_6_b, jensen_6_c)
-jensen_7_a = np.array([20.0, 0.0]); jensen_7_b = np.array([80.0, 80.0]); jensen_7_c = np.array([0.0, 20.0])
-jensen_7_xy = ternary_to_xy(jensen_7_a, jensen_7_b, jensen_7_c)
-jensen_8_a = np.array([10.0, 20.1, 30.0, 10.0]); jensen_8_b = np.array([90.0, 70.0, 70.0, 90.0]); jensen_8_c = np.array([0.0, 9.9, -0.0, 0.0])
-jensen_8_xy = ternary_to_xy(jensen_8_a, jensen_8_b, jensen_8_c)
-jensen_9_a = np.array([20.1, 25.2, 40.0, 30.0, 20.1])
-jensen_9_b = np.array([70.0, 60.0, 60.0, 70.0, 70.0])
-jensen_9_c = np.array([9.9, 14.8, 0.0, -0.0, 9.9])
-jensen_9_xy = ternary_to_xy(jensen_9_a, jensen_9_b, jensen_9_c)
-jensen_10_a = np.array([25.2, 28.5, 29.0, 29.0, 33.5, 35.0, 50.0, 40.0, 25.2])
-jensen_10_b = np.array([60.0, 53.5, 52.5, 51.5, 50.0, 50.0, 50.0, 60.0, 60.0])
-jensen_10_c = np.array([14.8, 18.0, 18.5, 19.5, 16.5, 15.0, 0.0, 0.0, 14.8])
-jensen_10_xy = ternary_to_xy(jensen_10_a, jensen_10_b, jensen_10_c)
-jensen_11_a = np.array([0.0, 15.1, 10.0, 0.0, 0.0]); jensen_11_b = np.array([80.0, 80.0, 90.0, 100.0, 80.0]); jensen_11_c = np.array([20.0, 4.9, 0.0, 0.0, 20.0])
-jensen_11_xy = ternary_to_xy(jensen_11_a, jensen_11_b, jensen_11_c)
-jensen_12_a = np.array([0.0, 20.1, 15.1, 0.0, 0.0]); jensen_12_b = np.array([70.0, 70.0, 80.0, 80.0, 70.0]); jensen_12_c = np.array([30.0, 9.9, 4.9, 20.0, 30.0])
-jensen_12_xy = ternary_to_xy(jensen_12_a, jensen_12_b, jensen_12_c)
-jensen_13_a = np.array([0.0, 0.0, 25.2, 20.1, 0.0]); jensen_13_b = np.array([70.0, 60.0, 60.0, 70.0, 70.0]); jensen_13_c = np.array([30.0, 40.0, 14.8, 9.9, 30.0])
-jensen_13_xy = ternary_to_xy(jensen_13_a, jensen_13_b, jensen_13_c)
-jensen_14_a = np.array([12.5, 20.0, 25.0, 27.5, 29.0, 29.0, 28.5, 25.2, 0.0, 12.5])
-jensen_14_b = np.array([51.5, 50.8, 50.3, 50.5, 51.5, 52.5, 53.5, 60.0, 60.0, 51.5])
-jensen_14_c = np.array([36.0, 29.2, 24.7, 22.0, 19.5, 18.5, 18.0, 14.8, 40.0, 36.0])
-jensen_14_xy = ternary_to_xy(jensen_14_a, jensen_14_b, jensen_14_c)
-jensen_15_a = np.array([0.0, 33.3, 25.0, 24.8, 20.0, 12.5, 0.0])
-jensen_15_b = np.array([50.0, 33.3, 50.0, 50.3, 50.8, 51.5, 50.0])
-jensen_15_c = np.array([50.0, 33.4, 25.0, 24.8, 29.2, 36.0, 50.0])
-jensen_15_xy = ternary_to_xy(jensen_15_a, jensen_15_b, jensen_15_c)
-jensen_16_a = np.array([0.0, 40.0, 55.0, 0.0, 0.0]); jensen_16_b = np.array([40.0, -0.0, 22.5, 50.0, 40.0]); jensen_16_c = np.array([60.0, 60.0, 22.5, 50.0, 60.0])
-jensen_16_xy = ternary_to_xy(jensen_16_a, jensen_16_b, jensen_16_c)
-jensen_17_a = np.array([0.0, 40.0, 0.0, 0.0]); jensen_17_b = np.array([-0.0, -0.0, 40.0, -0.0]); jensen_17_c = np.array([100.0, 60.0, 60.0, 100.0])
-jensen_17_xy = ternary_to_xy(jensen_17_a, jensen_17_b, jensen_17_c)
-jensen_18_a = np.array([24.8, 25.0, 33.3, 55.0, 50.0, 35.0, 33.5, 29.0, 27.5, 25.0, 24.8])
-jensen_18_b = np.array([50.3, 50.0, 33.3, 22.5, 50.0, 50.0, 50.0, 51.5, 50.5, 50.3, 50.3])
-jensen_18_c = np.array([24.8, 25.0, 33.4, 22.5, 0.0, 15.0, 16.5, 19.5, 22.0, 24.7, 24.8])
-jensen_18_xy = ternary_to_xy(jensen_18_a, jensen_18_b, jensen_18_c)
-
-_jensen_all = [jensen_0_xy, jensen_1_xy, jensen_2_xy, jensen_3_xy, jensen_4_xy,
-               jensen_5_xy, jensen_6_xy, jensen_7_xy, jensen_8_xy, jensen_9_xy,
-               jensen_10_xy, jensen_11_xy, jensen_12_xy, jensen_13_xy, jensen_14_xy,
-               jensen_15_xy, jensen_16_xy, jensen_17_xy, jensen_18_xy]
-
 
 def plot_jensen(gd, out_dir=None, save=True):
     """Jensen (1976) 阳离子分类三角图（Cation Plot）
@@ -1136,6 +989,19 @@ def plot_jensen(gd, out_dir=None, save=True):
     T = np.array([0.5, SQ])   # FeOt+TiO2 顶
     L = np.array([0.0, 0.0])  # Al2O3 左下
     R = np.array([1.0, 0.0])  # MgO 右下
+
+    # 从 JSON 加载 Jensen 边界并计算 xy
+    _jensen_raw = load_boundary('cls', 'jensen')
+    _jensen_curves = _jensen_raw['curves']
+    _jensen_xy_list = []
+    for key in sorted(_jensen_curves.keys(), key=lambda k: int(k[1:])):
+        c = _jensen_curves[key]
+        xy = ternary_to_xy(np.array(c['a']), np.array(c['b']), np.array(c['c']))
+        _jensen_xy_list.append(xy)
+    # 保持向后兼容
+    for i, xy in enumerate(_jensen_xy_list):
+        globals()['jensen_%d_xy' % i] = xy
+    _jensen_all = _jensen_xy_list
 
     # Jensen 三元图分区：
     # 大类: Komatiitic (科马提岩质) — 底边附近, Mg+Fe²+Mn 高
@@ -1200,24 +1066,6 @@ def plot_jensen(gd, out_dir=None, save=True):
 
 # ── O'Connor (1965) An-Ab-Or 火山岩分类 ──────────────────
 
-ocomorv_0_a = np.array([0.0, 17.5]); ocomorv_0_b = np.array([70.0, 52.5]); ocomorv_0_c = np.array([30.0, 30.0])
-ocomorv_0_xy = ternary_to_xy(ocomorv_0_a, ocomorv_0_b, ocomorv_0_c)
-ocomorv_1_a = np.array([20.0, 44.0]); ocomorv_1_b = np.array([60.0, 36.0]); ocomorv_1_c = np.array([20.0, 20.0])
-ocomorv_1_xy = ternary_to_xy(ocomorv_1_a, ocomorv_1_b, ocomorv_1_c)
-ocomorv_2_a = np.array([16.3, 35.8]); ocomorv_2_b = np.array([48.7, 29.2]); ocomorv_2_c = np.array([35.0, 35.0])
-ocomorv_2_xy = ternary_to_xy(ocomorv_2_a, ocomorv_2_b, ocomorv_2_c)
-ocomorv_3_a = np.array([12.5, 27.5]); ocomorv_3_b = np.array([37.5, 22.5]); ocomorv_3_c = np.array([50.0, 50.0])
-ocomorv_3_xy = ternary_to_xy(ocomorv_3_a, ocomorv_3_b, ocomorv_3_c)
-ocomorv_4_a = np.array([25.0, 12.5]); ocomorv_4_b = np.array([75.5, 37.5]); ocomorv_4_c = np.array([-0.5, 50.0])
-ocomorv_4_xy = ternary_to_xy(ocomorv_4_a, ocomorv_4_b, ocomorv_4_c)
-ocomorv_5_a = np.array([12.5, 2.5]); ocomorv_5_b = np.array([37.5, 7.5]); ocomorv_5_c = np.array([50.0, 90.0])
-ocomorv_5_xy = ternary_to_xy(ocomorv_5_a, ocomorv_5_b, ocomorv_5_c)
-ocomorv_6_a = np.array([2.5, 5.5]); ocomorv_6_b = np.array([7.5, 4.5]); ocomorv_6_c = np.array([90.0, 90.0])
-ocomorv_6_xy = ternary_to_xy(ocomorv_6_a, ocomorv_6_b, ocomorv_6_c)
-
-_ocomorv_all = [ocomorv_0_xy, ocomorv_1_xy, ocomorv_2_xy, ocomorv_3_xy,
-                ocomorv_4_xy, ocomorv_5_xy, ocomorv_6_xy]
-
 
 def plot_oconnor_volc(gd, out_dir=None, save=True):
     """O'Connor (1965) An-Ab-Or 火山岩分类三角图
@@ -1243,6 +1091,14 @@ def plot_oconnor_volc(gd, out_dir=None, save=True):
     corners = ternary_corners()
     draw_ternary_frame(ax, corners); draw_ternary_grid(ax); draw_ternary_ticks(ax)
 
+    # 从 JSON 加载 O'Connor 火山岩边界
+    _ocv_raw = load_boundary('cls', 'oconnor_volc')
+    _ocomorv_all = []
+    for key in sorted(_ocv_raw['curves'].keys(), key=lambda k: int(k[2:])):
+        c = _ocv_raw['curves'][key]
+        xy = ternary_to_xy(np.array(c['a']), np.array(c['b']), np.array(c['c']))
+        _ocomorv_all.append(xy)
+
     # ── O'Connor (1965) 分界线 ──
     for xy in _ocomorv_all:
         ax.plot(xy[0], xy[1], 'k-', lw=1.0, zorder=4)
@@ -1253,10 +1109,8 @@ def plot_oconnor_volc(gd, out_dir=None, save=True):
     L = np.array([0.0, 0.0])  # Ab 顶点
     R = np.array([1.0, 0.0])  # Or 顶点
 
-    # 计算每条界线的投影坐标
-    bnd_coords = []
-    for xy in _ocomorv_all:
-        bnd_coords.append(xy)
+    # 计算每条界线的投影坐标 — 复用 _ocomorv_all
+    bnd_coords = [xy for xy in _ocomorv_all]
 
     # 8 个区域依次填充
     fills = [
@@ -1311,24 +1165,6 @@ def plot_oconnor_volc(gd, out_dir=None, save=True):
 
 # ── Ohta-Arai (2007) M-F-W 源区判别 ─────────────────────
 
-ohta_0_a = np.array([0.0, 0.6, 3.9, 9.1, 15.2, 21.6, 27.8, 33.7, 40.9, 48.0, 54.9, 62.0, 69.3, 76.4, 83.0, 89.0, 95.6, 97.1])
-ohta_0_b = np.array([98.1, 96.8, 90.5, 81.9, 73.1, 65.1, 57.9, 51.6, 43.9, 36.9, 30.3, 23.8, 17.7, 12.2, 7.5, 4.0, 0.7, 0.1])
-ohta_0_c = np.array([1.9, 2.6, 5.7, 9.0, 11.7, 13.3, 14.2, 14.8, 15.2, 15.1, 14.8, 14.2, 13.0, 11.4, 9.5, 7.0, 3.6, 2.8])
-ohta_0_xy = ternary_to_xy(ohta_0_a, ohta_0_b, ohta_0_c)
-ohta_1_a = np.array([11.3, 11.0, 9.4, 7.7, 6.2, 5.2, 4.2, 3.2, 2.3, 1.6, 1.1, 1.0])
-ohta_1_b = np.array([78.2, 77.5, 73.5, 66.7, 58.6, 51.4, 44.0, 36.3, 27.7, 18.3, 11.6, 10.3])
-ohta_1_c = np.array([10.5, 11.5, 17.1, 25.6, 35.1, 43.4, 51.8, 60.5, 70.0, 80.1, 87.3, 88.7])
-ohta_1_xy = ternary_to_xy(ohta_1_a, ohta_1_b, ohta_1_c)
-ohta_2_a = np.array([63.9, 63.6, 62.1, 59.5, 55.9, 51.2, 45.3, 37.1, 28.3, 19.5, 12.6, 11.3])
-ohta_2_b = np.array([22.5, 21.8, 18.6, 15.9, 13.3, 10.8, 8.7, 6.3, 4.2, 2.3, 1.0, 0.7])
-ohta_2_c = np.array([13.6, 14.6, 19.3, 24.5, 30.7, 38.0, 46.1, 56.6, 67.5, 78.2, 86.4, 88.0])
-ohta_2_xy = ternary_to_xy(ohta_2_a, ohta_2_b, ohta_2_c)
-ohta_3_a = np.array([88.4, 86.5, 77.1, 64.9, 49.0, 33.8, 30.6])
-ohta_3_b = np.array([3.6, 3.5, 3.0, 2.2, 1.7, 1.4, 1.3])
-ohta_3_c = np.array([8.0, 10.0, 19.9, 32.9, 49.3, 64.8, 68.0])
-ohta_3_xy = ternary_to_xy(ohta_3_a, ohta_3_b, ohta_3_c)
-
-_ohta_all = [ohta_0_xy, ohta_1_xy, ohta_2_xy, ohta_3_xy]
 
 
 def plot_ohta_arai(gd, out_dir=None, save=True):
@@ -1354,6 +1190,13 @@ def plot_ohta_arai(gd, out_dir=None, save=True):
     fig, ax = plt.subplots(figsize=(10, 9))
     corners = ternary_corners()
     draw_ternary_frame(ax, corners); draw_ternary_grid(ax); draw_ternary_ticks(ax)
+    # 从 JSON 加载 Ohta-Arai 边界
+    _ohta_raw = load_boundary('cls', 'ohta_arai')
+    _ohta_all = []
+    for key in sorted(_ohta_raw['curves'].keys(), key=lambda k: int(k[2:])):
+        c = _ohta_raw['curves'][key]
+        xy = ternary_to_xy(np.array(c['a']), np.array(c['b']), np.array(c['c']))
+        _ohta_all.append(xy)
     for xy in _ohta_all:
         ax.plot(xy[0], xy[1], 'k-', lw=1.2, zorder=4)
     label_ternary_vertices(ax, 'M', 'F', 'W')
@@ -1369,22 +1212,6 @@ def plot_ohta_arai(gd, out_dir=None, save=True):
 
 # ── Pearce (1977) FeOt-MgO-Al2O3 构造判别 ─────────────
 
-pearce77_0_a = np.array([32.0, 32.0, 51.0]); pearce77_0_b = np.array([38.0, 21.5, 14.0]); pearce77_0_c = np.array([30.0, 46.5, 35.0])
-pearce77_0_xy = ternary_to_xy(pearce77_0_a, pearce77_0_b, pearce77_0_c)
-pearce77_1_a = np.array([32.0, 27.5, 24.0, 15.0])
-pearce77_1_b = np.array([21.5, 21.0, 23.0, 28.0])
-pearce77_1_c = np.array([46.5, 51.5, 53.0, 57.0])
-pearce77_1_xy = ternary_to_xy(pearce77_1_a, pearce77_1_b, pearce77_1_c)
-pearce77_2_a = np.array([27.5, 31.0, 34.0, 34.5, 33.0, 28.5, 21.0])
-pearce77_2_b = np.array([21.0, 19.0, 16.0, 14.0, 12.0, 11.5, 10.0])
-pearce77_2_c = np.array([51.5, 50.0, 50.0, 51.5, 55.0, 60.0, 69.0])
-pearce77_2_xy = ternary_to_xy(pearce77_2_a, pearce77_2_b, pearce77_2_c)
-pearce77_3_a = np.array([34.5, 38.0, 43.0, 49.0])
-pearce77_3_b = np.array([14.0, 12.4, 10.0, 8.0])
-pearce77_3_c = np.array([51.5, 49.6, 47.0, 43.0])
-pearce77_3_xy = ternary_to_xy(pearce77_3_a, pearce77_3_b, pearce77_3_c)
-
-_pearce77_all = [pearce77_0_xy, pearce77_1_xy, pearce77_2_xy, pearce77_3_xy]
 
 
 def plot_pearce1977(gd, out_dir=None, save=True):
@@ -1410,6 +1237,13 @@ def plot_pearce1977(gd, out_dir=None, save=True):
     fig, ax = plt.subplots(figsize=(10, 9))
     corners = ternary_corners()
     draw_ternary_frame(ax, corners); draw_ternary_grid(ax); draw_ternary_ticks(ax)
+    # 从 JSON 加载 Pearce 1977 边界
+    _p77_raw = load_boundary('cls', 'pearce1977')
+    _pearce77_all = []
+    for key in sorted(_p77_raw['curves'].keys(), key=lambda k: int(k[3:])):
+        c = _p77_raw['curves'][key]
+        xy = ternary_to_xy(np.array(c['a']), np.array(c['b']), np.array(c['c']))
+        _pearce77_all.append(xy)
     for xy in _pearce77_all:
         ax.plot(xy[0], xy[1], 'k-', lw=1.2, zorder=4)
     label_ternary_vertices(ax, 'FeOt', 'MgO', 'Al2O3')
@@ -1421,3 +1255,557 @@ def plot_pearce1977(gd, out_dir=None, save=True):
     if save:
         _style.save_fig(fig, 'Pearce1977_FeOt_MgO_Al2O3.png', out_dir)
     return fig, ax
+
+
+def plot_tasmiddlemostplut(gd, out_dir=None, save=True):
+    """TAS Plutonic (Middlemost 1994) — 深成岩全碱-硅分类图
+    所需元素: SiO2, Na2O, K2O
+    """
+    missing = gd.check_elements('SiO2', 'Na2O', 'K2O', strict=True)
+    if missing:
+        return None, None
+    sio2 = gd.get('SiO2'); alk = gd.get('Na2O') + gd.get('K2O')
+    labels = gd.labels
+    fig, ax = plt.subplots(figsize=(10, 7))
+
+    # Middlemost (1994) 深成岩系列分界线
+    # 平行的斜线群：石英二长岩/二长岩/二长闪长岩等之间的边界
+    xs = np.linspace(42, 80, 20)
+    ax.plot(xs, 0.07*xs - 1.8, 'k-', lw=0.8)   # 碱性/亚碱性分界
+    ax.plot([45, 95], [5, 5], 'k--', lw=0.8)     # 低碱/中碱
+    ax.plot([45, 95], [9.5, 17], 'k--', lw=0.8)  # 中碱/高碱
+
+    _style.scatter_samples(ax, sio2, alk, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(35, 82); ax.set_ylim(0, 18)
+    _style.style_ax(ax, r'SiO$_2$ (wt.%)', r'Na$_2$O+K$_2$O (wt.%)')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'TAS_Middlemost1994_Plutonic.png', out_dir)
+    return fig, ax
+
+
+# ── TAS Volcanic (Middlemost 1994) ─────────────────────────
+
+
+def plot_tasmiddlemostvolc(gd, out_dir=None, save=True):
+    """TAS Volcanic (Middlemost 1994) — 火山岩全碱-硅分类图
+    所需元素: SiO2, Na2O, K2O
+    """
+    missing = gd.check_elements('SiO2', 'Na2O', 'K2O', strict=True)
+    if missing:
+        return None, None
+    sio2 = gd.get('SiO2'); alk = gd.get('Na2O') + gd.get('K2O')
+    labels = gd.labels
+    fig, ax = plt.subplots(figsize=(10, 7))
+
+    # Middlemost (1994) 火山岩边界线 — 与 Le Bas 相似但略有偏移
+    xs = np.linspace(41, 82, 20)
+    ax.plot(xs, 0.095*xs - 2.8, 'k-', lw=1.0)  # Irvine 分界线
+    ax.plot(xs, 0.06*xs - 1.0, 'k--', lw=0.8)   # 辅助分界
+    ax.plot([41, 77], [4, 4], 'k--', lw=0.8)
+    ax.plot([41, 82], [8, 14], 'k--', lw=0.8)
+
+    _style.scatter_samples(ax, sio2, alk, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(35, 82); ax.set_ylim(0, 18)
+    _style.style_ax(ax, r'SiO$_2$ (wt.%)', r'Na$_2$O+K$_2$O (wt.%)')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'TAS_Middlemost1994_Volcanic.png', out_dir)
+    return fig, ax
+
+
+# ── Cox Plutonic (1979) ───────────────────────────────────
+
+
+def plot_coxplut(gd, out_dir=None, save=True):
+    """TAS for plutonic rocks (Cox et al. 1979)
+    所需元素: SiO2, Na2O, K2O
+    """
+    missing = gd.check_elements('SiO2', 'Na2O', 'K2O', strict=True)
+    if missing:
+        return None, None
+    sio2 = gd.get('SiO2'); alk = gd.get('Na2O') + gd.get('K2O')
+    labels = gd.labels
+    fig, ax = plt.subplots(figsize=(10, 7))
+
+    # Cox (1979) TAS 分界线
+    xs = np.linspace(42, 78, 20)
+    ax.plot(xs, 0.08*xs - 1.6, 'k-', lw=1.0)   # 碱性/亚碱性
+    ax.plot([42, 80], [2.5, 2.5], 'k--', lw=0.8)
+    ax.plot([52, 76], [5.5, 10], 'k--', lw=0.8)
+
+    _style.scatter_samples(ax, sio2, alk, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(35, 82); ax.set_ylim(0, 18)
+    _style.style_ax(ax, r'SiO$_2$ (wt.%)', r'Na$_2$O+K$_2$O (wt.%)')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'TAS_Cox1979_Plutonic.png', out_dir)
+    return fig, ax
+
+
+# ── Cox Volcanic (1979) ───────────────────────────────────
+
+
+def plot_coxvolc(gd, out_dir=None, save=True):
+    """TAS for volcanic rocks (Cox et al. 1979)
+    所需元素: SiO2, Na2O, K2O
+    """
+    missing = gd.check_elements('SiO2', 'Na2O', 'K2O', strict=True)
+    if missing:
+        return None, None
+    sio2 = gd.get('SiO2'); alk = gd.get('Na2O') + gd.get('K2O')
+    labels = gd.labels
+    fig, ax = plt.subplots(figsize=(10, 7))
+
+    xs = np.linspace(35, 89, 20)
+    ax.plot(xs, 0.09*xs - 2.6, 'k-', lw=1.0)
+    ax.plot([35, 68], [2, 6.5], 'k--', lw=0.8)
+    ax.plot([42, 82], [7, 14], 'k--', lw=0.8)
+
+    _style.scatter_samples(ax, sio2, alk, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(35, 82); ax.set_ylim(0, 18)
+    _style.style_ax(ax, r'SiO$_2$ (wt.%)', r'Na$_2$O+K$_2$O (wt.%)')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'TAS_Cox1979_Volcanic.png', out_dir)
+    return fig, ax
+
+
+
+# ════════════════════════════════════════════════════════════
+# 2. 判别/源区图（Pearce 系列）
+# ════════════════════════════════════════════════════════════
+
+# ── Pearce 1996 (Th/Yb vs Nb/Yb) ──────────────────────────
+
+# ── Pearce & Norry (1979) Zr/Y vs Zr ─────────────────────
+
+
+def plot_middlemostplut(gd, out_dir=None, save=True):
+    """Middlemost (1991) Na2O+K2O vs SiO2 侵入岩分类图
+    所需元素: SiO2, Na2O, K2O
+    """
+    missing = gd.check_elements('SiO2', 'Na2O', 'K2O', strict=True)
+    if missing:
+        return None, None
+    sio2 = gd.get('SiO2'); alk = gd.get('Na2O') + gd.get('K2O')
+    labels = gd.labels
+    fig, ax = plt.subplots(figsize=(10, 7))
+
+    xs = np.linspace(42, 80, 20)
+    ax.plot(xs, 0.07*xs - 1.8, 'k-', lw=0.8)
+    ax.plot([45, 95], [5, 5], 'k--', lw=0.8)
+    ax.plot([45, 95], [9.5, 17], 'k--', lw=0.8)
+
+    _style.scatter_samples(ax, sio2, alk, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(35, 82); ax.set_ylim(0, 18)
+    _style.style_ax(ax, r'SiO$_2$ (wt.%)', r'Na$_2$O+K$_2$O (wt.%)')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Middlemost1991_Plutonic.png', out_dir)
+    return fig, ax
+
+
+# ── Peccerillo & Taylor (1976) K2O-SiO2 ──────────────────
+
+
+def plot_pecetaylor(gd, out_dir=None, save=True):
+    """Peccerillo & Taylor (1976) K₂O vs SiO₂ 系列判别图
+    所需元素: SiO2, K2O
+    """
+    missing = gd.check_elements('SiO2', 'K2O', strict=True)
+    if missing:
+        return None, None
+    sio2 = gd.get('SiO2'); k2o = gd.get('K2O')
+    labels = gd.labels
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    xs = np.linspace(45, 78, 50)
+    # Peccerillo & Taylor (1976) 分界
+    ax.plot([45, 78], [0.4, 1.9], 'k-', lw=1.2, label='Low-K / Medium-K')
+    ax.plot([45, 78], [1.8, 3.8], 'k--', lw=1.0, label='Medium-K / High-K')
+    ax.plot([45, 61], [2.8, 4.7], 'k:', lw=0.8, label='High-K / Shoshonite')
+
+    _style.scatter_samples(ax, sio2, k2o, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(45, 78); ax.set_ylim(0, 6)
+    _style.style_ax(ax, r'SiO$_2$ (wt.%)', r'K$_2$O (wt.%)')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Peccerillo_Taylor1976_K2O_SiO2.png', out_dir)
+    return fig, ax
+
+
+# ── La/Yb vs Yb 判别图 ────────────────────────────────────
+
+
+def plot_frost(gd, out_dir=None, save=True):
+    """Frost et al. (2001) Fe-number vs SiO₂ 铁质-镁质花岗岩分类
+    所需元素: SiO2, MgO, FeO(T) 或 TFe2O3
+    """
+    missing = gd.check_elements('SiO2', 'MgO', strict=True)
+    if 'FeO' not in gd._elem_data and 'TFe2O3' not in gd._elem_data:
+        return None, None
+    sio2 = gd.get('SiO2'); mgo = gd.get('MgO')
+    feo_t = feot_calc(gd.get('FeO'), gd.get('TFe2O3'))
+    labels = gd.labels
+    denom = feo_t + mgo
+    fe_num = np.where(denom > 0, feo_t / denom, np.nan)
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    # Frost (2001) 分界: Fe* = 0.8 (铁质/镁质分界)
+    ax.axhline(0.8, 0, 1, color='k', ls='--', lw=1.5)
+    ax.axhline(0.6, 0, 1, color='k', ls=':', lw=0.8)
+    ax.axvline(56, 0, 1, color='grey', ls=':', lw=0.8)
+    ax.axvline(71, 0, 1, color='grey', ls=':', lw=0.8)
+
+    ax.text(40, 0.9, 'Ferroan', fontsize=11, ha='left', style='italic')
+    ax.text(40, 0.65, 'Magnesian', fontsize=11, ha='left', style='italic')
+
+    _style.scatter_samples(ax, sio2, fe_num, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(40, 80); ax.set_ylim(0.3, 1.0)
+    _style.style_ax(ax, r'SiO$_2$ (wt.%)', r'FeO$_t$/(FeO$_t$+MgO)')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Frost2001_Fenum_SiO2.png', out_dir)
+    return fig, ax
+
+
+# ── Whalen (1987) Ga/Al A-type 判别图（三张）────────────
+
+# Whalen 1: 10000*Ga/Al vs Zr
+
+
+def plot_whalen1(gd, out_dir=None, save=True):
+    """Whalen et al. (1987) 10000*Ga/Al vs Zr A型花岗岩判别
+    所需元素: Ga, Al (or Al2O3), Zr
+    """
+    missing = gd.check_elements('Ga', 'Al2O3', 'Zr', strict=True)
+    if missing:
+        return None, None
+    ga = gd.get('Ga'); al2o3 = gd.get('Al2O3'); zr = gd.get('Zr')
+    labels = gd.labels
+    # Ga/Al = Ga / (Al2O3 * 2*26.98/101.96) ≈ Ga / (Al2O3 * 0.529)
+    # 10000*Ga/Al
+    ga_al = ga / (al2o3 * 0.529)
+    ga_al_10k = ga_al * 10000
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    ax.axhline(2.6, 0, 1, color='k', ls='--', lw=1.2, label='A-type boundary')
+    ax.axhline(4.0, 0, 1, color='grey', ls=':', lw=0.8)
+
+    ax.text(5, 4.5, 'A-type', fontsize=10, ha='left', style='italic')
+    ax.text(5, 1.5, 'I, S, M-type', fontsize=10, ha='left', style='italic')
+
+    _style.scatter_samples(ax, zr, ga_al_10k, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xscale('log')
+    ax.set_xlim(10, 2000); ax.set_ylim(0.5, 20)
+    _style.style_ax(ax, 'Zr (ppm)', r'10000$\times$Ga/Al')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Whalen1987_GaAl_Zr.png', out_dir)
+    return fig, ax
+
+
+# Whalen 2: 10000*Ga/Al vs Nb
+
+
+def plot_whalen2(gd, out_dir=None, save=True):
+    """Whalen et al. (1987) 10000*Ga/Al vs Nb A型花岗岩判别
+    所需元素: Ga, Al2O3, Nb
+    """
+    missing = gd.check_elements('Ga', 'Al2O3', 'Nb', strict=True)
+    if missing:
+        return None, None
+    ga = gd.get('Ga'); al2o3 = gd.get('Al2O3'); nb = gd.get('Nb')
+    labels = gd.labels
+    ga_al = ga / (al2o3 * 0.529)
+    ga_al_10k = ga_al * 10000
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    ax.axhline(2.6, 0, 1, color='k', ls='--', lw=1.2, label='A-type boundary')
+
+    ax.text(0.5, 4.5, 'A-type', fontsize=10, ha='left', style='italic')
+    ax.text(0.5, 1.5, 'I, S, M-type', fontsize=10, ha='left', style='italic')
+
+    _style.scatter_samples(ax, nb, ga_al_10k, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xscale('log')
+    ax.set_xlim(1, 500); ax.set_ylim(0.5, 20)
+    _style.style_ax(ax, 'Nb (ppm)', r'10000$\times$Ga/Al')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Whalen1987_GaAl_Nb.png', out_dir)
+    return fig, ax
+
+
+# Whalen 3: 10000*Ga/Al vs Ce
+
+
+def plot_whalen3(gd, out_dir=None, save=True):
+    """Whalen et al. (1987) 10000*Ga/Al vs Ce+Y+Zr A型花岗岩判别
+    所需元素: Ga, Al2O3, Ce, Y, Zr
+    """
+    missing = gd.check_elements('Ga', 'Al2O3', 'Ce', 'Y', 'Zr', strict=True)
+    if missing:
+        return None, None
+    ga = gd.get('Ga'); al2o3 = gd.get('Al2O3')
+    ce = gd.get('Ce'); y = gd.get('Y'); zr = gd.get('Zr')
+    labels = gd.labels
+    ga_al = ga / (al2o3 * 0.529)
+    ga_al_10k = ga_al * 10000
+    ce_y_zr = ce + y + zr
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    ax.axhline(2.6, 0, 1, color='k', ls='--', lw=1.2, label='A-type boundary')
+    ax.axhline(4.0, 0, 1, color='grey', ls=':', lw=0.8)
+
+    ax.text(10, 4.5, 'A-type', fontsize=10, ha='left', style='italic')
+    ax.text(10, 1.5, 'I, S, M-type', fontsize=10, ha='left', style='italic')
+
+    _style.scatter_samples(ax, ce_y_zr, ga_al_10k, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xscale('log')
+    ax.set_xlim(10, 5000); ax.set_ylim(0.5, 20)
+    _style.style_ax(ax, 'Ce+Y+Zr (ppm)', r'10000$\times$Ga/Al')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Whalen1987_GaAl_CeYZr.png', out_dir)
+    return fig, ax
+
+
+# ── Sylvester (1989) CaO/Na2O vs Al2O3 ────────────────────
+
+
+def plot_villaseca(gd, out_dir=None, save=True):
+    """Villaseca et al. (1998) ASI vs FMM 花岗岩源区分类
+    ASI = Al2O3/(CaO+Na2O+K2O) 摩尔比
+    FMM = (FeOt+MgO)/(TiO2+Al2O3) × 100
+    所需元素: Al2O3, CaO, Na2O, K2O, MgO, TiO2, FeO(T) 或 TFe2O3
+    """
+    missing = gd.check_elements('Al2O3', 'CaO', 'Na2O', 'K2O', 'MgO', 'TiO2', strict=True)
+    if missing:
+        return None, None
+    if 'FeO' not in gd._elem_data and 'TFe2O3' not in gd._elem_data:
+        return None, None
+    al2o3 = gd.get('Al2O3'); cao = gd.get('CaO')
+    na2o = gd.get('Na2O'); k2o = gd.get('K2O')
+    mgo = gd.get('MgO'); tio2 = gd.get('TiO2')
+    feo_t = feot_calc(gd.get('FeO'), gd.get('TFe2O3'))
+    labels = gd.labels
+
+    # 摩尔比 ASI = Al2O3 / (CaO + Na2O + K2O)
+    asi = (al2o3 / 101.96) / ((cao / 56.08) + (na2o / 61.98) + (k2o / 94.20))
+    # FMM = (FeOt + MgO) / (TiO2 + Al2O3) × 100 (wt%)
+    fmm = (feo_t + mgo) / (tio2 + al2o3) * 100
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    # Villaseca (1998) 分界
+    ax.axhline(1.0, 0, 1, color='k', ls='--', lw=1.2)
+    ax.axvline(2.0, 0, 1, color='k', ls='--', lw=0.8)
+    ax.axvline(10, 0, 1, color='k', ls=':', lw=0.8)
+
+    ax.text(0.5, 1.4, 'Peraluminous', fontsize=9, ha='center', style='italic')
+    ax.text(0.5, 0.8, 'Metaluminous', fontsize=9, ha='center', style='italic')
+
+    _style.scatter_samples(ax, fmm, asi, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(0, 50); ax.set_ylim(0.5, 2.0)
+    _style.style_ax(ax, 'FMM (FeO$_t$+MgO)/(TiO$_2$+Al$_2$O$_3$)×100', 'ASI')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Villaseca1998_ASI_FMM.png', out_dir)
+    return fig, ax
+
+
+# ════════════════════════════════════════════════════════════
+# 4. 花岗岩专题图
+# ════════════════════════════════════════════════════════════
+
+# ── Debon & Le Fort (1983) B-A 图 ────────────────────────
+
+
+def plot_debonba(gd, out_dir=None, save=True):
+    """Debon & Le Fort (1983) B-A 花岗岩矿物分类图
+    B = Fe+Mg+Ti, A = Al-(K+Na+2Ca)
+    所需元素: Al2O3, K2O, Na2O, CaO, FeO(T), MgO, TiO2
+    """
+    needed = ('Al2O3', 'K2O', 'Na2O', 'CaO', 'MgO', 'TiO2')
+    missing = gd.check_elements(*needed, strict=True)
+    if missing or ('FeO' not in gd._elem_data and 'TFe2O3' not in gd._elem_data):
+        return None, None
+    al2o3 = gd.get('Al2O3'); k2o = gd.get('K2O')
+    na2o = gd.get('Na2O'); cao = gd.get('CaO')
+    mgo = gd.get('MgO'); tio2 = gd.get('TiO2')
+    feo_t = feot_calc(gd.get('FeO'), gd.get('TFe2O3'))
+    labels = gd.labels
+
+    # 原子数 (milliatoms/100g): Al = Al2O3*2000/101.96, K = K2O*2000/94.20, ...
+    al = al2o3 * 2000 / 101.96
+    k = k2o * 2000 / 94.20
+    na = na2o * 2000 / 61.98
+    ca = cao * 2000 / 56.08
+    fe = feo_t * 2000 / 71.84
+    mg = mgo * 2000 / 40.30
+    ti = tio2 * 2000 / 79.87
+    b = (fe + mg + ti) / 100  # 除以100使数值范围合理
+    a = (al - (k + na + 2*ca)) / 100
+    fig, ax = plt.subplots(figsize=(10, 8))
+
+    # Debon B-A 分界线（经验值）
+    ax.axvline(0, 0, 1, color='k', lw=0.5)
+    ax.axhline(0, 0, 1, color='k', lw=0.5)
+    # 分区标注
+    ax.fill_between([-100, 0], 0, 100, alpha=0.05, color='blue')
+    ax.fill_between([0, 50], 0, 100, alpha=0.05, color='red')
+    ax.text(-30, 50, 'Per.\n domain', fontsize=10, ha='center', style='italic')
+    ax.text(20, 50, 'Metal.\n domain', fontsize=10, ha='center', style='italic')
+
+    _style.scatter_samples(ax, a, b, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(-60, 40); ax.set_ylim(0, 80)
+    _style.style_ax(ax, 'A = Al-(K+Na+2Ca) (×10$^{-2}$)', 'B = Fe+Mg+Ti (×10$^{-2}$)')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Debon1983_BA_diagram.png', out_dir)
+    return fig, ax
+
+
+# ── Debon & Le Fort (1983) P-Q 图 ─────────────────────────
+
+
+def plot_debonpq(gd, out_dir=None, save=True):
+    """Debon & Le Fort (1983) P-Q 花岗岩分类图
+    P = K-(Na+Ca), Q = Si/3-(K+Na+2Ca/3), 原子数
+    所需元素: SiO2, Al2O3, K2O, Na2O, CaO, FeO(T), MgO, TiO2
+    """
+    needed = ('SiO2', 'Al2O3', 'K2O', 'Na2O', 'CaO', 'MgO', 'TiO2')
+    missing = gd.check_elements(*needed, strict=True)
+    if missing or ('FeO' not in gd._elem_data and 'TFe2O3' not in gd._elem_data):
+        return None, None
+    sio2 = gd.get('SiO2'); al2o3 = gd.get('Al2O3')
+    k2o = gd.get('K2O'); na2o = gd.get('Na2O'); cao = gd.get('CaO')
+    mgo = gd.get('MgO'); tio2 = gd.get('TiO2')
+    feo_t = feot_calc(gd.get('FeO'), gd.get('TFe2O3'))
+    labels = gd.labels
+
+    si = sio2 * 1000 / 60.08
+    al = al2o3 * 2000 / 101.96
+    k = k2o * 2000 / 94.20
+    na = na2o * 2000 / 61.98
+    ca = cao * 2000 / 56.08
+    p = (k - (na + ca)) / 100
+    q = (si/3 - (k + na + 2*ca/3)) / 100
+    fig, ax = plt.subplots(figsize=(10, 8))
+
+    ax.axhline(0, 0, 1, color='k', lw=0.5)
+    ax.axvline(0, 0, 1, color='k', lw=0.5)
+
+    # 标注典型矿物区
+    ax.text(-20, 50, 'Ksp\n domain', fontsize=9, ha='center', style='italic', alpha=0.5)
+    ax.text(20, 50, 'Plag\n domain', fontsize=9, ha='center', style='italic', alpha=0.5)
+
+    _style.scatter_samples(ax, p, q, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(-40, 30); ax.set_ylim(-20, 80)
+    _style.style_ax(ax, 'P = K-(Na+Ca) (×10$^{-2}$)', 'Q = Si/3-(K+Na+2Ca/3) (×10$^{-2}$)')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Debon1983_PQ_diagram.png', out_dir)
+    return fig, ax
+
+
+# ── Schandl (2004) Y vs Zr ────────────────────────────────
+
+
+def plot_larocheplut(gd, out_dir=None, save=True):
+    """La Roche et al. (1980) R1-R2 侵入岩分类图
+    所需元素: SiO2, Al2O3, K2O, Na2O, CaO, FeO(T), MgO, TiO2
+    """
+    needed = ('SiO2', 'Al2O3', 'K2O', 'Na2O', 'CaO', 'MgO', 'TiO2')
+    missing = gd.check_elements(*needed, strict=True)
+    if missing or ('FeO' not in gd._elem_data and 'TFe2O3' not in gd._elem_data):
+        return None, None
+    sio2 = gd.get('SiO2'); al2o3 = gd.get('Al2O3')
+    k2o = gd.get('K2O'); na2o = gd.get('Na2O'); cao = gd.get('CaO')
+    mgo = gd.get('MgO'); tio2 = gd.get('TiO2')
+    feo_t = feot_calc(gd.get('FeO'), gd.get('TFe2O3'))
+    labels = gd.labels
+
+    si = sio2 * 1000 / 60.08
+    al = al2o3 * 2000 / 101.96
+    k = k2o * 2000 / 94.20
+    na = na2o * 2000 / 61.98
+    ca = cao * 2000 / 56.08
+    fe = feo_t * 2000 / 71.84
+    mg = mgo * 2000 / 40.30
+    ti = tio2 * 2000 / 79.87
+    r1 = (4*si - 11*(na+k) - 2*(fe+ti)) / 100
+    r2 = (al + 2*mg + 6*ca) / 100
+    fig, ax = plt.subplots(figsize=(10, 8))
+
+    ax.axhline(0, 0, 1, color='k', lw=0.5)
+    ax.axvline(0, 0, 1, color='k', lw=0.5)
+
+    _style.scatter_samples(ax, r1, r2, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(-30, 40); ax.set_ylim(-20, 30)
+    _style.style_ax(ax, 'R1', 'R2')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'LaRoche1980_R1_R2_plutonic.png', out_dir)
+    return fig, ax
+
+
+# ── La Roche (1980) 火山岩 R1-R2 ──────────────────────────
+
+
+def plot_larochevolc(gd, out_dir=None, save=True):
+    """La Roche et al. (1980) R1-R2 火山岩分类图
+    所需元素: SiO2, Al2O3, K2O, Na2O, CaO, FeO(T), MgO, TiO2
+    """
+    needed = ('SiO2', 'Al2O3', 'K2O', 'Na2O', 'CaO', 'MgO', 'TiO2')
+    missing = gd.check_elements(*needed, strict=True)
+    if missing or ('FeO' not in gd._elem_data and 'TFe2O3' not in gd._elem_data):
+        return None, None
+    sio2 = gd.get('SiO2'); al2o3 = gd.get('Al2O3')
+    k2o = gd.get('K2O'); na2o = gd.get('Na2O'); cao = gd.get('CaO')
+    mgo = gd.get('MgO'); tio2 = gd.get('TiO2')
+    feo_t = feot_calc(gd.get('FeO'), gd.get('TFe2O3'))
+    labels = gd.labels
+
+    si = sio2 * 1000 / 60.08
+    al = al2o3 * 2000 / 101.96
+    k = k2o * 2000 / 94.20
+    na = na2o * 2000 / 61.98
+    ca = cao * 2000 / 56.08
+    fe = feo_t * 2000 / 71.84
+    mg = mgo * 2000 / 40.30
+    ti = tio2 * 2000 / 79.87
+    r1 = (4*si - 11*(na+k) - 2*(fe+ti)) / 100
+    r2 = (al + 2*mg + 6*ca) / 100
+    fig, ax = plt.subplots(figsize=(10, 8))
+
+    ax.axhline(0, 0, 1, color='k', lw=0.5)
+    ax.axvline(0, 0, 1, color='k', lw=0.5)
+
+    _style.scatter_samples(ax, r1, r2, labels, groups=gd.groups)
+    _style.add_legend(ax)
+    ax.set_xlim(-30, 40); ax.set_ylim(-20, 30)
+    _style.style_ax(ax, 'R1', 'R2')
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'LaRoche1980_R1_R2_volcanic.png', out_dir)
+    return fig, ax
+
+
+# ── Middlemost (1991) 侵入岩分类 ──────────────────────────
+
+

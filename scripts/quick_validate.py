@@ -44,6 +44,9 @@ def _bootstrap():
     scripts_dir = os.path.join(SKILL_DIR, 'scripts')
     if scripts_dir not in sys.path:
         sys.path.insert(0, scripts_dir)
+    wr_path = os.path.join(scripts_dir, 'whole_rock')
+    if os.path.isdir(wr_path) and wr_path not in sys.path:
+        sys.path.insert(0, wr_path)
     return SKILL_DIR, args.quick
 
 QUICK_MODE = _bootstrap()[1]
@@ -429,7 +432,16 @@ def test_element_dependency_integrity():
             xy_content = f.read()
         funcs_xy = re.findall(r'^def (plot_\w+)\(', xy_content, re.MULTILINE)
         for fn in funcs_xy:
-            fn_to_file[fn] = ('_xy_diagrams.py', xy_content)
+            fn_to_file[fn] = ('_xy_diagrams.py.bak', xy_content)
+    # _xy_diagrams.py 已拆散到 4 个分类文件，直接覆盖
+    for fname in ['_classification.py', '_tectonic.py', '_source.py', '_evolution.py']:
+        fpath = os.path.join(SKILL_DIR, 'scripts', 'whole_rock', 'diagrams', fname)
+        if os.path.isfile(fpath):
+            with open(fpath, 'r', encoding='utf-8') as f:
+                content = f.read()
+            funcs = re.findall(r'^def (plot_\w+)\(', content, re.MULTILINE)
+            for fn in funcs:
+                fn_to_file[fn] = (fname, content)
 
     # 化学元素全集（用于过滤非化学元素名）
     _CHEM_ELEMS = {

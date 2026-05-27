@@ -8,6 +8,9 @@ import argparse, sys, os
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
+wr_path = os.path.join(SCRIPT_DIR, 'whole_rock')
+if os.path.isdir(wr_path) and wr_path not in sys.path:
+    sys.path.insert(0, wr_path)
 
 from igneous_geochem.batch.backgrounds import run_batch, DEFAULT_OUT_DIR
 
