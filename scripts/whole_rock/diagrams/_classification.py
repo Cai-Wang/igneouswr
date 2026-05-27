@@ -26,6 +26,9 @@ from _ternary import (
 
 def plot_co_th(gd, out_dir=None, save=True):
     """Co vs Th 岩浆系列判别图（Hastie et al., 2007）
+    线性坐标 X=Th, Y=Co。
+    分界线: Th=2 垂线 及 Co=25, Co=80 水平线
+    区域: Tholeiitic, Calc-alkaline, High-K calc-alkaline
     所需元素: Co, Th
     """
     missing = gd.check_elements('Co', 'Th', strict=True)
@@ -34,13 +37,20 @@ def plot_co_th(gd, out_dir=None, save=True):
     co = gd.get('Co'); th = gd.get('Th')
     labels = gd.labels
     fig, ax = plt.subplots(figsize=(8, 7))
-    ax.plot([0.5, 10], [25, 25], 'k-', lw=1.0)
-    ax.plot([2, 2], [2, 200], 'k-', lw=1.0)
-    ax.plot([0.5, 5], [80, 80], 'k-', lw=1.0)
+
+    # 分界线: 水平 Co=25, Co=80；垂直 Th=2
+    ax.axhline(25, 0, 1, color='k', lw=1.0)
+    ax.axhline(80, 0, 1, color='k', lw=1.0)
+    ax.axvline(2, 0, 1, color='k', lw=1.0)
+
+    # 区域标注（系列名称）
+    ax.text(6, 60, 'Tholeiitic', fontsize=9, ha='center', fontstyle='italic', alpha=0.7)
+    ax.text(6, 40, 'Calc-alkaline', fontsize=9, ha='center', fontstyle='italic', alpha=0.7)
+    ax.text(6, 100, 'High-K\ncalc-alkaline', fontsize=9, ha='center', fontstyle='italic', alpha=0.7)
+
     _style.scatter_samples(ax, th, co, labels, groups=gd.groups)
     _style.add_legend(ax)
-    ax.set_xscale('log'); ax.set_yscale('log')
-    ax.set_xlim(0.1, 50); ax.set_ylim(1, 500)
+    ax.set_xlim(0, 15); ax.set_ylim(0, 120)
     _style.style_ax(ax, 'Th (ppm)', 'Co (ppm)')
     plt.tight_layout(pad=0.3)
     if save:
@@ -53,6 +63,8 @@ def plot_co_th(gd, out_dir=None, save=True):
 
 def plot_an_ab_or(gd, out_dir=None, save=True):
     """An-Ab-Or 长石分类三元图（O'Connor, 1965）
+    An=CaO（钙长石标准分子）, Ab=Na₂O（钠长石标准分子）, Or=K₂O（钾长石标准分子）
+    按 O'Connor (1965) / Streckeisen (1976) 花岗岩类岩石分类
     所需元素: Na2O, K2O, CaO, Al2O3, SiO2
     """
     missing = gd.check_elements('Na2O', 'K2O', 'CaO', 'Al2O3', 'SiO2', strict=True)
@@ -61,7 +73,7 @@ def plot_an_ab_or(gd, out_dir=None, save=True):
     na2o = gd.get('Na2O'); k2o = gd.get('K2O'); cao = gd.get('CaO')
     al2o3 = gd.get('Al2O3'); sio2 = gd.get('SiO2')
     labels = gd.labels
-    # 简化标准矿物计算
+    # 简化标准矿物计算（仅做三角图投点用）
     an = cao; ab = na2o; or_ = k2o
     total = an + ab + or_
     mask = total == 0
@@ -70,10 +82,104 @@ def plot_an_ab_or(gd, out_dir=None, save=True):
     or_n = np.where(mask, 0, or_/total*100)
     x_d, y_d = ternary_to_xy(an_n, ab_n, or_n)
     valid = ~np.isnan(x_d) & ~np.isnan(y_d)
+
     fig, ax = plt.subplots(figsize=(10, 9))
     corners = ternary_corners()
     draw_ternary_frame(ax, corners); draw_ternary_grid(ax); draw_ternary_ticks(ax)
-    label_ternary_vertices(ax, 'An', 'Ab', 'Or')
+
+    # ── O'Connor (1965) 花岗岩类分类界线 ──
+    # 每条界线由 (An%, Ab%, Or%) 三元坐标的两个端点定义
+    # 界线的走向为从一条边出发，终止于另一条边
+    _ocomor_boundaries = [
+        # 每条 (An_arr, Ab_arr, Or_arr) → 分界线
+        ([0.0, 17.5, 30.0],  [70.0, 52.5, 30.0],  [30.0, 30.0, 30.0]),   # Trondhjemite 上边界
+        ([20.0, 44.0, 20.0],  [60.0, 36.0, 20.0],  [20.0, 20.0, 20.0]),   # 第2条
+        ([16.3, 35.8, 35.0],  [48.7, 29.2, 35.0],  [35.0, 35.0, 35.0]),   # 第3条
+        ([12.5, 27.5, 50.0],  [37.5, 22.5, 50.0],  [50.0, 50.0, 50.0]),   # 第4条
+        ([25.0, 12.5, -0.5],  [75.5, 37.5, 50.0],  [-0.5, 50.0, 50.0]),   # 第5条
+        ([12.5, 2.5, 50.0],   [37.5, 7.5, 90.0],   [50.0, 90.0, 90.0]),   # 第6条
+        ([2.5, 5.5, 90.0],    [7.5, 4.5, 90.0],    [90.0, 90.0, 90.0]),   # 第7条
+    ]
+    for a_arr, b_arr, c_arr in _ocomor_boundaries:
+        a_np = np.array(a_arr); b_np = np.array(b_arr); c_np = np.array(c_arr)
+        bx, by = ternary_to_xy(a_np, b_np, c_np)
+        ax.plot(bx, by, 'k-', lw=1.0, zorder=4)
+
+    # ── 分类区域填充 ──
+    # 用7条界线将三角图分为8个区域，填充淡色便于区分
+    # 区域填充用围成的多边形顶点
+    SQ = SQRT3_2
+    T = np.array([0.5, SQ])   # An 顶点
+    L = np.array([0.0, 0.0])  # Ab 顶点
+    R = np.array([1.0, 0.0])  # Or 顶点
+
+    # 计算每条界线端点的投影坐标
+    bnd_coords = []
+    for a_arr, b_arr, c_arr in _ocomor_boundaries:
+        a_np = np.array(a_arr); b_np = np.array(b_arr); c_np = np.array(c_arr)
+        bx, by = ternary_to_xy(a_np, b_np, c_np)
+        bnd_coords.append((bx, by))
+
+    # ── 区域 1: An 顶角区（Anorthite-rich）──
+    # An 顶点 → 界线0起点 → 界线0终点 → 回到 An
+    r1_x = np.concatenate([[T[0]], bnd_coords[0][0], [T[0]]])
+    r1_y = np.concatenate([[T[1]], bnd_coords[0][1], [T[1]]])
+    ax.fill(r1_x, r1_y, color='#ffe0b2', alpha=0.25, ec='none', zorder=1)
+
+    # ── 区域 2: An-Ab 边附近 → 界线0 ~ 界线1 ──
+    r2_x = np.concatenate([bnd_coords[0][0], bnd_coords[1][0]])
+    r2_y = np.concatenate([bnd_coords[0][1], bnd_coords[1][1]])
+    ax.fill(r2_x, r2_y, color='#fff9c4', alpha=0.25, ec='none', zorder=1)
+
+    # ── 区域 3: 界线1 ~ 界线2 ──
+    r3_x = np.concatenate([bnd_coords[1][0], bnd_coords[2][0][::-1]])
+    r3_y = np.concatenate([bnd_coords[1][1], bnd_coords[2][1][::-1]])
+    ax.fill(r3_x, r3_y, color='#c8e6c9', alpha=0.25, ec='none', zorder=1)
+
+    # ── 区域 4: 界线2 ~ 界线3 ──
+    r4_x = np.concatenate([bnd_coords[2][0], bnd_coords[3][0][::-1]])
+    r4_y = np.concatenate([bnd_coords[2][1], bnd_coords[3][1][::-1]])
+    ax.fill(r4_x, r4_y, color='#b3e5fc', alpha=0.25, ec='none', zorder=1)
+
+    # ── 区域 5: 界线3 ~ 界线4 ──
+    r5_x = np.concatenate([bnd_coords[3][0], bnd_coords[4][0][::-1]])
+    r5_y = np.concatenate([bnd_coords[3][1], bnd_coords[4][1][::-1]])
+    ax.fill(r5_x, r5_y, color='#d1c4e9', alpha=0.25, ec='none', zorder=1)
+
+    # ── 区域 6: 界线4 ~ 界线5 ──
+    r6_x = np.concatenate([bnd_coords[4][0], bnd_coords[5][0][::-1]])
+    r6_y = np.concatenate([bnd_coords[4][1], bnd_coords[5][1][::-1]])
+    ax.fill(r6_x, r6_y, color='#f8bbd0', alpha=0.25, ec='none', zorder=1)
+
+    # ── 区域 7: 界线5 ~ 界线6 ──
+    r7_x = np.concatenate([bnd_coords[5][0], bnd_coords[6][0][::-1]])
+    r7_y = np.concatenate([bnd_coords[5][1], bnd_coords[6][1][::-1]])
+    ax.fill(r7_x, r7_y, color='#d7ccc8', alpha=0.25, ec='none', zorder=1)
+
+    # ── 区域 8: Or 角区（界线6 ~ Or 顶点）──
+    r8_x = np.concatenate([bnd_coords[6][0], [R[0]], [R[0]]])
+    r8_y = np.concatenate([bnd_coords[6][1], [R[1]], [R[1]]])
+    ax.fill(r8_x, r8_y, color='#cfd8dc', alpha=0.30, ec='none', zorder=1)
+
+    # ── 分类标注 ──
+    # 每个区域中心放分类名称（通过三元坐标找个中点）
+    # 按 O'Connor (1965) 花岗岩类分类
+    labels_text = [
+        ('Anorthite\n(An>50%)', [75, 15, 10]),
+        ('Gabbro/\nDiorite', [50, 35, 15]),
+        ('Quartz\nDiorite', [38, 42, 20]),
+        ('Granodiorite', [22, 48, 30]),
+        ('Quartz\nMonzonite', [12, 48, 40]),
+        ('Granite\n(Trondhjemite)', [5, 45, 50]),
+        ('Granite\n(Adamelite)', [5, 10, 85]),
+        ('Syenogranite\n(Alkali Granite)', [3, 3, 94]),
+    ]
+    for text, (a_pct, b_pct, c_pct) in labels_text:
+        lx, ly = ternary_to_xy(np.array([a_pct]), np.array([b_pct]), np.array([c_pct]))
+        ax.text(lx[0], ly[0], text, fontsize=7.5, ha='center', va='center',
+                color='#444444', fontweight='bold', zorder=5)
+
+    label_ternary_vertices(ax, 'An\n(Anorthite)', 'Ab\n(Albite)', 'Or\n(Orthoclase)')
     _style.scatter_samples(ax, x_d[valid], y_d[valid], labels, groups=gd.groups)
     _style.add_legend(ax)
     ax.set_xlim(-0.05, 1.1); ax.set_ylim(-0.08, 0.95)
@@ -88,7 +194,9 @@ def plot_an_ab_or(gd, out_dir=None, save=True):
 # ────────────────────────────────────────────────────────────
 
 def plot_qapf(gd, out_dir=None, save=True):
-    """Q-A-PF 深成岩分类三元图（Streckeisen, 1976）
+    """Q-A-P 深成岩分类三元图（Streckeisen, 1976 / Le Maitre et al., 2002）
+    顶点: Q=石英, A=碱性长石, P=斜长石
+    按 IUGS 推荐标准，适用于 Q ≥ 10% 的火成岩（含石英岩石）
     所需元素: SiO2, Na2O, K2O, CaO, Al2O3
     """
     missing = gd.check_elements('SiO2', 'Na2O', 'K2O', 'CaO', 'Al2O3', strict=True)
@@ -97,20 +205,126 @@ def plot_qapf(gd, out_dir=None, save=True):
     sio2 = gd.get('SiO2'); na2o = gd.get('Na2O'); k2o = gd.get('K2O')
     cao = gd.get('CaO'); al2o3 = gd.get('Al2O3')
     labels = gd.labels
-    # 简化 Q-A-PF
-    q = np.maximum(sio2 - 50, 0); a = na2o + k2o; pf = cao + al2o3 - a - q
-    pf = np.maximum(pf, 0)
-    total = q + a + pf
+    # 简化 Q-A-P 计算
+    q = np.maximum(sio2 - 50, 0); a = na2o + k2o; p = cao + al2o3 - a - q
+    p = np.maximum(p, 0)
+    total = q + a + p
     mask = total == 0
     q_n = np.where(mask, 0, q/total*100)
     a_n = np.where(mask, 0, a/total*100)
-    pf_n = np.where(mask, 0, pf/total*100)
-    x_d, y_d = ternary_to_xy(q_n, a_n, pf_n)
+    p_n = np.where(mask, 0, p/total*100)
+    x_d, y_d = ternary_to_xy(q_n, a_n, p_n)
     valid = ~np.isnan(x_d) & ~np.isnan(y_d)
     fig, ax = plt.subplots(figsize=(10, 9))
     corners = ternary_corners()
-    draw_ternary_frame(ax, corners); draw_ternary_grid(ax); draw_ternary_ticks(ax)
-    label_ternary_vertices(ax, 'Q', 'A', 'P+F')
+    draw_ternary_frame(ax, corners)
+    draw_ternary_grid(ax)
+    draw_ternary_ticks(ax)
+
+    # ── Streckeisen (1976) QAP 深成岩分类界线 ──
+    # Q 的等值线：Q=20, Q=60 两条水平线
+    # A/(A+P) 等值线 = 从 Q 顶点出发的射线：10%, 35%, 65%, 90%
+    # 每条射线: A = K*(100-Q), P = (1-K)*(100-Q), 其中 K = A/(A+P)
+
+    q_lines = [20, 60]
+    for q_val in q_lines:
+        # 水平线：从 (Q=q, A=0, P=100-q) 到 (Q=q, A=100-q, P=0)
+        pts_a = np.array([q_val, q_val])
+        pts_b = np.array([0.0, 100 - q_val])
+        pts_c = np.array([100 - q_val, 0.0])
+        lx, ly = ternary_to_xy(pts_a, pts_b, pts_c)
+        ax.plot(lx, ly, 'k-', lw=1.2, zorder=4)
+
+    # A/(A+P) 射线（从 Q=0 边出发到 Q=100 即 Q顶点）
+    ap_ratios = [0.10, 0.35, 0.65, 0.90]
+    ap_labels = ['0.10', '0.35', '0.65', '0.90']
+    for k in ap_ratios:
+        q_vals = np.array([0.0, 90.0])
+        a_vals = k * (100 - q_vals)
+        p_vals = (1 - k) * (100 - q_vals)
+        lx, ly = ternary_to_xy(q_vals, a_vals, p_vals)
+        ax.plot(lx, ly, 'k--', lw=0.8, zorder=4)
+
+    # ── 颜色区域填充 ──
+    SQ = SQRT3_2
+    T = np.array([0.5, SQ])    # Q 顶点
+    L = np.array([0.0, 0.0])   # A 顶点
+    R = np.array([1.0, 0.0])   # P 顶点
+
+    # 计算 Q=20 和 Q=60 的端点 xy
+    q20_a = np.array([20, 20]); q20_b = np.array([0, 80]); q20_c = np.array([80, 0])
+    q20_xy = ternary_to_xy(q20_a, q20_b, q20_c)
+
+    q60_a = np.array([60, 60]); q60_b = np.array([0, 40]); q60_c = np.array([40, 0])
+    q60_xy = ternary_to_xy(q60_a, q60_b, q60_c)
+
+    # 计算 A/(A+P) 射线的端点坐标（Q=0 底边上的点）
+    ray_endpoints = []
+    for k in ap_ratios:
+        qv = np.array([0.0]); av = k * 100.0; pv = (1-k) * 100.0
+        rx, ry = ternary_to_xy(qv, av, pv)
+        ray_endpoints.append([rx[0], ry[0]])
+
+    # 区域 1: Q > 60, A/(A+P) < 0.35 之间 — 富石英区
+    # 用 Q=60 线 + Q 顶点 + A/(A+P)=0.35 射线围合
+    k35_a = np.array([0, 90]); k35_b = np.array([35, 3.5]); k35_c = np.array([65, 6.5])
+    k35_xy = ternary_to_xy(k35_a, k35_b, k35_c)
+    # k65
+    k65_a = np.array([0, 90]); k65_b = np.array([65, 3.5]); k65_c = np.array([35, 6.5])
+    k65_xy = ternary_to_xy(k65_a, k65_b, k65_c)
+    # k10
+    k10_a = np.array([0, 90]); k10_b = np.array([10, 9]); k10_c = np.array([90, 1])
+    k10_xy = ternary_to_xy(k10_a, k10_b, k10_c)
+    # k90
+    k90_a = np.array([0, 90]); k90_b = np.array([90, 1]); k90_c = np.array([10, 9])
+    k90_xy = ternary_to_xy(k90_a, k90_b, k90_c)
+
+    # 区域 (Q>60, 高石英) — Q60 线以上到 Q 顶点之间的狭长区域，按 A/(A+P)分
+    # 实际上 Q>60 的区域很小，用淡色整体填充
+    r_qhi_x = np.concatenate([q60_xy[0], [T[0]]])
+    r_qhi_y = np.concatenate([q60_xy[1], [T[1]]])
+    ax.fill(r_qhi_x, r_qhi_y, color='#f8bbd0', alpha=0.20, ec='none', zorder=1)
+
+    # 区域: 20 < Q < 60, 按 A/(A+P) 划分
+    # Q20 到 Q60 之间 → 梯形
+
+    # Q20~Q60, A/(A+P)<0.10
+    r1_x = np.concatenate([q20_xy[0], q60_xy[0][::-1]])
+    r1_y = np.concatenate([q20_xy[1], q60_xy[1][::-1]])
+    ax.fill(r1_x, r1_y, color='#c8e6c9', alpha=0.18, ec='none', zorder=1)
+
+    # 总区域: Q<20, 用底边直接画
+    r_low_x = np.concatenate([[T[0]], q20_xy[0], [L[0]], [R[0]]])
+    r_low_y = np.concatenate([[T[1]], q20_xy[1], [L[1]], [R[1]]])
+    ax.fill(r_low_x, r_low_y, color='#fff9c4', alpha=0.12, ec='none', zorder=1)
+
+    # ── 岩石名称标注 ──
+    # 根据 Streckeisen (1976) 标准 QAP 分区命名
+    rock_labels = [
+        # (文本, (Q%, A%, P%), fontsize)
+        ('Quartzolite\n(>90% Q)', (90, 5, 5), 8),
+        ('Quartz-rich\nGranitoid', (40, 30, 30), 8),
+        ('Alkali\nGranite', (35, 80, 15), 8),
+        ('Granite', (35, 25, 40), 8),
+        ('Granodiorite', (35, 15, 50), 8),
+        ('Tonalite', (35, 7, 58), 8),
+        ('Quartz\nAlkali\nSyenite', (10, 80, 10), 7),
+        ('Quartz\nSyenite', (10, 50, 40), 7),
+        ('Quartz\nMonzonite', (10, 33, 57), 7),
+        ('Quartz\nMonzodiorite', (10, 20, 70), 7),
+        ('Quartz\nDiorite', (10, 7, 83), 7),
+        ('Alkali\nSyenite', (3, 85, 12), 7),
+        ('Syenite', (3, 50, 47), 7),
+        ('Monzonite', (3, 33, 64), 7),
+        ('Monzodiorite', (3, 20, 77), 7),
+        ('Diorite/\nGabbro', (3, 7, 90), 7),
+    ]
+    for text, (q_pct, a_pct, p_pct), fs in rock_labels:
+        lx, ly = ternary_to_xy(np.array([q_pct]), np.array([a_pct]), np.array([p_pct]))
+        ax.text(lx[0], ly[0], text, fontsize=fs, ha='center', va='center',
+                color='#333333', fontweight='bold', zorder=5)
+
+    label_ternary_vertices(ax, 'Q\n(Quartz)', 'A\n(Alkali Feldspar)', 'P\n(Plagioclase)')
     _style.scatter_samples(ax, x_d[valid], y_d[valid], labels, groups=gd.groups)
     _style.add_legend(ax)
     ax.set_xlim(-0.05, 1.1); ax.set_ylim(-0.08, 0.95)
@@ -233,24 +447,75 @@ def plot_tas(gd, out_dir=None, save=True):
 # ────────────────────────────────────────────────────────────
 
 def plot_k2o_sio2(gd, out_dir=None, save=True):
-    """K₂O–SiO₂ 钾系列分类图（Peccerillo & Taylor, 1976）
+    """K₂O–SiO₂ 钾系列分类图（Middlemost, 1975 / Le Maitre et al., 2002）
     所需元素: SiO2, K2O
+    分界线: Low-K, Medium-K, High-K, Shoshonitic
+    界线坐标参考 Le Maitre et al. (2002) Fig. 4.4
     """
     missing = gd.check_elements('SiO2', 'K2O', strict=True)
     if missing:
         return None, None
     sio2 = gd.get('SiO2'); k2o = gd.get('K2O')
     labels = gd.labels
-    fig, ax = plt.subplots(figsize=(10, 7))
-    xs = np.linspace(45, 80, 20)
-    ax.plot(xs, 0.025*xs-2.0, 'k-', lw=1.0)
-    ax.plot(xs, 0.05*xs-3.0, 'k-', lw=1.0)
-    ax.plot(xs, 0.1*xs-5.0, 'k-', lw=1.0)
-    ax.plot(xs, 0.2*xs-9.0, 'k-', lw=1.0)
+    fig, ax = plt.subplots(figsize=(8, 7))
+
+    # ── 背景颜色区域 ──
+    # Low-K: 最下方区域（淡黄色）
+    # Medium-K: Low-K ~ Medium-K 之间（淡绿色）
+    # High-K: Medium-K ~ High-K 之间（淡蓝色）
+    # Shoshonitic: High-K 以上（淡粉色）
+
+    # 用多边形填充各区域（覆盖全 x 范围 45~80，y 上限取 8）
+    # Low-K / Medium-K 分界线: (45,0.5) → (75,2.5)
+    # Medium-K / High-K 分界线: (50,1.5) → (75,4.0)
+    # High-K / Shoshonitic 分界线: (55,2.5) → (75,6.0)
+
+    # Shoshonitic 区域: 在 High-K/Shoshonitic 界线上方
+    sho_x = [55, 75, 80, 80, 55]
+    sho_y = [2.5, 6.0, 8.0, 8.0, 8.0]
+    ax.fill(sho_x, sho_y, color='#f48fb1', alpha=0.20, ec='none', zorder=0)
+
+    # High-K 区域: 在 Medium-K/High-K 与 High-K/Shoshonitic 之间
+    hk_x = [50, 75, 75, 55]
+    hk_y = [1.5, 4.0, 6.0, 2.5]
+    ax.fill(hk_x, hk_y, color='#90caf9', alpha=0.20, ec='none', zorder=0)
+
+    # Medium-K 区域: 在 Low-K/Medium-K 与 Medium-K/High-K 之间
+    mk_x = [45, 75, 75, 50]
+    mk_y = [0.5, 2.5, 4.0, 1.5]
+    ax.fill(mk_x, mk_y, color='#a5d6a7', alpha=0.20, ec='none', zorder=0)
+
+    # Low-K 区域: 在 Low-K/Medium-K 分界线下方 → 到底部 y=0
+    lk_x = [45, 75, 75, 45]
+    lk_y = [0.0, 0.0, 2.5, 0.5]
+    ax.fill(lk_x, lk_y, color='#fff9c4', alpha=0.25, ec='none', zorder=0)
+
+    # ── 分界线（Middlemost 1975 标准坐标）──
+    # Low-K / Medium-K
+    ax.plot([45, 75], [0.5, 2.5], 'k-', lw=0.8, zorder=3)
+    # Medium-K / High-K
+    ax.plot([50, 75], [1.5, 4.0], 'k--', lw=0.8, zorder=3)
+    # High-K / Shoshonitic
+    ax.plot([55, 75], [2.5, 6.0], '-.', color='#444444', lw=0.8, zorder=3)
+
+    # ── 区域标注 ──
+    ax.text(57, 0.3, 'Low-K\nTholeiitic', fontsize=10, ha='center', va='bottom',
+            color='#f57f17', fontweight='bold', zorder=4)
+    ax.text(62, 1.2, 'Medium-K\nCalc-alkaline', fontsize=10, ha='center', va='center',
+            color='#2e7d32', fontweight='bold', zorder=4)
+    ax.text(65, 3.3, 'High-K\nCalc-alkaline', fontsize=10, ha='center', va='center',
+            color='#1565c0', fontweight='bold', zorder=4)
+    ax.text(62, 6.8, 'Shoshonitic', fontsize=10, ha='center', va='center',
+            color='#c62828', fontweight='bold', zorder=4)
+
     _style.scatter_samples(ax, sio2, k2o, labels, groups=gd.groups)
     _style.add_legend(ax)
     ax.set_xlim(42, 82); ax.set_ylim(0, 8)
     _style.style_ax(ax, r'SiO$_2$ (wt.%)', r'K$_2$O (wt.%)')
+
+    # 覆盖：关闭网格（style_ax 默认打开网格，K₂O-SiO₂ 分类型不要网格）
+    ax.grid(False)
+
     plt.tight_layout(pad=0.3)
     if save:
         _style.save_fig(fig, 'K2O_SiO2_PT76.png', out_dir)
@@ -285,12 +550,57 @@ def plot_afm(gd, out_dir=None, save=True):
     fig, ax = plt.subplots(figsize=(10, 9))
     corners = ternary_corners()
     draw_ternary_frame(ax, corners); draw_ternary_grid(ax); draw_ternary_ticks(ax)
-    # Irvine & Baragar 边界：(ib_x=A%, ib_y=F%)
-    ib_x = np.array([20, 32, 41, 56, 75])
-    ib_y = np.array([80, 68, 59, 44, 25])
-    # ternary_to_xy(top=F, left=A, right=M) → ternary_to_xy(ib_y, ib_x, 100-ib_x-ib_y)
-    th_x, th_y = ternary_to_xy(ib_y, ib_x, 100-ib_x-ib_y)
-    ax.plot(th_x, th_y, 'k-', lw=1.5, zorder=4)
+
+    # ── Irvine & Baragar (1971) 精确分界线 ──
+    # 数据点：%A=F% (顶角), %B=A% (左下), %C=M% (右下)
+    boundary_A = np.array([
+        32.90, 38.61, 44.51, 49.39, 52.69, 54.30, 54.43, 53.41,
+        51.57, 49.21, 46.69, 44.12, 41.78, 39.52, 37.50, 35.59,
+        33.69, 31.70
+    ])
+    boundary_B = np.array([
+        62.10, 53.38, 44.49, 36.61, 30.32, 25.70, 22.56, 20.59,
+        19.44, 18.79, 18.32, 17.86, 17.24, 16.46, 15.49, 14.42,
+        13.32, 12.31
+    ])
+    boundary_C = np.array([
+        5.00, 8.00, 11.00, 14.00, 17.00, 20.00, 23.01, 26.00,
+        28.99, 32.00, 34.99, 38.02, 40.98, 44.02, 47.01, 49.99,
+        52.98, 56.00
+    ])
+    b_x, b_y = ternary_to_xy(boundary_A, boundary_B, boundary_C)
+    ax.plot(b_x, b_y, 'k-', lw=1.8, zorder=5)
+
+    # ── 区域填充：Tholeiitic (上) / Calc-Alkaline (下) ──
+    # 从左上角 → 沿框架到右下角 → 回起点构成闭合填充
+    # 取边界上方区域（Tholeiitic）: 从 A 顶点出发 → 沿框架走 → 边界折回去
+    # 上区：A顶点(0,0) → F顶点(0.5, SQRT3_2) → M顶点(1,0) → 边界反向走
+    SQ = SQRT3_2
+    from_top = np.array([0.5, SQ])  # F 顶点
+    from_left = np.array([0.0, 0.0])  # A 顶点
+    from_right = np.array([1.0, 0.0])  # M 顶点
+    # Tholeiitic（上区）: F→A 沿左边 + A→M 沿底边 + M→边界终点 反向 → 边界折回 → 边界起点→F
+    th_x = np.concatenate([[from_top[0]], [from_left[0]], [from_right[0]], b_x[::-1]])
+    th_y = np.concatenate([[from_top[1]], [from_left[1]], [from_right[1]], b_y[::-1]])
+    ax.fill(th_x, th_y, color='#e57373', alpha=0.18, ec='none', zorder=1)
+
+    # Calc-Alkaline（下区）: 边界以下
+    ca_x = np.concatenate([[from_top[0]], b_x, [from_right[0]]])
+    ca_y = np.concatenate([[from_top[1]], b_y, [from_right[1]]])
+    ax.fill(ca_x, ca_y, color='#64b5f6', alpha=0.18, ec='none', zorder=1)
+
+    # ── 区域标注 ──
+    # Tholeiitic 标注在分界线上方靠左区域
+    label_th_x, label_th_y = ternary_to_xy(np.array([45]), np.array([40]), np.array([15]))
+    ax.text(label_th_x[0], label_th_y[0], 'Tholeiitic',
+            fontsize=12, ha='center', va='center',
+            color='#c62828', fontweight='bold', zorder=6)
+    # Calc-Alkaline 标注在分界线下方靠右区域
+    label_ca_x, label_ca_y = ternary_to_xy(np.array([25]), np.array([30]), np.array([45]))
+    ax.text(label_ca_x[0], label_ca_y[0], 'Calc-Alkaline',
+            fontsize=12, ha='center', va='center',
+            color='#1565c0', fontweight='bold', zorder=6)
+
     label_ternary_vertices(ax, 'FeO*', r'Na$_2$O+K$_2$O', 'MgO')
     _style.scatter_samples(ax, x_d, y_d, labels, groups=gd.groups)
     _style.add_legend(ax)
@@ -319,10 +629,46 @@ def plot_shand(gd, out_dir=None, save=True):
     a_cnk = al2o3 / (cao + na2o + k2o)
     a_nk = al2o3 / (na2o + k2o)
     fig, ax = plt.subplots(figsize=(8, 7))
-    ax.axhline(y=1, color='#888888', ls='--', lw=1.0)
-    ax.axvline(x=1, color='#888888', ls='--', lw=1.0)
+
+    # ── 底色填充 ──
+    # Metaluminous (A/CNK < 1, A/NK > 1) — 左上，淡绿色
+    x_ml = [0, 1, 1, 0]
+    y_ml = [1, 1, 3, 3]
+    ax.fill(x_ml, y_ml, color='#a8e6cf', alpha=0.25, ec='none', zorder=0)
+
+    # Peraluminous (A/CNK > 1, A/NK > 1) — 右上，淡蓝色
+    x_pa = [1, 3, 3, 1]
+    y_pa = [1, 1, 3, 3]
+    ax.fill(x_pa, y_pa, color='#90caf9', alpha=0.25, ec='none', zorder=0)
+
+    # Peralkaline (A/NK < 1, 全范围) — 下方，淡粉色
+    x_pk = [0, 3, 3, 0]
+    y_pk = [0, 0, 1, 1]
+    ax.fill(x_pk, y_pk, color='#f48fb1', alpha=0.25, ec='none', zorder=0)
+
+    # ── 分界线 ──
+    # 垂直线 A/CNK = 1.0
+    ax.axvline(x=1.0, color='#444444', ls='--', lw=1.2, zorder=1)
+    # 水平线 A/NK = 1.0
+    ax.axhline(y=1.0, color='#444444', ls='--', lw=1.2, zorder=1)
+    # 对角线 A/CNK = A/NK (1:1)
+    ax.plot([0, 3], [0, 3], color='#444444', ls=':', lw=1.0, zorder=1)
+
+    # ── 区域标注 ──
+    ax.text(0.35, 2.2, 'Metaluminous',
+            fontsize=11, ha='center', va='center',
+            color='#2e7d32', fontweight='bold', zorder=2)
+    ax.text(2.0, 2.2, 'Peraluminous',
+            fontsize=11, ha='center', va='center',
+            color='#1565c0', fontweight='bold', zorder=2)
+    ax.text(1.5, 0.5, 'Peralkaline',
+            fontsize=11, ha='center', va='center',
+            color='#c62828', fontweight='bold', zorder=2)
+
+    # ── 投点 ──
     _style.scatter_samples(ax, a_cnk, a_nk, labels, groups=gd.groups)
     _style.add_legend(ax)
+
     ax.set_xlim(0, 3); ax.set_ylim(0, 3)
     _style.style_ax(ax, 'A/CNK', 'A/NK')
     plt.tight_layout(pad=0.3)
@@ -450,6 +796,7 @@ def plot_cabanis(gd, out_dir=None, save=True):
     """Cabanis (1989) La/10-Y/15-Nb/8 基性岩构造判别三角图
     SVG轴标: 顶=Y/15, 左下=La/10, 右下=Nb/8
     所需元素: La, Y, Nb
+    分区: WPB (板内), MORB (洋中脊), IAB (岛弧)
     """
     missing = gd.check_elements('La', 'Y', 'Nb', strict=True)
     if missing:
@@ -468,7 +815,71 @@ def plot_cabanis(gd, out_dir=None, save=True):
     fig, ax = plt.subplots(figsize=(10, 9))
     corners = ternary_corners()
     draw_ternary_frame(ax, corners); draw_ternary_grid(ax); draw_ternary_ticks(ax)
-    ax.plot(cabanis_bd_xy[0], cabanis_bd_xy[1], 'k-', lw=1.5, zorder=4)
+
+    # ── 分界线 ──
+    ax.plot(cabanis_bd_xy[0], cabanis_bd_xy[1], 'k-', lw=1.2, zorder=4)
+
+    # ── 区域填充 ──
+    SQ = SQRT3_2
+    T = np.array([0.5, SQ])   # Y/15 顶点
+    L = np.array([0.0, 0.0])  # La/10 顶点
+    R = np.array([1.0, 0.0])  # Nb/8 顶点
+
+    # 区域 1: WPB (板内玄武岩) — La/10 高, Nb/8 高区
+    # 大致在三角图左下角，底边附近，由点0→点1→...→点18→点19→点0围成
+    # 实际这是整个多边形内部的一个区域
+    # 用多边形的第一个子分段：点0～点2（到右边Nb=0）
+    wpb_seg = list(range(0, 3))  # 点0-2
+    wpb_x = [cabanis_bd_xy[0][i] for i in wpb_seg]
+    wpb_y = [cabanis_bd_xy[1][i] for i in wpb_seg]
+    # 闭合到底边和右边
+    p2 = (cabanis_bd_xy[0][2], cabanis_bd_xy[1][2])
+    p0 = (cabanis_bd_xy[0][0], cabanis_bd_xy[1][0])
+    wpb_x += [p2[0], R[0], L[0], p0[0]]
+    wpb_y += [p2[1], R[1], L[1], p0[1]]
+    ax.fill(wpb_x, wpb_y, color='#a5d6a7', alpha=0.20, ec='none', zorder=1)
+
+    # 区域 2: IAB (岛弧玄武岩) — La/10 高, Y/15 高, Nb/8 低
+    # 围在左边附近
+    iab_seg = list(range(2, 9))  # 点2到点8，沿Nb=0边
+    iab_x = [cabanis_bd_xy[0][i] for i in iab_seg]
+    iab_y = [cabanis_bd_xy[1][i] for i in iab_seg]
+    p2 = (cabanis_bd_xy[0][2], cabanis_bd_xy[1][2])
+    p8 = (cabanis_bd_xy[0][8], cabanis_bd_xy[1][8])
+    iab_x += [p8[0], T[0], p2[0]]
+    iab_y += [p8[1], T[1], p2[1]]
+    ax.fill(iab_x, iab_y, color='#ffcc80', alpha=0.20, ec='none', zorder=1)
+
+    # 区域 3: MORB (洋中脊玄武岩) — Y/15 高, Nb/8 和 La/10 低
+    # 从上部分
+    morb_seg = list(range(8, 12))  # 点8到点11
+    morb_x = [cabanis_bd_xy[0][i] for i in morb_seg]
+    morb_y = [cabanis_bd_xy[1][i] for i in morb_seg]
+    p8 = (cabanis_bd_xy[0][8], cabanis_bd_xy[1][8])
+    p11 = (cabanis_bd_xy[0][11], cabanis_bd_xy[1][11])
+    morb_x += [p11[0], T[0], p8[0]]
+    morb_y += [p11[1], T[1], p8[1]]
+    ax.fill(morb_x, morb_y, color='#90caf9', alpha=0.20, ec='none', zorder=1)
+
+    # ── 区域标注 ──
+    # WPB 标注点：La/10 高, Nb/8 中, Y/15 低
+    l_wpb = ternary_to_xy(np.array([15]), np.array([55]), np.array([30]))
+    ax.text(l_wpb[0][0], l_wpb[1][0], 'WPB\n(Within-plate\nBasalt)',
+            fontsize=8, ha='center', va='center',
+            color='#2e7d32', fontweight='bold', zorder=5)
+
+    # IAB 标注点：La/10 中, Y/15 中, Nb/8 低
+    l_iab = ternary_to_xy(np.array([50]), np.array([42]), np.array([8]))
+    ax.text(l_iab[0][0], l_iab[1][0], 'IAB\n(Island Arc\nBasalt)',
+            fontsize=8, ha='center', va='center',
+            color='#e65100', fontweight='bold', zorder=5)
+
+    # MORB 标注点：Y/15 高, 其他低
+    l_morb = ternary_to_xy(np.array([75]), np.array([20]), np.array([5]))
+    ax.text(l_morb[0][0], l_morb[1][0], 'MORB\n(Mid-Ocean\nRidge Basalt)',
+            fontsize=8, ha='center', va='center',
+            color='#1565c0', fontweight='bold', zorder=5)
+
     label_ternary_vertices(ax, 'Y/15', 'La/10', 'Nb/8')
     _style.scatter_samples(ax, x_d, y_d, labels, groups=gd.groups)
     _style.add_legend(ax)
@@ -501,8 +912,9 @@ mullen_3_xy = ternary_to_xy(mullen_3_a, mullen_3_b, mullen_3_c)
 
 
 def plot_mullen(gd, out_dir=None, save=True):
-    """Mullen (1983) TiO2-10MnO-10P2O5 基性岩构造判别三角图
-    SVG轴标: 顶=TiO2, 左下=10MnO, 右下=10P2O5
+    """Mullen (1983) TiO₂-10×MnO-10×P₂O₅ 基性岩构造判别三角图
+    SVG轴标: 顶=TiO₂, 左下=10×MnO, 右下=10×P₂O₅
+    分区: IAT (岛弧拉斑), MORB (洋中脊), OIT (洋岛拉斑), OIA+CAB (洋岛碱性+钙碱)
     所需元素: TiO2, MnO, P2O5
     """
     missing = gd.check_elements('TiO2', 'MnO', 'P2O5', strict=True)
@@ -521,10 +933,82 @@ def plot_mullen(gd, out_dir=None, save=True):
     fig, ax = plt.subplots(figsize=(10, 9))
     corners = ternary_corners()
     draw_ternary_frame(ax, corners); draw_ternary_grid(ax); draw_ternary_ticks(ax)
-    # 4 条分界线
+
+    # ── 区域填充（Mullen 1983 标准分区）──
+    # 三角图顶点
+    T_tio2 = np.array([0.5, SQRT3_2])   # TiO2 顶
+    L_10mno = np.array([0.0, 0.0])       # 10×MnO 左下
+    R_10p2o5 = np.array([1.0, 0.0])      # 10×P₂O₅ 右下
+
+    # m0 曲线是外缘边界（点0→1→2→3→4）
+    # m1 曲线从左上到中右（点0→1→2）
+    # m2 曲线从左中到右中（横贯）
+    # m3 直线从中间到底边
+
+    # 区域 1: IAT — m1 上方, 靠近 TiO2 顶角
+    # 由 m1 (3点) + 顶部围成
+    m1_x = mullen_1_xy[0].tolist()
+    m1_y = mullen_1_xy[1].tolist()
+    iat_x = m1_x + [T_tio2[0], m1_x[0]]
+    iat_y = m1_y + [T_tio2[1], m1_y[0]]
+    ax.fill(iat_x, iat_y, color='#ffcc80', alpha=0.20, ec='none', zorder=1)
+
+    # 区域 2: MORB — m1下方, m2上方, 右侧
+    # 从 m1终点 → m3上段 → m0右侧下段 → 右底角
+    m3_p0 = (mullen_3_xy[0][0], mullen_3_xy[1][0])  # 与m1/m2交点
+    m3_p1 = (mullen_3_xy[0][1], mullen_3_xy[1][1])  # 底边点
+    m0_p4 = (mullen_0_xy[0][4], mullen_0_xy[1][4])  # (0,8,92) 右下
+    m1_p2 = (mullen_1_xy[0][2], mullen_1_xy[1][2])  # m1终点
+    m2_p2 = (mullen_2_xy[0][2], mullen_2_xy[1][2])  # m2终点(右端)
+
+    # MORB: m3上方, R底角, m0之间
+    morb_x = [m3_p0[0], m3_p1[0], R_10p2o5[0], m0_p4[0], m1_p2[0]]
+    morb_y = [m3_p0[1], m3_p1[1], R_10p2o5[1], m0_p4[1], m1_p2[1]]
+    ax.fill(morb_x, morb_y, color='#90caf9', alpha=0.20, ec='none', zorder=1)
+
+    # 区域 3: OIT — m2左上方, 左侧
+    m2_p0 = (mullen_2_xy[0][0], mullen_2_xy[1][0])  # (39,61,0) 左边始点
+    m0_p0 = (mullen_0_xy[0][0], mullen_0_xy[1][0])  # (59,41,0) 左边
+    m0_p1 = (mullen_0_xy[0][1], mullen_0_xy[1][1])
+    m2_p1 = (mullen_2_xy[0][1], mullen_2_xy[1][1])
+    # OIT: 左上区域
+    oit_x = [m0_p0[0], m0_p1[0], m2_p1[0], m2_p0[0], L_10mno[0]]
+    oit_y = [m0_p0[1], m0_p1[1], m2_p1[1], m2_p0[1], L_10mno[1]]
+    ax.fill(oit_x, oit_y, color='#a5d6a7', alpha=0.20, ec='none', zorder=1)
+
+    # 区域 4: OIA+CAB — m2下方, m3右侧, 底部
+    oia_x = [m2_p1[0], m2_p2[0], m3_p0[0], m3_p1[0], R_10p2o5[0], L_10mno[0], m2_p1[0]]
+    oia_y = [m2_p1[1], m2_p2[1], m3_p0[1], m3_p1[1], R_10p2o5[1], L_10mno[1], m2_p1[1]]
+    ax.fill(oia_x, oia_y, color='#f48fb1', alpha=0.20, ec='none', zorder=1)
+
+    # ── 区域标注 ──
+    lbl_iat = ternary_to_xy(np.array([45]), np.array([30]), np.array([25]))
+    ax.text(lbl_iat[0][0], lbl_iat[1][0], 'IAT\n(Island Arc\nTholeiite)',
+            fontsize=8, ha='center', va='center',
+            color='#e65100', fontweight='bold', zorder=5)
+
+    lbl_morb = ternary_to_xy(np.array([20]), np.array([10]), np.array([70]))
+    ax.text(lbl_morb[0][0], lbl_morb[1][0], 'MORB\n(Mid-Ocean\nRidge Basalt)',
+            fontsize=8, ha='center', va='center',
+            color='#1565c0', fontweight='bold', zorder=5)
+
+    lbl_oit = ternary_to_xy(np.array([15]), np.array([55]), np.array([30]))
+    ax.text(lbl_oit[0][0], lbl_oit[1][0], 'OIT\n(Ocean Island\nTholeiite)',
+            fontsize=8, ha='center', va='center',
+            color='#2e7d32', fontweight='bold', zorder=5)
+
+    lbl_oia = ternary_to_xy(np.array([10]), np.array([35]), np.array([55]))
+    ax.text(lbl_oia[0][0], lbl_oia[1][0], 'OIA +\nCAB',
+            fontsize=8, ha='center', va='center',
+            color='#c62828', fontweight='bold', zorder=5)
+
+    # 4 条分界线（加粗）
     for xy in [mullen_0_xy, mullen_1_xy, mullen_2_xy, mullen_3_xy]:
         ax.plot(xy[0], xy[1], 'k-', lw=1.5, zorder=4)
-    label_ternary_vertices(ax, 'TiO2', '10MnO', '10P2O5')
+
+    # 顶点标签（修正化学式格式）
+    label_ternary_vertices(ax, 'TiO\u2082', '10\u00d7MnO', '10\u00d7P\u2082O\u2085')
+
     _style.scatter_samples(ax, x_d, y_d, labels, groups=gd.groups)
     _style.add_legend(ax)
     ax.set_xlim(-0.05, 1.1); ax.set_ylim(-0.08, 0.95)
@@ -595,30 +1079,115 @@ _jensen_all = [jensen_0_xy, jensen_1_xy, jensen_2_xy, jensen_3_xy, jensen_4_xy,
 
 
 def plot_jensen(gd, out_dir=None, save=True):
-    """Jensen (1976) FeOt+TiO2-Al2O3-MgO 阳离子三角图
-    所需元素: FeO/TFe2O3, TiO2, Al2O3, MgO
+    """Jensen (1976) 阳离子分类三角图（Cation Plot）
+    端元: 顶=Al+Fe³⁺+Ti, 左下=Mg+Fe²⁺+Mn, 右下=Ca+Na+K
+    Jensen (1976) 原图使用阳离子百分比（Cation %），而非氧化物 wt%。
+    数据由 wt% 自动转换为阳离子数再归一化到 100%。
+    所需元素: Al2O3, FeO/TFe2O3, TiO2, MgO, MnO, CaO, Na2O, K2O
     """
-    missing = gd.check_elements('Al2O3', 'MgO', strict=True)
-    if missing:
+    needed = ('Al2O3', 'MgO', 'CaO', 'Na2O', 'K2O', 'TiO2')
+    missing = gd.check_elements(*needed, strict=True)
+    if missing or ('FeO' not in gd._elem_data and 'TFe2O3' not in gd._elem_data):
         return None, None
+    missing = gd.check_elements('MnO', strict=False)
     al2o3 = gd.get('Al2O3'); mgo = gd.get('MgO')
     feo = gd.get('FeO'); tfe2 = gd.get('TFe2O3'); tio2 = gd.get('TiO2')
+    cao = gd.get('CaO'); na2o = gd.get('Na2O'); k2o = gd.get('K2O')
+    mno = gd.get('MnO') if gd.get('MnO') is not None else np.zeros_like(al2o3)
     labels = gd.labels
+
+    # 摩尔质量
+    M_Al2O3, M_Fe2O3, M_FeO, M_TiO2 = 101.96, 159.69, 71.844, 79.866
+    M_MgO, M_MnO, M_CaO, M_Na2O, M_K2O = 40.304, 70.937, 56.08, 61.98, 94.20
+
+    # Fe²⁺/Fe³⁺ 分配（Jensen 1976 标准，FeOt → FeO:Fe2O3 = 85:15）
     feot = feot_calc(feo, tfe2)
-    a = feot + tio2; b = al2o3; c = mgo
-    total = a + b + c
+    feo_m = feot * 0.85
+    fe2o3_m = feot * 0.15
+
+    # 阳离子数计算
+    al_cat = al2o3 / M_Al2O3 * 2       # Al³⁺
+    fe3_cat = fe2o3_m / M_Fe2O3 * 2    # Fe³⁺
+    ti_cat = tio2 / M_TiO2 * 1          # Ti⁴⁺
+    fe2_cat = feo_m / M_FeO * 1         # Fe²⁺
+    mg_cat = mgo / M_MgO * 1            # Mg²⁺
+    mn_cat = mno / M_MnO * 1            # Mn²⁺
+    ca_cat = cao / M_CaO * 1            # Ca²⁺
+    na_cat = na2o / M_Na2O * 2          # Na⁺
+    k_cat = k2o / M_K2O * 2             # K⁺
+
+    # Jensen 三角图三端元
+    top = al_cat + fe3_cat + ti_cat      # Al + Fe³⁺ + Ti
+    left = mg_cat + fe2_cat + mn_cat     # Mg + Fe²⁺ + Mn
+    right = ca_cat + na_cat + k_cat       # Ca + Na + K
+
+    total = top + left + right
     valid = (total > 0) & ~np.isnan(total)
-    a_p = np.where(valid, a/total*100, 0)
-    b_p = np.where(valid, b/total*100, 0)
-    c_p = np.where(valid, c/total*100, 0)
-    x_d = np.where(valid, ternary_to_xy(a_p, b_p, c_p)[0], np.nan)
-    y_d = np.where(valid, ternary_to_xy(a_p, b_p, c_p)[1], np.nan)
+    top_p = np.where(valid, top/total*100, 0)
+    left_p = np.where(valid, left/total*100, 0)
+    right_p = np.where(valid, right/total*100, 0)
+    x_d = np.where(valid, ternary_to_xy(top_p, left_p, right_p)[0], np.nan)
+    y_d = np.where(valid, ternary_to_xy(top_p, left_p, right_p)[1], np.nan)
     fig, ax = plt.subplots(figsize=(10, 9))
     corners = ternary_corners()
     draw_ternary_frame(ax, corners); draw_ternary_grid(ax); draw_ternary_ticks(ax)
+
+    SQ = SQRT3_2
+    T = np.array([0.5, SQ])   # FeOt+TiO2 顶
+    L = np.array([0.0, 0.0])  # Al2O3 左下
+    R = np.array([1.0, 0.0])  # MgO 右下
+
+    # Jensen 三元图分区：
+    # 大类: Komatiitic (科马提岩质) — 底边附近, Mg+Fe²+Mn 高
+    #       Tholeiitic (拉斑系列) — 顶部, Al+Fe³+Ti 高
+    #       Calc-alkaline (钙碱系列) — 右侧, Ca+Na+K 高
+
+    # ── 颜色区域填充（直接取现有的分界线）──
+    # 区域 1: Komatiitic 区域 — jensen_0 下方 (Al+Fe3+Ti=50%线)
+    k_x = np.concatenate([jensen_0_xy[0], jensen_0_xy[0][0:1]])
+    k_y = np.concatenate([jensen_0_xy[1], jensen_0_xy[1][0:1]])
+    ax.fill(k_x, k_y, color='#c8e6c9', alpha=0.25, ec='none', zorder=1)
+
+    # 区域 2: Tholeiitic — jensen_1 上方围顶角
+    SQ = SQRT3_2
+    T = np.array([0.5, SQ])   # Al+Fe³+Ti 顶
+    th_x = np.concatenate([jensen_1_xy[0], [T[0]], jensen_1_xy[0][0:1]])
+    th_y = np.concatenate([jensen_1_xy[1], [T[1]], jensen_1_xy[1][0:1]])
+    ax.fill(th_x, th_y, color='#ffcc80', alpha=0.22, ec='none', zorder=1)
+
+    # 区域 3: Calc-alkaline — jensen_2 右侧
+    ca_x = np.concatenate([jensen_2_xy[0], jensen_1_xy[0][::-1]])
+    ca_y = np.concatenate([jensen_2_xy[1], jensen_1_xy[1][::-1]])
+    ax.fill(ca_x, ca_y, color='#b3e5fc', alpha=0.22, ec='none', zorder=1)
+
+    # 区域 4: 左下区（Ca+Na+K 高残余区）
+    L = np.array([0.0, 0.0])  # Mg+Fe²+Mn 左下
+    ca2_x = np.concatenate([jensen_2_xy[0], [L[0]], jensen_2_xy[0][0:1]])
+    ca2_y = np.concatenate([jensen_2_xy[1], [L[1]], jensen_2_xy[1][0:1]])
+    ax.fill(ca2_x, ca2_y, color='#f8bbd0', alpha=0.22, ec='none', zorder=1)
+
+    # ── 分界线 ──
     for xy in _jensen_all:
-        ax.plot(xy[0], xy[1], 'k-', lw=1.2, zorder=4)
-    label_ternary_vertices(ax, 'FeOt+TiO2', 'Al2O3', 'MgO')
+        ax.plot(xy[0], xy[1], 'k-', lw=0.8, zorder=4)
+
+    # ── 区域标注 ──
+    # 注意：以下标签的 % 值是在新端元空间(Al+Fe3+Ti / Mg+Fe2+Mn / Ca+Na+K)中的位置
+    # Komatiitic (Mg+Fe2+Mn 高)
+    l_k = ternary_to_xy(np.array([20]), np.array([50]), np.array([30]))
+    ax.text(l_k[0][0], l_k[1][0], 'Komatiitic', fontsize=8, ha='center', va='center',
+            color='#2e7d32', fontweight='bold', zorder=5)
+
+    # Tholeiitic (Al+Fe³+Ti 高)
+    l_th = ternary_to_xy(np.array([60]), np.array([25]), np.array([15]))
+    ax.text(l_th[0][0], l_th[1][0], 'Tholeiitic', fontsize=8, ha='center', va='center',
+            color='#e65100', fontweight='bold', zorder=5)
+
+    # Calc-alkaline (中间偏左)
+    l_ca = ternary_to_xy(np.array([15]), np.array([40]), np.array([45]))
+    ax.text(l_ca[0][0], l_ca[1][0], 'Calc-alkaline', fontsize=8, ha='center', va='center',
+            color='#1565c0', fontweight='bold', zorder=5)
+
+    label_ternary_vertices(ax, 'Al+Fe\u00b3\u207a+Ti', 'Mg+Fe\u00b2\u207a+Mn', 'Ca+Na+K')
     _style.scatter_samples(ax, x_d, y_d, labels, groups=gd.groups)
     _style.add_legend(ax)
     ax.set_xlim(-0.05, 1.1); ax.set_ylim(-0.08, 0.95)
@@ -652,6 +1221,8 @@ _ocomorv_all = [ocomorv_0_xy, ocomorv_1_xy, ocomorv_2_xy, ocomorv_3_xy,
 
 def plot_oconnor_volc(gd, out_dir=None, save=True):
     """O'Connor (1965) An-Ab-Or 火山岩分类三角图
+    An=CaO（钙长石标准分子）, Ab=Na₂O（钠长石标准分子）, Or=K₂O（钾长石标准分子）
+    按 O'Connor (1965) 标准矿物分类
     SVG轴标: 顶=An, 左下=Ab, 右下=Or
     所需元素: Na2O, K2O, CaO, Al2O3, SiO2
     """
@@ -671,9 +1242,63 @@ def plot_oconnor_volc(gd, out_dir=None, save=True):
     fig, ax = plt.subplots(figsize=(10, 9))
     corners = ternary_corners()
     draw_ternary_frame(ax, corners); draw_ternary_grid(ax); draw_ternary_ticks(ax)
+
+    # ── O'Connor (1965) 分界线 ──
     for xy in _ocomorv_all:
-        ax.plot(xy[0], xy[1], 'k-', lw=1.2, zorder=4)
-    label_ternary_vertices(ax, 'An', 'Ab', 'Or')
+        ax.plot(xy[0], xy[1], 'k-', lw=1.0, zorder=4)
+
+    # ── 颜色区域填充 ──
+    SQ = SQRT3_2
+    T = np.array([0.5, SQ])   # An 顶点
+    L = np.array([0.0, 0.0])  # Ab 顶点
+    R = np.array([1.0, 0.0])  # Or 顶点
+
+    # 计算每条界线的投影坐标
+    bnd_coords = []
+    for xy in _ocomorv_all:
+        bnd_coords.append(xy)
+
+    # 8 个区域依次填充
+    fills = [
+        ([T[0]], [T[1]]),           # 起点 An 顶点
+        (bnd_coords[0][0], bnd_coords[0][1]),
+        ([T[0]], [T[1]]),
+    ]
+    # 区域 1: An 顶角区
+    r1_x = np.concatenate([[T[0]], bnd_coords[0][0], [T[0]]])
+    r1_y = np.concatenate([[T[1]], bnd_coords[0][1], [T[1]]])
+    ax.fill(r1_x, r1_y, color='#ffe0b2', alpha=0.25, ec='none', zorder=1)
+
+    # 其他区域: 相邻界线之间
+    for i in range(len(bnd_coords) - 1):
+        rx = np.concatenate([bnd_coords[i][0], bnd_coords[i+1][0][::-1]])
+        ry = np.concatenate([bnd_coords[i][1], bnd_coords[i+1][1][::-1]])
+        colors = ['#fff9c4', '#c8e6c9', '#b3e5fc', '#d1c4e9', '#f8bbd0', '#d7ccc8']
+        ax.fill(rx, ry, color=colors[i % len(colors)], alpha=0.22, ec='none', zorder=1)
+
+    # 最后一个区域: Or 角区
+    r_last_x = np.concatenate([bnd_coords[-1][0], [R[0]], [R[0]]])
+    r_last_y = np.concatenate([bnd_coords[-1][1], [R[1]], [R[1]]])
+    ax.fill(r_last_x, r_last_y, color='#cfd8dc', alpha=0.25, ec='none', zorder=1)
+
+    # ── 分类标注 ──
+    # 按 O'Connor (1965) / Streckeisen 火山岩分类
+    labels_text = [
+        ('Anorthite\n(An>50%)', [75, 15, 10]),
+        ('Gabbro/\nDiorite', [50, 35, 15]),
+        ('Quartz\nDiorite', [38, 42, 20]),
+        ('Granodiorite', [22, 48, 30]),
+        ('Quartz\nMonzonite', [12, 48, 40]),
+        ('Granite\n(Trondhjemite)', [5, 45, 50]),
+        ('Granite\n(Adamelite)', [5, 10, 85]),
+        ('Syenogranite\n(Alkali Granite)', [3, 3, 94]),
+    ]
+    for text, (a_pct, b_pct, c_pct) in labels_text:
+        lx, ly = ternary_to_xy(np.array([a_pct]), np.array([b_pct]), np.array([c_pct]))
+        ax.text(lx[0], ly[0], text, fontsize=7.5, ha='center', va='center',
+                color='#444444', fontweight='bold', zorder=5)
+
+    label_ternary_vertices(ax, 'An\n(Anorthite)', 'Ab\n(Albite)', 'Or\n(Orthoclase)')
     _style.scatter_samples(ax, x_d, y_d, labels, groups=gd.groups)
     _style.add_legend(ax)
     ax.set_xlim(-0.05, 1.1); ax.set_ylim(-0.08, 0.95)

@@ -175,7 +175,19 @@ def plot_pearce_cann(gd, out_dir=None, save=True):
     """
     Pearce & Cann (1973) Ti/100–Zr–Y 三角图 🔥火山岩
     所需元素: Ti (ppm), Zr, Y
-    Ti 从微量 ppm 列直接读取，不需转换。
+
+    标准分区（Pearce & Cann, 1973, EPSL）:
+      A = IAT (岛弧拉斑玄武岩)
+      B = MORB (洋中脊玄武岩)
+      C = CAB (钙碱性玄武岩)
+      D = WPB (板内玄武岩)
+
+    ⚠️ 场界坐标与场区标注的对应关系在原始 PTS_PC 数据中存在几何不匹配
+       （场区 B 多边形自交，面积仅 ~0.001），需要原始 Fig.2 数字化数据才能彻底修正。
+       当前标注已按 Pearce & Cann (1973) 标准配置，但场界位置仍待校准。
+
+    顶点: Ti/100 (顶), Zr (左下), Y (右下)
+    Ti 从微量 ppm 列直接读取（即 Ti 毫克/千克，非氧化物 TiO₂）。
     """
     missing = gd.check_elements('Ti', 'Zr', 'Y', strict=True)
     if missing:
@@ -186,22 +198,31 @@ def plot_pearce_cann(gd, out_dir=None, save=True):
         return None, None
     labels = gd.labels
 
+    # 场界顶点（继承自 GCDkit Ti/1000 约定 → 当前 Ti/100 体系下近似坐标）
     PTS_PC = {
-        'a':(22,38,40),'b':(22,55,23),'c':(18,65,17),'d':(16,60,24),
-        'e':(7,70,23),'f':(7,88,5),'g':(3,88,9),'h':(4,60,36),'i':(4,22,74),
+        'a':(73.8,12.8,13.4), 'b':(73.8,18.5, 7.7), 'c':(68.7,24.8, 6.5),
+        'd':(65.6,24.6, 9.8), 'e':(42.9,42.9,14.1), 'f':(42.9,54.0, 3.1),
+        'g':(23.6,69.3, 7.1), 'h':(29.4,44.1,26.5), 'i':(29.4,16.2,54.4),
     }
     cart_pc = {k: ternary_to_xy(*v) for k, v in PTS_PC.items()}
 
+    # 四个判别场区 — Pearce & Cann (1973) Fig.2 标准分区
+    # 注意：原始 GCDkit 场界多边形在此体系下几何不完全准确
     FIELDS_PC = {
-        'D': {'keys':['a','b','c','d','h','i'],'fill':'#E1BEE7','edge':'#6A1B9A','label':'D','sub':'MORB'},
-        'C': {'keys':['b','f','g','h','d'],'fill':'#C8E6C9','edge':'#2E7D32','label':'C','sub':'WPB'},
-        'B': {'keys':['a','b','d','e','f'],'fill':'#BBDEFB','edge':'#1565C0','label':'B','sub':'MORB+IAT+CAB'},
-        'A': {'keys':['a','i','h','d','e'],'fill':'#FFE0B2','edge':'#E65100','label':'A','sub':'IAT+CAB'},
+        'A': {'keys':['a','i','h','d','e'],
+              'fill':'#FFE0B2', 'edge':'#E65100',
+              'label':'A', 'sub':'IAT'},
+        'B': {'keys':['a','b','d','e','f'],
+              'fill':'#BBDEFB', 'edge':'#1565C0',
+              'label':'B', 'sub':'MORB'},
+        'C': {'keys':['b','f','g','h','d'],
+              'fill':'#C8E6C9', 'edge':'#2E7D32',
+              'label':'C', 'sub':'CAB'},
+        'D': {'keys':['a','b','c','d','h','i'],
+              'fill':'#E1BEE7', 'edge':'#6A1B9A',
+              'label':'D', 'sub':'WPB'},
     }
 
-    # Ti/100-Zr-Y: Ti除以100使量级与Zr匹配，Y不额外缩放
-    # ⚠️ 场界多边形坐标(PTS_PC)基于Ti/1000约定设计，
-    #    在Ti/100体系下位置可能不准确，需确认后调整
     x_d, y_d = ternary_to_xy(ti_arr/100.0, zr_arr, yi_arr)
 
     fig, ax = plt.subplots(figsize=(10, 9))
@@ -211,11 +232,13 @@ def plot_pearce_cann(gd, out_dir=None, save=True):
     draw_ternary_ticks(ax)
     label_ternary_vertices(ax, 'Ti/100', 'Zr', 'Y', corners=corners)
 
+    # 填充场区
     for fd in FIELDS_PC.values():
         keys = fd['keys'] + [fd['keys'][0]]
         ax.fill([cart_pc[k][0] for k in keys], [cart_pc[k][1] for k in keys],
                 color=fd['fill'], edgecolor=fd['edge'], lw=1.5, zorder=1)
 
+    # 场区标注
     for name, fd in FIELDS_PC.items():
         cx = np.mean([cart_pc[k][0] for k in fd['keys']])
         cy = np.mean([cart_pc[k][1] for k in fd['keys']])
@@ -223,6 +246,11 @@ def plot_pearce_cann(gd, out_dir=None, save=True):
                 ha='center', va='center', color=fd['edge'], alpha=0.8, zorder=5)
         ax.text(cx, cy-0.03, fd['sub'], fontsize=9,
                 ha='center', va='center', color=fd['edge'], alpha=0.7, zorder=5)
+
+    # 图底文献引用
+    ax.text(0.5, -0.08, 'After Pearce & Cann (1973)',
+            fontsize=8, fontstyle='italic', ha='center', va='top',
+            transform=ax.transAxes, color='#666666')
 
     _style.plot_samples_ternary(ax, x_d, y_d, labels, groups=gd.groups)
     _style.add_legend(ax)
