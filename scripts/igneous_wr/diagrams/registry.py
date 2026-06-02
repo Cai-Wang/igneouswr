@@ -98,7 +98,7 @@ DIAGRAM_REGISTRY = [
                 review_status="experimental", source_ref="oconnor1965"
                 ),
     DiagramSpec(plot_qapf,       "CLS-08_QAPF_Streckeisen1976.png",
-                "Q-A-PF 深成岩分类三元图 (Streckeisen 1976)",     ('SiO2', 'Na2O', 'K2O', 'CaO', 'Al2O3'), None, ("felsic",)
+                "Q-A-PF 深成岩分类三元图 (Streckeisen 1976)",     ('SiO2', 'Na2O', 'K2O', 'CaO', 'Al2O3'), None, ("felsic",), review_status="experimental", source_ref="streckeisen1974"
                 ),
     DiagramSpec(plot_cabanis,    "CLS-09_Cabanis1986_LaY_Nb_ternary.png",
                 "Cabanis La/10-Y/15-Nb/8 基性岩三角图",             ('La', 'Y', 'Nb'),                None,  ("mafic",),
@@ -137,13 +137,13 @@ DIAGRAM_REGISTRY = [
                 review_status="verified", source_ref="frost2001", review_note="已校正: 删除Y=0.6/X=71, 加色区填充+引用"
                 ),
     DiagramSpec(plot_whalen1,    "CLS-18_Whalen1987_GaAl_Zr.png",
-                "Whalen 10000×Ga/Al–Zr A型花岗岩判别",           ('Ga', 'Al2O3', 'Zr'),             None,  ("felsic",)
+                "Whalen 10000×Ga/Al–Zr A型花岗岩判别",           ('Ga', 'Al2O3', 'Zr'),             None,  ("felsic",), review_status="experimental", source_ref="whalen1987"
                 ),
     DiagramSpec(plot_whalen2,    "CLS-19_Whalen1987_GaAl_Nb.png",
-                "Whalen 10000×Ga/Al–Nb A型花岗岩判别",           ('Ga', 'Al2O3', 'Nb'),             None,  ("felsic",)
+                "Whalen 10000×Ga/Al–Nb A型花岗岩判别",           ('Ga', 'Al2O3', 'Nb'),             None,  ("felsic",), review_status="experimental", source_ref="whalen1987"
                 ),
     DiagramSpec(plot_whalen3,    "CLS-20_Whalen1987_GaAl_CeYZr.png",
-                "Whalen 10000×Ga/Al–Ce+Y+Zr A型花岗岩判别",      ('Ga', 'Al2O3', 'Ce', 'Y', 'Zr'),  None,  ("felsic",)
+                "Whalen 10000×Ga/Al–Ce+Y+Zr A型花岗岩判别",      ('Ga', 'Al2O3', 'Ce', 'Y', 'Zr'),  None,  ("felsic",), review_status="experimental", source_ref="whalen1987"
                 ),
     DiagramSpec(plot_villaseca,  "CLS-21_Villaseca1998_ASI_FMM.png",
                 "Villaseca ASI–FMM 花岗岩源区分类",              ('Al2O3', 'CaO', 'Na2O', 'K2O', 'MgO', 'TiO2'),
@@ -189,14 +189,14 @@ DIAGRAM_REGISTRY = [
                 review_status="verified", source_ref="pearce2008",
                 review_note="2026-06-25 用户校准：阵列改为 Th/Nb=0.04/0.14 两条直线；参考点 S&M89 精确值 N-MORB(0.98,0.051)/E-MORB(4.30,0.311)/OIB(26.67,2.222)；新增 UCC 端元(5.45,4.77) R&G2003"
                 ),
-    DiagramSpec(plot_u_th_zr_nb, "SRC-04_UTh_ZrNb_Stern2006.png",        "U/Th-Zr/Nb (Stern) 源区判别",        ('U', 'Th', 'Zr', 'Nb'),  None,                      ("mafic",)
+    DiagramSpec(plot_u_th_zr_nb, "SRC-04_UTh_ZrNb_Stern2006.png",        "U/Th-Zr/Nb (Stern) 源区判别",        ('U', 'Th', 'Zr', 'Nb'),  None,                      ("mafic",), review_status="experimental", source_ref="stern2006"
                 ),
     DiagramSpec(plot_sm_yb_la_sm, "SRC-05_SmYb_LaSm_partial_melting.png","(Sm/Yb)PM-(La/Sm)PM 部分熔融图",    ('Sm', 'Yb', 'La'), None,                            ("mafic",),
                 review_status="experimental", source_ref="melting_trend"
                 ),
-    DiagramSpec(plot_sc_v,     "SRC-06_Sc_V_HickeyVargas2018.png",    "Sc-V (Hickey-Vargas) 氧化条件判别",  ('Sc', 'V'),            None,                           ("mafic",)
+    DiagramSpec(plot_sc_v,     "SRC-06_Sc_V_HickeyVargas2018.png",    "Sc-V (Hickey-Vargas) 氧化条件判别",  ('Sc', 'V'),            None,                           ("mafic",), review_status="experimental", source_ref="hickey_vargas2018"
                 ),
-    DiagramSpec(plot_ba_th_la_sm, "SRC-07_BaTh_LaSm_PearceRobinson2010.png", "Ba/Th-La/Sm 流体vs熔体判别",('Ba', 'Th', 'La', 'Sm'), None,                         ("mafic",)
+    DiagramSpec(plot_ba_th_la_sm, "SRC-07_BaTh_LaSm_PearceRobinson2010.png", "Ba/Th-La/Sm 流体vs熔体判别",('Ba', 'Th', 'La', 'Sm'), None,                         ("mafic",), review_status="experimental", source_ref="pearce_robinson2010"
                 ),
     DiagramSpec(plot_gdyb_dydystar, "SRC-08_GdYb_DyDystar_Davidson2013.png",
                 "Gd/Yb vs Dy/Dy* 稀土分馏模式 (Davidson 2013)",   ('La', 'Gd', 'Tb', 'Dy', 'Ho', 'Yb'),  None,  ("mafic", "felsic"),
@@ -219,7 +219,7 @@ DIAGRAM_REGISTRY = [
                 review_status="verified", source_ref="pearce1995"
                 ),
     DiagramSpec(plot_sylvester,  "SRC-13_Sylvester1989_CaONa2O_Al2O3.png",
-                "Sylvester CaO/Na₂O–Al₂O₃ 花岗岩源区判别",       ('CaO', 'Na2O', 'Al2O3'),           None,  ("felsic",)
+                "Sylvester CaO/Na₂O–Al₂O₃ 花岗岩源区判别",       ('CaO', 'Na2O', 'Al2O3'),           None,  ("felsic",), review_status="experimental", source_ref="sylvester1989"
                 ),
     DiagramSpec(plot_layb,       "SRC-14_LaYb_vs_Yb.png",
                 "La/Yb vs Yb 源区部分熔融判别",                 ('La', 'Yb'),                        None,  ("mafic", "felsic")
@@ -242,10 +242,10 @@ DIAGRAM_REGISTRY = [
                 review_status="experimental", source_ref="covariance_no_ref"
                 ),
     DiagramSpec(plot_hollocher1, "EVO-05_Hollocher2012_VSc.png",
-                "Hollocher V/Sc–V+Sc 弧岩浆氧化条件判别",        ('V', 'Sc'),                        None,  ("mafic",)
+                "Hollocher V/Sc–V+Sc 弧岩浆氧化条件判别",        ('V', 'Sc'),                        None,  ("mafic",), review_status="experimental", source_ref="hollocher2012"
                 ),
     DiagramSpec(plot_hollocher2, "EVO-06_Hollocher2012_VSc_ZrCe.png",
-                "Hollocher Zr/Ce–V/Sc 弧岩浆分类",              ('V', 'Sc', 'Zr', 'Ce'),            None,  ("mafic",)
+                "Hollocher Zr/Ce–V/Sc 弧岩浆分类",              ('V', 'Sc', 'Zr', 'Ce'),            None,  ("mafic",), review_status="experimental", source_ref="hollocher2012"
                 ),
 
     # ── 🌍 构造环境判别 ──────────────────────────────
@@ -259,7 +259,7 @@ DIAGRAM_REGISTRY = [
                 review_status="experimental", source_ref="ternary_verify"
                 ),
     DiagramSpec(plot_pearcegranite, "TEC-15_Pearce1984_Granite_Rb_YNb.png",
-                "Pearce Rb–Y+Nb 花岗岩构造判别",                  ('Rb', 'Y', 'Nb'),                 None,  ("felsic",)
+                "Pearce Rb–Y+Nb 花岗岩构造判别",                  ('Rb', 'Y', 'Nb'),                 None,  ("felsic",), review_status="experimental", source_ref="pearce1984"
                 ),
     DiagramSpec(plot_harris,     "TEC-11_Harris1986_Rb30_Hf_3Ta.png",
                 "Harris Rb/30-Hf-3Ta 花岗岩构造判别三角图",         ('Rb', 'Hf', 'Ta'),               None,  ("felsic",),
@@ -271,14 +271,14 @@ DIAGRAM_REGISTRY = [
     DiagramSpec(plot_4panel,     "TEC-04_V_Ti_Sc_ThNb_BaTh_4panel.png",  "四联比值构造判别图",                 ('Ti', 'V', 'Sc', 'Th', 'Nb', 'Ba', 'La', 'Sm', 'Yb'),  None,           ("mafic",),
                 review_status="experimental", source_ref="fourpanel"
                 ),
-    DiagramSpec(plot_pearce_1983, "TEC-06_ThYb_TaYb_Pearce1983.png",     "Th/Yb-Ta/Yb (Pearce 1983) 构造判别", ('Th', 'Ta', 'Yb'), None,                             ("mafic",)
+    DiagramSpec(plot_pearce_1983, "TEC-06_ThYb_TaYb_Pearce1983.png",     "Th/Yb-Ta/Yb (Pearce 1983) 构造判别", ('Th', 'Ta', 'Yb'), None,                             ("mafic",), review_status="experimental", source_ref="pearce1983"
                 ),
-    DiagramSpec(plot_saccani_2015,"TEC-07_NbN_ThN_Saccani2015.png",      "NbN-ThN (Saccani) 构造判别",         ('Nb', 'Th'),       None,                           ("mafic",)
+    DiagramSpec(plot_saccani_2015,"TEC-07_NbN_ThN_Saccani2015.png",      "NbN-ThN (Saccani) 构造判别",         ('Nb', 'Th'),       None,                           ("mafic",), review_status="experimental", source_ref="saccani2015"
                 ),
-    DiagramSpec(plot_zr_y_zr,  "TEC-08_ZrY_Zr_Xia2014.png",           "Zr/Y vs Zr 岛弧vs大陆弧判别",        ('Zr', 'Y'),            None,                           ("mafic",)
+    DiagramSpec(plot_zr_y_zr,  "TEC-08_ZrY_Zr_Xia2014.png",           "Zr/Y vs Zr 岛弧vs大陆弧判别",        ('Zr', 'Y'),            None,                           ("mafic",), review_status="experimental", source_ref="xia2014"
                 ),
     DiagramSpec(plot_nb_la_th_la,"TEC-09_NbLa_ThLa_Cabanis1986.png",
-                "Nb/La vs Th/La 构造判别 (Cabanis & Lemelle 1986)", ('Nb', 'Th', 'La'),               None,  ("mafic",)
+                "Nb/La vs Th/La 构造判别 (Cabanis & Lemelle 1986)", ('Nb', 'Th', 'La'),               None,  ("mafic",), review_status="experimental", source_ref="cabanis_lemelle1986"
                 ),
     DiagramSpec(plot_pearce1977, "TEC-10_Pearce1977_FeOt_MgO_Al2O3.png",
                 "Pearce FeOt-MgO-Al2O3 基性岩构造三角图",           ('MgO', 'Al2O3'),                 ('FeO', 'TFe2O3'), ("mafic",),

@@ -43,6 +43,11 @@ RockPlot SVG 数据提取自 `D:\\RockPlot\\resources\\app.asar`，用 `npx asar
 
 ### 0. 参考文献库（references/）
 
+**当前状态**：refs.json 有 63 条记录，但 full 字段 0 条已填写（100% 空白）。
+制作人/校图时可用 `references/gcd-pdf-full-references.md` 中的完整引用快速填入 full 字段。
+该文件是从 GCDkit PDF 经 MinerU 提取的 ~55 条完整参考文献，覆盖了 IgneousWR 大部分核心图件的引用。
+33 条可直接匹配现有 refs.json key，另有约 14 条是 GCD 特有但 IgneousWR 暂未实现的图件的引用，供新增图时参考。
+
 `igneous_wr/references/` 目录管理所有图件的参考文献：
 
 - **`refs.json`**：文献库，每条记录一个 key。格式：`key → {short, full, type}`

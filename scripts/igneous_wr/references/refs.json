@@ -2,62 +2,62 @@
   "#README": "IgneousWR 图件参考文献库。格式: key → {short, full, type, note}。short 显示在图上，full 用于报告参考文献列表。type: article/book/svg/other。你校图时往 full 字段填完整信息（作者, 年, 标题, 期刊/出版社）。",
   "lebas1992": {
     "short": "Le Bas et al. (1992)",
-    "full": "",
+    "full": "Le Bas, M. J., Le Maitre, R. W., Streckeisen, A. & Zanettin, B. (1986). A chemical classification of volcanic rocks based on the total alkali–silica diagram. Journal of Petrology 27, 745–750.",
     "type": "article"
   },
   "middlemost1985": {
     "short": "Middlemost (1985)",
-    "full": "",
+    "full": "Middlemost, E. A. K. (1985). Magmas and Magmatic Rocks. London: Longman.",
     "type": "book"
   },
   "irvine_baragar1971": {
     "short": "Irvine & Baragar (1971)",
-    "full": "",
+    "full": "Irvine, T. N. & Baragar, W. R. A. (1971). A guide to the chemical classification of the common volcanic rocks. Canadian Journal of Earth Sciences 8, 523–548.",
     "type": "article"
   },
   "shand1947": {
     "short": "Shand (1947); Frost & Kelsey (2013)",
-    "full": "",
+    "full": "Shand, S. J. (1943). Eruptive Rocks. Their Genesis, Composition, Classification, and Their Relation to Ore-Deposits with a Chapter on Meteorite. New York: John Wiley & Sons.",
     "type": "book"
   },
   "winchester_floyd1977": {
     "short": "Winchester & Floyd (1977)",
-    "full": "",
+    "full": "Winchester, J. A. & Floyd, P. A. (1977). Geochemical discrimination of different magma series and their differentiation products using immobile elements. Chemical Geology 20, 325–343.",
     "type": "article"
   },
   "middlemost1994": {
     "short": "Middlemost (1994)",
-    "full": "",
+    "full": "Middlemost, E. A. K. (1994). Naming materials in the magma/igneous rock system. Earth-Sciences Reviews 37, 215–224.",
     "type": "book"
   },
   "cox1979": {
     "short": "Cox et al. (1979)",
-    "full": "",
+    "full": "Cox, K. G., Bell, J. D. & Pankhurst, R. J. (1979). The Interpretation of Igneous Rocks. George Allen & Unwin.",
     "type": "book"
   },
   "frost2001": {
     "short": "Frost et al. (2001)",
-    "full": "",
+    "full": "Frost, B. R., Barnes, C. G., Collins, W. J., Arculus, R. J., Ellis, D. J. & Frost, C. D. (2001). A geochemical classification for granitic rocks. Journal of Petrology 42, 2033–2048.",
     "type": "article"
   },
   "middlemost1991": {
     "short": "Middlemost (1991)",
-    "full": "",
+    "full": "Middlemost, E. A. K. (1991). Towards a comprehensive classification of igneous rocks and magmas. Earth-Science Reviews 31, 73–87.",
     "type": "article"
   },
   "sun_mcdonough1989": {
     "short": "Sun & McDonough (1989)",
-    "full": "",
+    "full": "Sun, S. S. & McDonough, W. F. (1989). Chemical and isotopic systematics of oceanic basalts: implications for mantle composition and processes. In: Saunders, A. D. & Norry, M. J. (eds.) Magmatism in the Ocean Basins. Geological Society London Special Publications 42, 313–345.",
     "type": "article"
   },
   "pearce2008": {
     "short": "Pearce (2008)",
-    "full": "",
+    "full": "Pearce, J. A. (2008). Geochemical fingerprinting of oceanic basalts with applications to ophiolite classification and the search for Archean oceanic crust. Lithos 100, 14–48.",
     "type": "article"
   },
   "pearce1996": {
     "short": "Pearce (1996)",
-    "full": "",
+    "full": "Pearce, J. A. (1996). A user's guide to basalt discrimination diagrams. In: Wyman, D. A. (ed.) Trace Element Geochemistry of Volcanic Rocks: Applications for Massive Sulphide Exploration. Geological Association of Canada, Short Course Notes 12, 79–113.",
     "type": "article"
   },
   "pearce1995": {
@@ -67,37 +67,37 @@
   },
   "harker1909": {
     "short": "Harker (1909)",
-    "full": "",
+    "full": "Harker, A. (1909). The Natural History of Igneous Rocks. New York: Macmillan.",
     "type": "book"
   },
   "roeder_emslie1970": {
     "short": "Roeder & Emslie (1970)",
-    "full": "",
+    "full": "Roeder, P. L. & Emslie, R. F. (1970). Olivine-liquid equilibrium. Contributions to Mineralogy and Petrology 29, 275–289.",
     "type": "article"
   },
   "miyashiro1974": {
     "short": "Miyashiro (1974)",
-    "full": "",
+    "full": "Miyashiro A. (1974). Volcanic rock series in island arcs and active continental margins. American Journal of Science 274, 321–355.",
     "type": "article"
   },
   "shervais1982": {
     "short": "Shervais (1982)",
-    "full": "",
+    "full": "Shervais, J. W. (1982). Ti–V plots and the petrogenesis of modern and ophiolitic lavas. Earth and Planetary Science Letters 59, 101–118.",
     "type": "article"
   },
   "pearce_norry1979": {
     "short": "Pearce & Norry (1979)",
-    "full": "",
+    "full": "Pearce, J. A. & Norry, M. J. (1979). Petrogenetic implications of Ti, Zr, Y, and Nb variations in volcanic rocks. Contributions to Mineralogy and Petrology 69, 33–47.",
     "type": "article"
   },
   "pearce1982": {
     "short": "Pearce (1982)",
-    "full": "",
+    "full": "Pearce, J. A. (1982). Trace element characteristics of lavas from destructive plate boundaries. In: Thorpe R.S. (ed.) Andesites: Orogenic Andesites and Related Rocks. John Wiley & Sons, Chichester, pp. 525-548.",
     "type": "article"
   },
   "schandl2004": {
     "short": "Schandl et al. (2004)",
-    "full": "",
+    "full": "Schandl, E. S. & Gorton, M. P. (2002). Application of high field strength elements to discriminate tectonic settings in VMS environments. Economic Geology 97, 629–642.",
     "type": "article"
   },
   "#备注": "以下带有 note 字段的条目当前无完整文献信息，保留为占位，你校正图时逐步填入",
@@ -169,12 +169,12 @@
   },
   "hastie2007": {
     "short": "Hastie et al. (2007)",
-    "full": "",
+    "full": "Hastie, A. R., Kerr, A. C., Pearce, J. A. & Mitchell, S. F. (2007). Classification of altered volcanic island arc rocks using immobile trace elements: development of the Th Co discrimination diagram. Journal of Petrology 48, 2341–2357.",
     "type": "article"
   },
   "oconnor1965": {
     "short": "O'Connor (1965)",
-    "full": "",
+    "full": "O'Connor, J. T. (1965). A classification for quartz-rich igneous rocks based on feldspar ratios. In: US Geological Survey Professional Paper B525. USGS, 79–84.",
     "type": "article"
   },
   "streckeisen1976": {
@@ -184,37 +184,37 @@
   },
   "cabanis1986": {
     "short": "Cabanis & Lecolle (1986)",
-    "full": "",
+    "full": "Cabanis, B. & Lecolle, M. (1989). Le diagramme La/10-Y/15-Nb/8: un outil pour la discrimination des séries volcaniques et la mise en évidence des processus de mélange et/ou de contamination crustale. Comptes rendus de l'Académie des sciences. Série 2, Mécanique, Physique, Chimie, Sciences de l'univers, Sciences de la Terre 309, 2023–2029.",
     "type": "article"
   },
   "mullen1983": {
     "short": "Mullen (1983)",
-    "full": "",
+    "full": "Mullen, E. D. (1983). MnO/TiO2/P2O5: a minor element discriminant for basaltic rocks of oceanic environments and its implications for petrogenesis. Earth and Planetary Science Letters 62, 53–62.",
     "type": "article"
   },
   "jensen1976": {
     "short": "Jensen (1976)",
-    "full": "",
+    "full": "Jensen, L. S. (1976). A New Cation Plot for Classifying Subalkalic Volcanic Rocks. Ontario Geological Survey Miscellaneous Paper 66.",
     "type": "article"
   },
   "whalen1987": {
     "short": "Whalen et al. (1987)",
-    "full": "",
+    "full": "Whalen, J. B., Currie, K. L. & Chappell, B. W. (1987). A-type granites: geochemical characteristics, discrimination and petrogenesis. Contributions to Mineralogy and Petrology 95, 407–419.",
     "type": "article"
   },
   "villaseca1998": {
     "short": "Villaseca et al. (1998)",
-    "full": "",
+    "full": "Villaseca, C., Barbero, L. & Herreros, V. (1998). A re-examination of the typology of peraluminous granite types in intracontinental orogenic belts. Transactions of the Royal Society of Edinburgh, Earth Sciences 89, 113–119.",
     "type": "article"
   },
   "debon1983": {
     "short": "Debon & Le Fort (1983)",
-    "full": "",
+    "full": "Debon, F. & Le Fort, P. (1983). A chemical–mineralogical classification of common plutonic rocks and associations. Transactions of the Royal Society of Edinburgh, Earth Sciences 73, 135–149.",
     "type": "article"
   },
   "laroche1980": {
     "short": "La Roche et al. (1980)",
-    "full": "",
+    "full": "De La Roche, H., Leterrier, J., Grandclaude, P. & Marchal, M. (1980). A classification of volcanic and plutonic rocks using R1R2-diagram and major element analyses – its relationships with current nomenclature. Chemical Geology 29, 183–210.",
     "type": "article"
   },
   "stern2006": {
@@ -239,27 +239,27 @@
   },
   "sylvester1989": {
     "short": "Sylvester (1989)",
-    "full": "",
+    "full": "Sylvester, P. J. (1989). Post-collisional alkaline granites. Journal of Geology 97, 261–280.",
     "type": "article"
   },
   "ross_bedard2009": {
     "short": "Ross & Bédard (2009)",
-    "full": "",
+    "full": "Ross, P. S. & Bédard, L. P. (2009). Magmatic affinity of modern and ancient subalkaline volcanic rocks determined from trace-element discriminant diagrams. Canadian Journal of Earth Sciences 46, 823–839.",
     "type": "article"
   },
   "pearce_cann1973": {
     "short": "Pearce & Cann (1973)",
-    "full": "",
+    "full": "Pearce, J. A. & Cann, J. R. (1973). Tectonic setting of basic volcanic rocks determined using trace element analyses. Earth and Planetary Science Letters 19, 290–300.",
     "type": "article"
   },
   "wood1980": {
     "short": "Wood (1980)",
-    "full": "",
+    "full": "Wood, D. A. (1980). The application of a Th–Hf–Ta diagram to problems of tectonomagmatic classification and to establishing the nature of crustal contamination of basaltic lavas of the British Tertiary volcanic province. Earth and Planetary Science Letters 50, 11–30.",
     "type": "article"
   },
   "meschede1986": {
     "short": "Meschede (1986)",
-    "full": "",
+    "full": "Meschede, M. (1986). A method of discriminating between different types of mid-ocean ridge basalts and continental tholeiites with the Nb–Zr–Y diagram. Chemical Geology 56, 207–218.",
     "type": "article"
   },
   "pearce1983": {
@@ -269,7 +269,7 @@
   },
   "saccani2015": {
     "short": "Saccani (2015)",
-    "full": "",
+    "full": "Saccani, E. (2015). A new method of discriminating different types of post-Archean ophiolitic basalts and their tectonic significance using Th–Nb and Ce–Dy–Yb systematics. Geoscience Frontiers 6, 481–501.",
     "type": "article"
   },
   "xia2014": {
@@ -284,7 +284,7 @@
   },
   "pearce1977": {
     "short": "Pearce (1977)",
-    "full": "",
+    "full": "Pearce, T. H., Gorman, B. E. & Birkett, T. C. (1977). The relationship between major element geochemistry and tectonic environment of basic and intermediate volcanic rocks. Earth and Planetary Science Letters 36, 121–132.",
     "type": "article"
   },
   "muller2000": {
@@ -294,37 +294,137 @@
   },
   "pearce1984": {
     "short": "Pearce et al. (1984)",
-    "full": "",
+    "full": "Pearce, J. A., Harris, N. W. & Tindle, A. G. (1984). Trace element discrimination diagrams for the tectonic interpretation of granitic rocks. Journal of Petrology 25, 956–983.",
     "type": "article"
   },
   "harris1986": {
     "short": "Harris et al. (1986)",
-    "full": "",
+    "full": "Harris, N. B. W., Pearce, J. A. & Tindle, A. G. (1986). Geochemical characteristics of collision-zone magmatism. In: Coward M. P. & Ries A. C. (eds) Collision Tectonics. Geological Society London Special Publications 19, pp 67-81.",
     "type": "article"
   },
   "batchelor1985": {
     "short": "Batchelor & Bowden (1985)",
-    "full": "",
+    "full": "Batchelor, R. A. & Bowden, P. (1985). Petrogenetic interpretation of granitoid rock series using multicationic parameters. Chemical Geology 48, 43–55.",
     "type": "article"
   },
   "maniar1989": {
     "short": "Maniar & Piccoli (1989)",
-    "full": "",
+    "full": "Maniar, P. D. & Piccoli, P. M. (1989). Tectonic discriminations of granitoids. Geological Society of America Bulletin 101, 635–643.",
     "type": "article"
   },
   "agrawal2004": {
     "short": "Agrawal et al. (2004)",
-    "full": "",
+    "full": "Agrawal, S., Guevara, M. & Verma, S. (2008). Tectonic discrimination of basic and ultrabasic volcanic rocks through log-transformed ratios of immobile trace elements. International Geology Review 50, 1057–1079.",
     "type": "article"
   },
   "verma2006": {
     "short": "Verma et al. (2006)",
-    "full": "",
+    "full": "Verma, S. P., Guevara, M. & Agrawal, S. (2006). Discriminating four tectonic settings: Five new geochemical diagrams for basic and ultrabasic volcanic rocks based on log-ratio transformation of major-element data. Journal of Earth System Science 115, 485–528.",
     "type": "article"
   },
   "hollocher2012": {
     "short": "Hollocher et al. (2012)",
-    "full": "",
+    "full": "Hollocher, K., Robinson, P., Walsh, E. & Roberts, D. (2012). Geochemistry of amphibolite-facies volcanics and gabbros of the Storen Nappe in extensions west and southwest of Trondheim, western gneiss region, Norway: A key to correlations and paleotectonic settings. American Journal of Science 312, 357–416.",
     "type": "article"
+  },
+  "butler_woronow1986": {
+    "short": "Butler & Woronow (1986)",
+    "full": "Butler, J. C. & Woronow, A. (1986). Discrimination among tectonic settings using trace element abundances of basalts. Journal of Geophysical Research 91, 10289–10300.",
+    "type": "article"
+  },
+  "debon1988": {
+    "short": "Debon & Le Fort (1988)",
+    "full": "Debon, F. & Le Fort, P. (1988). A cationic classification of common plutonic rocks and their magmatic associations: principles, method, applications. Bulletin de Minéralogie 111, 493–510.",
+    "type": "article"
+  },
+  "enrique2018": {
+    "short": "Enrique (2018)",
+    "full": "Enrique, P. (2018). Clasificación normativa de las rocas plutónicas saturadas y sobresaturadas en sílice basada en la clasificación modal QAP: el diagrama 2Q–(or + ab)–4an. Geogaceta 63, 95–98.",
+    "type": "article"
+  },
+  "frost_frost2008": {
+    "short": "Frost & Frost (2008)",
+    "full": "Frost, B. R. & Frost, C. D. (2008). A geochemical classification for feldspathic igneous rocks. Journal of Petrology 49, 1955–1969.",
+    "type": "article"
+  },
+  "grebennikov2014": {
+    "short": "Grebennikov (2014)",
+    "full": "Grebennikov, A. V. (2014). A-type granites and related rocks: petrogenesis and classification. Russian Geology and Geophysics 55, 1353–1366.",
+    "type": "article"
+  },
+  "laurent2014": {
+    "short": "Laurent et al. (2014)",
+    "full": "Laurent, O., Martin, H., Moyen, J. F. & Doucelance, R. (2014). The diversity and evolution of late-Archean granitoids: evidence for the onset of 'modern-style' plate tectonics between 3.0 and 2.5 Ga. Lithos 205, 208–235.",
+    "type": "article"
+  },
+  "lemaitre1989": {
+    "short": "Le Maitre (1989)",
+    "full": "Le Maitre, R. W. (1989). A Classification of Igneous Rocks and Glossary of Terms. Recommendations of the IUGS Commission on the Systematics of Igneous Rocks. Oxford: Blackwell.",
+    "type": "book"
+  },
+  "martin1986": {
+    "short": "Martin (1986)",
+    "full": "Martin, H. (1986). Effect of steeper Archean geothermal gradient on geochemistry of subduction-zone magmas. Geology 14, 753–756.",
+    "type": "article"
+  },
+  "mielke_winkler1979": {
+    "short": "Mielke & Winkler (1979)",
+    "full": "Mielke, P. & Winkler, H. F. G. (1979). Eine bessere Berechnung der Mesonorm für granitische Gesteine. Neues Jahrbuch für Mineralogie, Monatshefte 471–480.",
+    "type": "article"
+  },
+  "muller1992": {
+    "short": "Müller et al. (1992)",
+    "full": "Müller, D., Rock, N. M. S. & Groves, D. I. (1992). Geochemical discrimination between shoshonitic and potassic volcanic rocks in different tectonic settings: a pilot study. Mineralogy and Petrology 46, 259–289.",
+    "type": "article"
+  },
+  "ohta_arai2007": {
+    "short": "Ohta & Arai (2007)",
+    "full": "Ohta, T. & Arai, H. (2007). Statistical empirical index of chemical weathering in igneous rocks: a new tool for evaluating the degree of weathering. Chemical Geology 240, 280–297.",
+    "type": "article"
+  },
+  "paulick2006": {
+    "short": "Paulick et al. (2006)",
+    "full": "Paulick, H., Bach, W., Godard, M., De Hoog, J. C. M., Suhr, G. & Harvey, J. (2006). Geochemistry of abyssal peridotites (Mid-Atlantic Ridge, 15°20'N, ODP Leg 209): Implications for fluid/rock interaction in slow spreading environments. Chemical Geology 234, 179–210.",
+    "type": "article"
+  },
+  "pearce1976": {
+    "short": "Pearce (1976)",
+    "full": "Pearce, J. A. (1976). Statistical analysis of major element patterns in basalts. Journal of Petrology 17, 15–43.",
+    "type": "article"
+  },
+  "peccerillo_taylor1976": {
+    "short": "Peccerillo & Taylor (1976)",
+    "full": "Peccerillo, A. & Taylor, S. R. (1976). Geochemistry of Eocene calc-alkaline volcanic rocks from the Kastamonu area, Northern Turkey. Contributions to Mineralogy and Petrology 58, 63–81.",
+    "type": "article"
+  },
+  "streckeisen1974": {
+    "short": "Streckeisen (1974)",
+    "full": "Streckeisen, A. (1974). Classification and nomenclature of plutonic rocks. Geologische Rundschau 63, 773–786.",
+    "type": "article"
+  },
+  "streckeisen1978": {
+    "short": "Streckeisen (1978)",
+    "full": "Streckeisen, A. (1978). IUGS Subcommission on the Systematics of Igneous Rocks: Classification and nomenclature of volcanic rocks, lamprophyres, carbonatites and melilitic rocks; recommendation and suggestions. Neues Jahrbuch für Mineralogie, Abhandlungen 134, 1–14.",
+    "type": "article"
+  },
+  "streckeisen_lemaitre1979": {
+    "short": "Streckeisen & Le Maitre (1979)",
+    "full": "Streckeisen, A. & Le Maitre, R. W. (1979). A chemical approximation to the modal QAPF classification of the igneous rocks. Neues Jahrbuch für Mineralogie, Abhandlungen 136, 169–206.",
+    "type": "article"
+  },
+  "vermeesch2006": {
+    "short": "Vermeesch (2006)",
+    "full": "Vermeesch, P. (2006). Tectonic discrimination diagrams revisited. Geochemistry, Geophysics, Geosystems 7, Q06017.",
+    "type": "article"
+  },
+  "whalen_hildebrand2019": {
+    "short": "Whalen & Hildebrand (2019)",
+    "full": "Whalen, J. B. & Hildebrand, R. S. (2019). Trace element discrimination of arc, slab failure, and A-type granitic rocks. Lithos 348–349, 105179.",
+    "type": "article"
+  },
+  "wilson1989": {
+    "short": "Wilson (1989)",
+    "full": "Wilson, M. (1989). Igneous Petrogenesis. London: Unwin Hyman.",
+    "type": "book"
   }
 }

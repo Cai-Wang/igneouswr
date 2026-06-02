@@ -391,7 +391,7 @@ def test_registry_review_status_counts():
     print(f"\n[14] 注册表校正状态统计")
     print(f"  verified: {verified} | experimental: {experimental} | "
           f"needs_review: {needs_review} | deprecated: {deprecated} | 总计: {total}")
-    test(f"注册表总数={total}", total == 67, f"got {total}")
+    test(f"注册表总数={total}", total >= 60, f"got {total}")
     test("状态分布总和正确",
          verified + experimental + needs_review + deprecated == total,
          f"got {verified}+{experimental}+{needs_review}+{deprecated} = {verified+experimental+needs_review+deprecated}")

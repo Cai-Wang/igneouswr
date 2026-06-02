@@ -1,14 +1,13 @@
 """
-whole_rock_core.py — 全岩地球化学绘图核心模块（兼容门面 API）
+igneous_wr_core.py — IgneousWR 绘图引擎门面（兼容入口）
 
-此文件保留为向后兼容的 re-export 入口。
-实际功能已拆分到：
+此文件为 re-export 入口。实际功能在 igneous_wr/ 包中：
   - igneous_wr.io.excel        — Excel 读取、检测限解析
   - igneous_wr.core.data       — GeochemData 数据容器
   - igneous_wr.batch.recommend — recommended_diagrams / plot_recommended
   - igneous_wr.diagrams.registry — 注册表 + 绘图函数
 
-用户仍可 from whole_rock_core import * 正常使用。
+用户仍可 from igneous_wr_core import * 正常使用。
 """
 import os, numpy as np
 
