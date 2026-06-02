@@ -78,7 +78,7 @@ def find_excel(path=None):
     if not candidates:
         candidates = glob.glob('*geochem*.xlsx')
     if len(candidates) == 1:
-        print(f"[whole_rock] 自动发现 Excel: {candidates[0]}")
+        print(f"[IgneousWR] 自动发现 Excel: {candidates[0]}")
         return candidates[0]
     elif len(candidates) > 1:
         raise FileNotFoundError(

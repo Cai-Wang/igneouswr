@@ -72,6 +72,48 @@
 5. 删除模块级变量定义
 6. 语法检查 + import 验证
 
+## Pitfalls
+
+### JSON 解析为 list 而非 tuple → 不可 hash
+
+`json.load()` 始终将 `[x, y]` 数组解析为 Python `list`，而非 `tuple`。这导致：
+
+```python
+seg = tuple(sorted([poly[i], poly[(i+1) % n]]))  # ← poly[i] 是 [x, y] list
+segments.add(seg)
+# TypeError: unhashable type: 'list'  ← sorted() 返回 list
+```
+
+**修复**：在 `load_boundary()` 返回值的外层把 list 转 tuple：
+
+```python
+_TAS_FIELDS = {k: [tuple(p) for p in v] for k, v in _tas_data['fields'].items()}
+```
+
+或者改 `sorted()` 为 `tuple(sorted(tuple(...)))`。推荐前者，因为数据进入 `ax.fill()` 和 `ax.plot()` 后都能接受 list。
+
+**检查清单**：使用 `load_boundary()` 加载任何包含坐标对的数据时，检查该数据是否会进入：
+1. `set()` / 集合运算 → 需转 `tuple`
+2. `dict` 的 `keys()` → 需转 `tuple`
+3. `hash()` → 需转 `tuple`
+
+### sys.path 需包含 `whole_rock/`
+
+`boundaries/` 包位于 `scripts/whole_rock/boundaries/`，需要 `scripts/whole_rock/` 在 sys.path 上才能被 `from boundaries.core import load_boundary` 解析。以下入口脚本必须在启动时添加：
+
+```python
+wr_path = os.path.join(SCRIPT_DIR, 'whole_rock')
+if os.path.isdir(wr_path) and wr_path not in sys.path:
+    sys.path.insert(0, wr_path)
+```
+
+已知受影响入口：
+- `quick_validate.py`（bootstrap 区）
+- `batch_backgrounds_main.py`（启动区）
+- 任何直接 `python3 xxx.py` 运行的脚本
+
+`quick_validate.py --quick` 和 `batch_backgrounds_main.py --mode minimal` 是验证 sys.path 是否正确的回归标准。
+
 ## 已提取的文件
 
 | 原始文件 | 类别 | JSON 文件 | 函数 | 状态 |

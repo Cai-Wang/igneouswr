@@ -13,7 +13,7 @@ from _ternary import (
     draw_ternary_frame, draw_ternary_grid,
     draw_ternary_ticks, label_ternary_vertices,
 )
-from boundaries.core import load_boundary
+from igneous_wr.boundaries.core import load_boundary
 
 """
 _tectonic.py — 构造判别图：Meschede, Wood, Pearce-Cann, 四联, Shervais Ti-V
@@ -896,36 +896,6 @@ def plot_schandl(gd, out_dir=None, save=True):
 
 
 # ── Batchelor & Bowden (1985) R1-R2 ────────────────────────
-
-
-def plot_hastie(gd, out_dir=None, save=True):
-    """Hastie et al. (2007) Th-Co 弧岩浆系列判别图
-    所需元素: Th, Co
-    """
-    missing = gd.check_elements('Th', 'Co', strict=True)
-    if missing:
-        return None, None
-    th = gd.get('Th'); co = gd.get('Co')
-    labels = gd.labels
-    fig, ax = plt.subplots(figsize=(9, 7))
-
-    xs = np.linspace(0, 100, 50)
-    # 分界线: 拉斑/钙碱, 钙碱/高K钙碱
-    ax.plot(xs, -0.5*xs + 30, 'k-', lw=1.2, label='Tholeiitic / Calc-alkaline')
-    ax.plot(xs, -0.3*xs + 35, 'k--', lw=0.8, label='CA / High-K CA')
-
-    ax.text(10, 5, 'Tholeiitic', fontsize=9, ha='center', style='italic')
-    ax.text(30, 15, 'Calc-alkaline', fontsize=9, ha='center', style='italic')
-    ax.text(10, 25, 'High-K CA', fontsize=9, ha='center', style='italic')
-
-    _style.scatter_samples(ax, th, co, labels, groups=gd.groups)
-    _style.add_legend(ax)
-    ax.set_xlim(0, 30); ax.set_ylim(0, 50)
-    _style.style_ax(ax, 'Th (ppm)', 'Co (ppm)')
-    plt.tight_layout(pad=0.3)
-    if save:
-        _style.save_fig(fig, 'Hastie2007_Th_Co.png', out_dir)
-    return fig, ax
 
 
 # ── Maniar & Piccoli (1989) 判别图 ────────────────────────

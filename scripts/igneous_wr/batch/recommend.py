@@ -6,10 +6,10 @@ batch/recommend.py — 推荐图件调度
 - plot_recommended 一键出所有推荐图
 - 内部使用 DIAGRAM_REGISTRY 过滤缺元素图
 
-注意：内部 import 倒挂层（whole_rock_core、_style 等是 scripts/ 下的模块）
+注意：内部 import 倒挂层（igneous_wr_core、_style 等是 scripts/ 下的模块）
 """
-from igneous_geochem.diagrams.registry import DIAGRAM_REGISTRY, MAFIC_DIAGRAMS, FELSIC_DIAGRAMS
-from igneous_geochem.diagrams.registry import FILENAME_MAP as _FILENAME_MAP
+from igneous_wr.diagrams.registry import DIAGRAM_REGISTRY, MAFIC_DIAGRAMS, FELSIC_DIAGRAMS
+from igneous_wr.diagrams.registry import FILENAME_MAP as _FILENAME_MAP
 import numpy as np
 
 
@@ -19,6 +19,11 @@ _registry_by_fn = {d.fn: d for d in DIAGRAM_REGISTRY}
 
 def _registry_lookup(fn):
     return _registry_by_fn.get(fn)
+
+
+def _ti_from_tio2(gd, elem):
+    """Ti → TiO2 回退检查。"""
+    return elem == 'Ti' and 'TiO2' in gd._elem_data
 
 
 def recommended_diagrams(gd, rock_type='auto'):
@@ -53,23 +58,23 @@ def recommended_diagrams(gd, rock_type='auto'):
                 review_tag = " [实验性]"
             elif spec.review_status == "needs_review":
                 review_tag = " [未校正]"
-        missing = [e for e in needed if e not in gd._elem_data]
+        missing = [e for e in needed if e not in gd._elem_data and not _ti_from_tio2(gd, e)]
         if missing:
             skipped.append((desc, missing))
             continue
         if any_of:
-            any_present = [e for e in any_of if e in gd._elem_data]
+            any_present = [e for e in any_of if e in gd._elem_data or _ti_from_tio2(gd, e)]
             if not any_present:
                 skipped.append((desc, f"any_of {any_of} 全部缺失"))
                 continue
         results.append((fn, desc, review_tag))
 
-    print(f"[whole_rock] 岩性判定: {type_name}")
-    print(f"[whole_rock] 推荐图件: {len(results)} 张")
+    print(f"[IgneousWR] 岩性判定: {type_name}")
+    print(f"[IgneousWR] 推荐图件: {len(results)} 张")
     for fn, desc, tag in results:
         print(f"   ✓ {fn.__name__:28s} — {desc}{tag}")
     if skipped:
-        print(f"[whole_rock] 因缺元素跳过: {len(skipped)} 张")
+        print(f"[IgneousWR] 因缺元素跳过: {len(skipped)} 张")
         for desc, missing in skipped:
             print(f"   ✗ 缺 {missing}  → 跳过 {desc}")
 
@@ -85,7 +90,7 @@ def plot_recommended(gd, out_dir=None, rock_type='auto'):
         rock_type: 'mafic', 'felsic', 或 'auto'（自动从 SiO₂ 判断）
 
     Returns:
-        dict — {'success': [(fn_name, file), ...], 'skipped': [(desc, missing), ...]}
+        dict — {'success': [(fn_name, file), ...], 'skipped': [(desc, reason), ...]}
     """
     from _style import DEFAULT_OUT_DIR, _OUT_DIR
     final_dir = out_dir or _OUT_DIR or DEFAULT_OUT_DIR
@@ -107,7 +112,7 @@ def plot_recommended(gd, out_dir=None, rock_type='auto'):
         except Exception as e:
             skipped.append((desc, str(e)))
 
-    print(f"\n[whole_rock] ==== 推荐出图完成 ====")
+    print(f"\n[IgneousWR] ==== 推荐出图完成 ====")
     print(f"   ✓ 成功: {len(success)} 张")
     for name, fname in success:
         print(f"      {name:28s} → {fname}")
@@ -123,6 +128,6 @@ def plot_recommended(gd, out_dir=None, rock_type='auto'):
         generate_report_html(
             success, skipped, gd=gd, out_dir=final_dir, rock_type=rock_type)
     except Exception as e:
-        print(f"[whole_rock] ⚠️ 报告生成跳过: {e}")
+        print(f"[IgneousWR] ⚠️ 报告生成跳过: {e}")
 
     return {'success': success, 'skipped': skipped}

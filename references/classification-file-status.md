@@ -23,12 +23,12 @@
 - `plot_pearce1977` — Pearce (1977) FeOt-MgO-Al₂O₃ 三角图
 
 ### 当前全技能状态
-- `_classification.py`: 14 函数 ✓
-- `_tectonic.py`: 9 函数（含 Harris + MullerKternary）✓
-- `_source.py`: 12 函数 ✓
-- `_evolution.py`: 4 函数 ✓
-- **总计**: 38 个绘图函数，DIAGRAM_REGISTRY 已注册 53 条
-- **待创建**: `_xy_diagrams.py` — 约 22 张 X-Y 专题图（见 memory）
+- `_classification.py`: 27 函数（含全部27张CLS图）✓
+- `_tectonic.py`: 20 函数（含全部20张TEC图）✓
+- `_source.py`: 15 函数 ✓
+- `_evolution.py`: 6 函数 ✓
+- **总计**: 68 个绘图函数，DIAGRAM_REGISTRY 已注册 67 条（CLS-25已删除）
+- **注册表总数校验**: 67（quick_validate.py 校验码需对应更新）
 
 ## 损坏历史
 

@@ -11,7 +11,7 @@ backgrounds.py — 批量生成所有图件的纯底图（无数据投点）
   - 整合了旧 batch_backgrounds.py + batch_backgrounds_fix.py 的功能
 
 用法（通过 CLI 包装器，或直接 import）：
-    from igneous_geochem.batch.backgrounds import run_batch
+    from igneous_wr.batch.backgrounds import run_batch
     run_batch(mode='full', out_dir='../runs/backgrounds')
 """
 import os, sys
@@ -23,7 +23,7 @@ DEFAULT_OUT_DIR = os.path.abspath(os.path.join(
 ))
 
 # ── 注册表 ──
-from igneous_geochem.diagrams.registry import DIAGRAM_REGISTRY
+from igneous_wr.diagrams.registry import DIAGRAM_REGISTRY
 
 
 # ════════════════════════════════════════════════════════════════
@@ -95,7 +95,7 @@ class FakeGeochemData:
         canon = self._elem_data.get(elem_name)
         if canon is not None:
             return canon
-        from whole_rock_core import ELEM_ALIAS
+        from igneous_wr_core import ELEM_ALIAS
         alias = ELEM_ALIAS.get(elem_name, None)
         if alias and alias in self._elem_data:
             return self._elem_data[alias]
@@ -133,13 +133,13 @@ def run_batch(mode='full', out_dir=None):
 
     # ── full 模式：patch scatter_samples 为空操作 ──
     if mode == 'full':
-        from igneous_geochem.report import style as _style_mod
+        from igneous_wr.report import style as _style_mod
         _original_scatter = _style_mod.scatter_samples
         _style_mod.scatter_samples = lambda *a, **kw: None
 
     # ── patch save_fig 用 spec.filename 输出 ──
-    from igneous_geochem.report.style import save_fig as _orig_save_fig
-    from igneous_geochem.report import style as _style_mod_for_save
+    from igneous_wr.report.style import save_fig as _orig_save_fig
+    from igneous_wr.report import style as _style_mod_for_save
     _current_spec = [None]
 
     def _patched_save_fig(fig, old_filename, _out_dir):

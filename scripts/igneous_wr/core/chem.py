@@ -19,3 +19,15 @@ def feot_calc(feo, tfe2):
     if np.all(np.isnan(tfe2)):
         return feo
     return np.where(np.isnan(feo), 0.8998 * tfe2, feo + 0.8998 * tfe2)
+
+
+# ── Ti 换算 ────────────────────────────────────────────────
+
+def tio2_to_ti_ppm(tio2_wt_pct):
+    """TiO₂ (wt%) → Ti (ppm)。
+    原子量: Ti=47.867, O=15.999, TiO₂=79.865
+    Ti 质量比 = 47.867 / 79.865 ≈ 0.5994
+    Ti (ppm) = TiO₂ (wt%) × 0.5994 × 10000
+    """
+    tio2 = np.asarray(tio2_wt_pct, dtype=float)
+    return tio2 * 0.5994 * 10000.0

@@ -2,17 +2,17 @@
 """
 batch_backgrounds_main.py — CLI 包装器
 
-委托给 igneous_geochem.batch.backgrounds.run_batch
+委托给 igneous_wr.batch.backgrounds.run_batch
 """
 import argparse, sys, os
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
-wr_path = os.path.join(SCRIPT_DIR, 'whole_rock')
+wr_path = os.path.join(SCRIPT_DIR, 'igneous_wr')
 if os.path.isdir(wr_path) and wr_path not in sys.path:
     sys.path.insert(0, wr_path)
 
-from igneous_geochem.batch.backgrounds import run_batch, DEFAULT_OUT_DIR
+from igneous_wr.batch.backgrounds import run_batch, DEFAULT_OUT_DIR
 
 parser = argparse.ArgumentParser(description='批量生成纯底图')
 parser.add_argument('--mode', default='full', choices=['minimal', 'full'],

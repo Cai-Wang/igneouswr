@@ -12,7 +12,7 @@ from _ternary import (
     draw_ternary_frame, draw_ternary_grid,
     draw_ternary_ticks, label_ternary_vertices,
 )
-from boundaries.core import load_boundary
+from igneous_wr.boundaries.core import load_boundary
 
 """
 _evolution.py — 演化图：Harker, Miyashiro, Mg#, Zr协变
@@ -128,7 +128,7 @@ def plot_miyashiro(gd, out_dir=None, save=True):
     feo_ok = not gd.check_elements('FeO')
     tfe2_ok = not gd.check_elements('TFe2O3')
     if not (feo_ok or tfe2_ok):
-        print("[whole_rock] ❌ 缺少 FeO 和 TFe2O3，无法计算 FeOt/MgO")
+        print("[IgneousWR] ❌ 缺少 FeO 和 TFe2O3，无法计算 FeOt/MgO")
         return None, None
     sio2 = gd.get('SiO2'); feo = gd.get('FeO')
     tfe2 = gd.get('TFe2O3'); mgo = gd.get('MgO')
@@ -164,6 +164,7 @@ def plot_mgno(gd, out_dir=None, save=True):
     """
     Mg# vs SiO₂ 📊通用
     所需元素: SiO2, FeO, TFe2O3, MgO
+    Mg# = 100 × Mg/(Mg+Fe²⁺) (molar), 参考 Roeder & Emslie (1970)
     """
     missing = gd.check_elements('SiO2', 'MgO', strict=True)
     if missing:
@@ -172,7 +173,7 @@ def plot_mgno(gd, out_dir=None, save=True):
     feo_ok = not gd.check_elements('FeO')
     tfe2_ok = not gd.check_elements('TFe2O3')
     if not (feo_ok or tfe2_ok):
-        print("[whole_rock] ❌ 缺少 FeO 和 TFe2O3，无法计算 Mg#")
+        print("[IgneousWR] ❌ 缺少 FeO 和 TFe2O3，无法计算 Mg#")
         return None, None
     sio2 = gd.get('SiO2'); feo = gd.get('FeO')
     tfe2 = gd.get('TFe2O3'); mgo = gd.get('MgO')
@@ -183,12 +184,25 @@ def plot_mgno(gd, out_dir=None, save=True):
     labels = gd.labels
 
     fig, ax = plt.subplots(figsize=(8, 6))
-    ax.axhline(y=50, color='#555555', ls=':', lw=0.8, alpha=0.7)
-    ax.text(76, 51, 'Mg# = 50', fontsize=8, ha='right', va='bottom',
-            color='#555555', fontproperties=_style.times_prop)
+
+    # SiO₂ 岩类��直参考线（超基性/基性/中性/酸性）
+    for x_val, x_ls, x_color in [(45, ':', '#aaaaaa'), (52, ':', '#aaaaaa'),
+                                   (57, ':', '#aaaaaa'), (63, ':', '#aaaaaa')]:
+        ax.axvline(x=x_val, color=x_color, ls=x_ls, lw=0.5, alpha=0.5)
+
+    # Mg# = 50 主判别线：原始岩浆 vs 分异岩浆 (Roeder & Emslie 1970)
+    ax.axhline(y=50, color='#333333', ls='--', lw=1.5)
+    ax.text(76, 52, 'Mg# = 50', fontsize=9, ha='right', va='bottom',
+            fontweight='bold', color='#333333')
+
+    # Mg# < 50 背景色填充（分异岩浆区）
+    ax.fill_between([38, 80], 0, 50, color='#e6e0d4', alpha=0.15, zorder=0)
 
     ax.set_xlim(38, 80); ax.set_ylim(0, 100)
-    _style.style_ax(ax, r'SiO$_2$ (wt.%)', 'Mg#')
+    _style.style_ax(ax, r'SiO$_2$ (wt.%)', 'Mg# (molar)')
+    ax.text(0.98, 0.02, 'After Roeder & Emslie (1970)',
+            transform=ax.transAxes, fontsize=9, ha='right',
+            va='bottom', style='italic', color='grey')
 
     _style.scatter_samples(ax, sio2, mg_no, labels, groups=gd.groups)
     _style.add_legend(ax)
@@ -304,38 +318,6 @@ def plot_hollocher2(gd, out_dir=None, save=True):
 # ════════════════════════════════════════════════════════════
 
 # ── Hastie et al. (2007) Co-Th 系列判别（已有Co-Th参考）───
-
-
-def plot_mullerkbinary(gd, out_dir=None, save=True):
-    """Muller et al. (1992) K₂O vs SiO₂ 岩浆系列判别
-    所需元素: SiO2, K2O
-    """
-    missing = gd.check_elements('SiO2', 'K2O', strict=True)
-    if missing:
-        return None, None
-    sio2 = gd.get('SiO2'); k2o = gd.get('K2O')
-    labels = gd.labels
-    fig, ax = plt.subplots(figsize=(9, 7))
-
-    # Muller (1992) 分界: 低K/中K/高K
-    xs = np.linspace(45, 65, 30)
-    ax.plot(xs, 0.02*xs + 0.1, 'k-', lw=1.2, label='Low-K / Medium-K')
-    ax.plot(xs, 0.08*xs - 2.2, 'k--', lw=1.2, label='Medium-K / High-K')
-    ax.plot(xs, 0.12*xs - 3.8, 'k:', lw=1.0, label='High-K / Shoshonite')
-
-    ax.text(48, 0.3, 'Low-K\n(tholeiitic)', fontsize=8, ha='center')
-    ax.text(48, 0.9, 'Medium-K\n(calc-alkaline)', fontsize=8, ha='center')
-    ax.text(48, 1.8, 'High-K', fontsize=8, ha='center')
-    ax.text(48, 3.0, 'Shoshonite', fontsize=8, ha='center', rotation=10)
-
-    _style.scatter_samples(ax, sio2, k2o, labels, groups=gd.groups)
-    _style.add_legend(ax)
-    ax.set_xlim(45, 65); ax.set_ylim(0, 5)
-    _style.style_ax(ax, r'SiO$_2$ (wt.%)', r'K$_2$O (wt.%)')
-    plt.tight_layout(pad=0.3)
-    if save:
-        _style.save_fig(fig, 'Muller1992_K2O_SiO2.png', out_dir)
-    return fig, ax
 
 
 # ── Hollocher (2012) V/Sc vs V+Sc ─────────────────────────

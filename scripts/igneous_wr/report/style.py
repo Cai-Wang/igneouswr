@@ -20,6 +20,83 @@ import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 
 
+# ── 注册表短名→长名映射（自动为文件名补编号前缀） ───
+_SHORT_TO_LONG = {
+    # CLS
+    'TAS.png':                                'CLS-01_TAS.png',
+    'Middlemost1985_K2O_SiO2.png':            'CLS-02_Middlemost1985_K2O_SiO2.png',
+    'AFM_IB1971.png':                         'CLS-03_AFM_IB1971.png',
+    'Shand_ACNK_ANK.png':                     'CLS-04_Shand_ACNK_ANK.png',
+    'Winchester_Floyd1977_NbY_ZrTiO2.png':    'CLS-05_Winchester_Floyd1977_NbY_ZrTiO2.png',
+    'Co_Th_Hastie2007.png':                   'CLS-06_Co_Th_Hastie2007.png',
+    'An_Ab_Or_OConnor1965.png':               'CLS-07_An_Ab_Or_OConnor1965.png',
+    'QAPF_Streckeisen1976.png':               'CLS-08_QAPF_Streckeisen1976.png',
+    'Cabanis1986_LaY_Nb_ternary.png':         'CLS-09_Cabanis1986_LaY_Nb_ternary.png',
+    'Mullen1983_TiO2_MnO_P2O5.png':           'CLS-10_Mullen1983_TiO2_MnO_P2O5.png',
+    'Jensen1976_cation_ternary.png':          'CLS-11_Jensen1976_cation_ternary.png',
+    'OConnor_Volc_An_Ab_Or.png':              'CLS-12_OConnor_Volc_An_Ab_Or.png',
+    'TAS_Middlemost1994_Plutonic.png':        'CLS-13_TAS_Middlemost1994_Plutonic.png',
+    'TAS_Middlemost1994_Volcanic.png':        'CLS-14_TAS_Middlemost1994_Volcanic.png',
+    'TAS_Cox1979_Plutonic.png':               'CLS-15_TAS_Cox1979_Plutonic.png',
+    'TAS_Cox1979_Volcanic.png':               'CLS-16_TAS_Cox1979_Volcanic.png',
+    'Frost2001_Fenum_SiO2.png':               'CLS-17_Frost2001_Fenum_SiO2.png',
+    'Whalen1987_GaAl_Zr.png':                 'CLS-18_Whalen1987_GaAl_Zr.png',
+    'Whalen1987_GaAl_Nb.png':                 'CLS-19_Whalen1987_GaAl_Nb.png',
+    'Whalen1987_GaAl_CeYZr.png':              'CLS-20_Whalen1987_GaAl_CeYZr.png',
+    'Villaseca1998_ASI_FMM.png':              'CLS-21_Villaseca1998_ASI_FMM.png',
+    'Debon1983_BA_diagram.png':               'CLS-22_Debon1983_BA_diagram.png',
+    'Debon1983_PQ_diagram.png':               'CLS-23_Debon1983_PQ_diagram.png',
+    'LaRoche1980_R1_R2_plutonic.png':         'CLS-26_LaRoche1980_R1_R2_plutonic.png',
+    'LaRoche1980_R1_R2_volcanic.png':         'CLS-27_LaRoche1980_R1_R2_volcanic.png',
+    'Middlemost1991_Plutonic.png':            'CLS-28_Middlemost1991_Plutonic.png',
+    'Pearce1996_NbY_ZrTi.png':                'CLS-29_Pearce1996_NbY_ZrTi.png',
+    # SRC
+    'REE_chondrite.png':                      'SRC-01_REE_chondrite.png',
+    'Spider_PM.png':                          'SRC-02_Spider_PM.png',
+    'Pearce2008_ThYb_NbYb.png':              'SRC-03_Pearce2008_ThYb_NbYb.png',
+    'UTh_ZrNb_Stern2006.png':                 'SRC-04_UTh_ZrNb_Stern2006.png',
+    'SmYb_LaSm_partial_melting.png':          'SRC-05_SmYb_LaSm_partial_melting.png',
+    'Sc_V_HickeyVargas2018.png':              'SRC-06_Sc_V_HickeyVargas2018.png',
+    'BaTh_LaSm_PearceRobinson2010.png':       'SRC-07_BaTh_LaSm_PearceRobinson2010.png',
+    'GdYb_DyDystar_Davidson2013.png':          'SRC-08_GdYb_DyDystar_Davidson2013.png',
+    'DyYb_LaYb_garnet_depth.png':              'SRC-09_DyYb_LaYb_garnet_depth.png',
+    'Ohta_Arai2007_MFW.png':                  'SRC-10_Ohta_Arai2007_MFW.png',
+    'Pearce1995_NbYb_ThYb.png':               'SRC-11_Pearce1995_NbYb_ThYb.png',
+    'Pearce1995_TiYb_NbYb.png':               'SRC-12_Pearce1995_TiYb_NbYb.png',
+    'Sylvester1989_CaONa2O_Al2O3.png':        'SRC-13_Sylvester1989_CaONa2O_Al2O3.png',
+    'LaYb_vs_Yb.png':                          'SRC-14_LaYb_vs_Yb.png',
+    'Ross2009_LaSm_LaYb.png':                  'SRC-15_Ross2009_LaSm_LaYb.png',
+    # EVO
+    'Harker_6panel.png':                       'EVO-01_Harker_6panel.png',
+    'Miyashiro1974_FeOtMgO_SiO2.png':          'EVO-02_Miyashiro1974_FeOtMgO_SiO2.png',
+    'MgNo_vs_SiO2.png':                        'EVO-03_MgNo_vs_SiO2.png',
+    'Zr_covariance.png':                       'EVO-04_Zr_covariance.png',
+    'Hollocher2012_VSc.png':                   'EVO-05_Hollocher2012_VSc.png',
+    'Hollocher2012_VSc_ZrCe.png':              'EVO-06_Hollocher2012_VSc_ZrCe.png',
+    # TEC
+    'Meschede1986_ternary.png':                'TEC-01_Meschede1986_ternary.png',
+    'Wood1980_Hf3_Th_Ta.png':                  'TEC-02_Wood1980_Hf3_Th_Ta.png',
+    'PearceCann1973_TiZrY.png':                'TEC-03_PearceCann1973_TiZrY.png',
+    'V_Ti_Sc_ThNb_BaTh_4panel.png':            'TEC-04_V_Ti_Sc_ThNb_BaTh_4panel.png',
+    'Shervais1982_Ti_V.png':                   'TEC-05_Shervais1982_Ti_V.png',
+    'ThYb_TaYb_Pearce1983.png':                'TEC-06_ThYb_TaYb_Pearce1983.png',
+    'NbN_ThN_Saccani2015.png':                 'TEC-07_NbN_ThN_Saccani2015.png',
+    'ZrY_Zr_Xia2014.png':                      'TEC-08_ZrY_Zr_Xia2014.png',
+    'NbLa_ThLa_Cabanis1986.png':               'TEC-09_NbLa_ThLa_Cabanis1986.png',
+    'Pearce1977_FeOt_MgO_Al2O3.png':           'TEC-10_Pearce1977_FeOt_MgO_Al2O3.png',
+    'Harris1986_Rb30_Hf_3Ta.png':              'TEC-11_Harris1986_Rb30_Hf_3Ta.png',
+    'Muller2000_Kternary.png':                 'TEC-12_Muller2000_Kternary.png',
+    'Pearce_Norry1979_ZrY_Zr.png':             'TEC-13_Pearce_Norry1979_ZrY_Zr.png',
+    'Pearce1982_ZrY_Zr.png':                   'TEC-14_Pearce1982_ZrY_Zr.png',
+    'Pearce1984_Granite_Rb_YNb.png':           'TEC-15_Pearce1984_Granite_Rb_YNb.png',
+    'Schandl2004_Y_Zr.png':                    'TEC-16_Schandl2004_Y_Zr.png',
+    'Batchelor1985_R1_R2.png':                 'TEC-17_Batchelor1985_R1_R2.png',
+    'Maniar1989_Granite_disc.png':             'TEC-18_Maniar1989_Granite_disc.png',
+    'Agrawal2004_DF1_DF2.png':                 'TEC-19_Agrawal2004_DF1_DF2.png',
+    'Verma_discriminant_DF1_DF2.png':          'TEC-20_Verma_discriminant_DF1_DF2.png',
+}
+
+
 # ── Times New Roman 字体查找 ───────────────────────────────
 def _find_times_font():
     candidates = [
@@ -477,11 +554,11 @@ def style_ax(ax, xlabel='', ylabel='', xlabel_size=12, ylabel_size=12):
 
 # ── 保存 / 图例 ────────────────────────────────────────────
 def save_fig(fig, filename, out_dir=None, dpi=600):
-    """保存图片到输出目录。不关闭 fig。
+    """保存图片到输出目录。自动查注册表加引用 imprint。不关闭 fig。
 
     Args:
         fig: matplotlib Figure 对象
-        filename: 输出文件名（如 'TAS.png'）
+        filename: 输出文件名（如 'TAS.png' 或 'CLS-01_TAS.png'）
         out_dir: 输出目录，None 则使用默认输出目录
         dpi: 图片分辨率（默认 600）
 
@@ -490,7 +567,35 @@ def save_fig(fig, filename, out_dir=None, dpi=600):
     """
     out = out_dir or _OUT_DIR or DEFAULT_OUT_DIR
     os.makedirs(out, exist_ok=True)
-    path = os.path.join(out, filename)
+    # 自动补注册表编号前缀：短名 → 长名（如 TAS.png → CLS-01_TAS.png）
+    long_name = _SHORT_TO_LONG.get(filename, filename)
+    path = os.path.join(out, long_name)
+
+    # ── 自动加引用 imprint ────────────────────────────
+    # 从文件名找注册表条目
+    ref_text = None
+    try:
+        from igneous_wr.diagrams.registry import DIAGRAM_REGISTRY
+        from igneous_wr.references.loader import get_short
+        for d in DIAGRAM_REGISTRY:
+            if d.filename == long_name:
+                if d.source_ref:
+                    ref_text = get_short(d.source_ref)
+                break
+    except Exception:
+        pass
+
+    if ref_text:
+        # 取最后一个 axe
+        axs = fig.axes
+        if axs:
+            ax = axs[0]  # 多数单轴图
+            ax.text(0.99, 0.01, ref_text,
+                    transform=ax.transAxes,
+                    fontsize=7, color='gray', style='italic',
+                    ha='right', va='bottom',
+                    fontfamily='serif')
+
     fig.savefig(path, dpi=dpi, bbox_inches='tight', facecolor='white')
     print(f"[saved] {path}")
     return path
@@ -688,7 +793,25 @@ def generate_report_html(success, skipped, gd=None, out_dir=None, rock_type=None
         w('</ul>')
         w('</div>')
 
-    w(f'<div class=\"footer\">由 igneous-geochemistry skill 自动生成 · {datetime.now():%Y-%m-%d %H:%M}</div>')
+    # ── 参考文献列表 ──
+    try:
+        from igneous_wr.references.loader import get_references_for_report, _format_ref_line
+        refs = get_references_for_report()
+        if refs:
+            w('<div class=\"references\">')
+            w('<h3 style=\"margin-top:28px; margin-bottom:10px; font-size:16px; color:#333;\">参考文献</h3>')
+            w('<ol style=\"font-size:12px; color:#555; line-height:1.9; padding-left:20px;\">')
+            for key, short, full in refs:
+                if full:
+                    w(f'<li>{full}</li>')
+                else:
+                    w(f'<li><em>{short}</em> (完整引用信息待补充)</li>')
+            w('</ol>')
+            w('</div>')
+    except Exception as e:
+        print(f'[报告] ⚠️ 参考文献列表生成跳过: {e}')
+
+    w(f'<div class=\"footer\">由 IgneousWR skill 自动生成 · {datetime.now():%Y-%m-%d %H:%M}</div>')
 
     w('</body>')
     w('</html>')

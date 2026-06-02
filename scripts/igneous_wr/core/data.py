@@ -6,7 +6,7 @@ core/data.py — GeochemData 数据容器与推荐图件调度
 import numpy as np
 import openpyxl
 
-from igneous_geochem.io.excel import (
+from igneous_wr.io.excel import (
     find_excel, parse_value, ELEM_ALIAS, KNOWN_ELEMENTS,
     DL_STRATEGY_HALF, DL_STRATEGY_ZERO, DL_STRATEGY_NAN,
 )
@@ -59,7 +59,7 @@ class GeochemData:
                     break
             else:
                 ws = wb[wb.sheetnames[0]]
-                print(f"[whole_rock] 使用工作表: {ws.title}")
+                print(f"[IgneousWR] 使用工作表: {ws.title}")
 
         r1_c2 = ws.cell(1, 2).value
         r2_c1 = ws.cell(2, 1).value
@@ -133,7 +133,7 @@ class GeochemData:
                     [parse_value(ws.cell(r, c).value, self.dl_strategy) for c in sample_cols]
                 )
 
-        print(f"[whole_rock] 标准格式，{len(self.all_labels)} 样品，{len(self._elem_data)} 元素"
+        print(f"[IgneousWR] 标准格式，{len(self.all_labels)} 样品，{len(self._elem_data)} 元素"
               f"{' (含 Lithology)' if self._lithology else ''}")
 
     def _load_transposed(self, ws):
@@ -149,7 +149,7 @@ class GeochemData:
                 break
 
         if elem_count < 3:
-            print(f"[whole_rock] ⚠️ 转置检测：Row 1 仅识别 {elem_count} 个元素列，按标准格式处理")
+            print(f"[IgneousWR] ⚠️ 转置检测：Row 1 仅识别 {elem_count} 个元素列，按标准格式处理")
             self._load_standard(ws)
             return
 
@@ -218,7 +218,7 @@ class GeochemData:
         for k in self._elem_data:
             self._elem_data[k] = np.array(self._elem_data[k])
 
-        print(f"[whole_rock] 转置格式，{len(self.all_labels)} 样品，{len(self._elem_data)} 元素")
+        print(f"[IgneousWR] 转置格式，{len(self.all_labels)} 样品，{len(self._elem_data)} 元素")
 
     def _filter(self, keyword, strict=True):
         idxs = [i for i, l in enumerate(self.all_labels) if keyword in str(l)]
@@ -229,13 +229,13 @@ class GeochemData:
                     f"(共 {len(self.all_labels)} 个: {self.all_labels[:5]}...)。"
                     f"请检查关键字，或传 sample_filter=None 全选。")
             else:
-                print(f"[whole_rock] ⚠️ 筛选关键字 '{keyword}' 未匹配任何样品，回退到全部样品")
+                print(f"[IgneousWR] ⚠️ 筛选关键字 '{keyword}' 未匹配任何样品，回退到全部样品")
                 self.idxs = list(range(len(self.all_labels)))
                 self.labels = list(self.all_labels)
         else:
             self.idxs = idxs
             self.labels = [self.all_labels[i] for i in idxs]
-            print(f"[whole_rock] 筛选 '{keyword}'：{len(idxs)}/{len(self.all_labels)} 样品")
+            print(f"[IgneousWR] 筛选 '{keyword}'：{len(idxs)}/{len(self.all_labels)} 样品")
 
         self._elem_data = {}
         for elem in self._all_elem_data:
@@ -267,18 +267,29 @@ class GeochemData:
             return self._elem_data[canon]
         if elem_name in self._elem_data:
             return self._elem_data[elem_name]
-        print(f"[whole_rock] ⚠️ 元素 '{elem_name}' 未找到")
+        # ── Ti 自动回退：从 TiO₂ (wt%) 换算为 Ti (ppm) ──
+        if elem_name == 'Ti' and 'TiO2' in self._elem_data:
+            from igneous_wr.core.chem import tio2_to_ti_ppm
+            return tio2_to_ti_ppm(self._elem_data['TiO2'])
+        # ── Pb 自动回退：蜘蛛网图需要 Pb ──
+        if elem_name == 'Pb' and 'Pb' in self._elem_data:
+            return self._elem_data['Pb']
+        print(f"[IgneousWR] ⚠️ 元素 '{elem_name}' 未找到")
         return np.full(len(self.labels), np.nan)
 
     def check_elements(self, *elems, strict=False):
         missing = []
         for e in elems:
             canon = ELEM_ALIAS.get(e, e)
-            if canon not in self._elem_data and e not in self._elem_data:
-                missing.append(e)
+            if canon in self._elem_data or e in self._elem_data:
+                continue
+            # Ti→TiO₂ 回退
+            if e == 'Ti' and 'TiO2' in self._elem_data:
+                continue
+            missing.append(e)
         if missing:
             if strict:
-                print(f"[whole_rock] ❌ 缺失关键元素: {missing}，无法出图")
+                print(f"[IgneousWR] ❌ 缺失关键元素: {missing}，无法出图")
             else:
-                print(f"[whole_rock] ⚠️ 缺失元素: {missing}，图中对应位置将为空")
+                print(f"[IgneousWR] ⚠️ 缺失元素: {missing}，图中对应位置将为空")
         return missing

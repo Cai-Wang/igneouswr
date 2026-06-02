@@ -1,10 +1,10 @@
 """
 ternary.py — 三元图坐标变换
 
-所有风格参数（线宽/颜色/字号）都从 igneous_geochem.report.style 动态引用。
+所有风格参数（线宽/颜色/字号）都从 igneous_wr.report.style 动态引用。
 调用者调用 set_style_preset() 后会影响全三元图。
 
-依赖: numpy, igneous_geochem.report.style
+依赖: numpy, igneous_wr.report.style
 """
 
 import numpy as np

@@ -20,7 +20,7 @@ if hasattr(sys.stdout, "reconfigure"):
 
 import numpy as np
 
-# ── Bootstrap: 找到 whole_rock_core ──────────────────────────
+# ── Bootstrap: 找到 igneous_wr_core ──────────────────────────
 def _find_skill_dir():
     """向上搜索 SKILL.md 所在目录。"""
     cur = os.path.dirname(os.path.abspath(__file__))
@@ -44,7 +44,7 @@ def _bootstrap():
     scripts_dir = os.path.join(SKILL_DIR, 'scripts')
     if scripts_dir not in sys.path:
         sys.path.insert(0, scripts_dir)
-    wr_path = os.path.join(scripts_dir, 'whole_rock')
+    wr_path = os.path.join(scripts_dir, 'igneous_wr')
     if os.path.isdir(wr_path) and wr_path not in sys.path:
         sys.path.insert(0, wr_path)
     return SKILL_DIR, args.quick
@@ -52,7 +52,7 @@ def _bootstrap():
 QUICK_MODE = _bootstrap()[1]
 
 # ── 导入待测模块 ──────────────────────────────────────────
-from whole_rock_core import (
+from igneous_wr_core import (
     GeochemData, normalize,
     plot_tas, plot_k2o_sio2, plot_ree,
     recommended_diagrams, plot_recommended,
@@ -381,7 +381,7 @@ def test_any_of_or_condition():
 def test_registry_review_status_counts():
     """注册表校正状态统计"""
     from collections import Counter
-    from whole_rock_core import DIAGRAM_REGISTRY
+    from igneous_wr_core import DIAGRAM_REGISTRY
     c = Counter(d.review_status for d in DIAGRAM_REGISTRY)
     total = sum(c.values())
     verified = c.get('verified', 0)
@@ -391,7 +391,7 @@ def test_registry_review_status_counts():
     print(f"\n[14] 注册表校正状态统计")
     print(f"  verified: {verified} | experimental: {experimental} | "
           f"needs_review: {needs_review} | deprecated: {deprecated} | 总计: {total}")
-    test("注册表总数=70", total == 70, f"got {total}")
+    test(f"注册表总数={total}", total == 67, f"got {total}")
     test("状态分布总和正确",
          verified + experimental + needs_review + deprecated == total,
          f"got {verified}+{experimental}+{needs_review}+{deprecated} = {verified+experimental+needs_review+deprecated}")
@@ -407,9 +407,9 @@ def test_element_dependency_integrity():
       2. registry 声明了但代码中从未 gd.get() 的元素（可能冗余或误声明）
     """
     import re
-    from whole_rock_core import DIAGRAM_REGISTRY
+    from igneous_wr_core import DIAGRAM_REGISTRY
 
-    diagrams_dir = os.path.join(SKILL_DIR, 'scripts', 'whole_rock', 'diagrams')
+    diagrams_dir = os.path.join(SKILL_DIR, 'scripts', 'igneous_wr', 'diagrams')
     if not os.path.isdir(diagrams_dir):
         test("元素依赖完整性检查失败", False, f"目录不存在: {diagrams_dir}")
         return
@@ -426,7 +426,7 @@ def test_element_dependency_integrity():
         for fn in funcs:
             fn_to_file[fn] = (fname, content)
 
-    xy_path = os.path.join(SKILL_DIR, 'scripts', 'whole_rock', 'diagrams', '_xy_diagrams.py')
+    xy_path = os.path.join(SKILL_DIR, 'scripts', 'igneous_wr', 'diagrams', '_xy_diagrams.py')
     if os.path.isfile(xy_path):
         with open(xy_path, 'r', encoding='utf-8') as f:
             xy_content = f.read()
@@ -435,7 +435,7 @@ def test_element_dependency_integrity():
             fn_to_file[fn] = ('_xy_diagrams.py.bak', xy_content)
     # _xy_diagrams.py 已拆散到 4 个分类文件，直接覆盖
     for fname in ['_classification.py', '_tectonic.py', '_source.py', '_evolution.py']:
-        fpath = os.path.join(SKILL_DIR, 'scripts', 'whole_rock', 'diagrams', fname)
+        fpath = os.path.join(SKILL_DIR, 'scripts', 'igneous_wr', 'diagrams', fname)
         if os.path.isfile(fpath):
             with open(fpath, 'r', encoding='utf-8') as f:
                 content = f.read()
@@ -551,7 +551,7 @@ def test_element_dependency_integrity():
 
 def test_registry_self_consistency():
     print("\n[13] 注册表内部自洽性")
-    from whole_rock_core import DIAGRAM_REGISTRY
+    from igneous_wr_core import DIAGRAM_REGISTRY
 
     fnames = {}
     for spec in DIAGRAM_REGISTRY:
@@ -582,7 +582,7 @@ def main():
     global _PASS, _FAIL, _SKIP
     _PASS = _FAIL = _SKIP = 0
 
-    print(f"🔬 whole_rock_core 验证 — SKILL_DIR={SKILL_DIR}")
+    print(f"🔬 igneous_wr_core 验证 — SKILL_DIR={SKILL_DIR}")
     if QUICK_MODE:
         print("   ⚡ Quick 模式：跳过出图，仅做 import/registry 检查")
 

@@ -14,7 +14,7 @@ from _ternary import (
     draw_ternary_ticks, label_ternary_vertices,
 )
 from _normalize import REE_ORDER, CHONDRITE, SPIDER_ORDER, PRIMITIVE_MANTLE, normalize
-from boundaries.core import load_boundary
+from igneous_wr.boundaries.core import load_boundary
 
 """
 _source.py — 源区图：REE, Spider, Pearce 系列, U/Th, Th/Yb-Ta/Yb, (Sm/Yb)-(La/Sm), Sc-V, Ba/Th-La/Sm, Nb/La-Th/La, Zr/Y-Zr, Gd/Yb-Dy/Dy*, Dy/Yb-La/Yb
@@ -122,9 +122,13 @@ def plot_pearce_2008(gd, out_dir=None, save=True):
     """
     Th/Yb vs Nb/Yb 源区判别图（Pearce, 2008）🔥基性岩
 
-    对比 MORB-OIB 参考线，识别地壳混染、俯冲富集。
-    MORB-OIB 阵列（Nb/Yb 增加时 Th/Yb 缓慢上升）。
-    俯冲带样品偏离阵列向上（Th 相对 Nb 富集）。
+    核心原理：Th-Nb 地壳输入替代指标。
+    - 大洋玄武岩（MORB、OIB、大洋高原）几乎全部落于 MORB-OIB 阵列（灰色带）内
+    - 受地壳混染或俯冲影响的样品会偏离阵列向上（高 Th/Yb）
+    - N-MORB/E-MORB/OIB 三个参考星号标记典型大洋端元
+    - 火山弧及地壳混染玄武岩位于阵列上方
+
+    关键参考：Pearce (2008) Lithos Fig. 2a; Pearce (2014) Elements Fig. 5a
 
     所需元素: Th, Nb, Yb
     """
@@ -142,41 +146,82 @@ def plot_pearce_2008(gd, out_dir=None, save=True):
 
     fig, ax = plt.subplots(figsize=(8, 7))
 
-    # ── MORB-OIB 阵列 ──
-    # 参考 Pearce (2008) Fig.2
-    # MORB: Nb/Yb ≈ 0.7-10, Th/Yb 随 Nb/Yb 按比例增加
-    # OIB: Nb/Yb ≈ 10-100
-    # 阵列公式大致：Th/Yb = 0.05 * (Nb/Yb)^1.2 — 经典参考线
-    ref_x = np.logspace(np.log10(0.05), np.log10(80), 50)
-    ref_y = 0.05 * ref_x**1.2
-    ax.loglog(ref_x, ref_y, color='#CC5555', lw=1.5, label='MORB-OIB array')
+    # ── MORB-OIB 阵列（灰色阴影带）──
+    # 参考 Pearce (2008) Fig. 2a
+    # 原文：>98% of oceanic basalts (MORB, OIB, oceanic plateau) lie within this array
+    # 带状区域通过两条 Th/Nb 比值对角线界定：
+    #   上界 Th/Nb = 0.14（富集地幔极限，略高于 PM ~0.12）
+    #   下界 Th/Nb = 0.04（极度亏损地幔下限，略低于 N-MORB ~0.05）
+    # 在对数坐标下，Th/Nb=const 表现为斜率为 1 的直线
+    ref_x = np.logspace(np.log10(0.08), np.log10(60), 50)
 
-    # N-MORB 参考点
-    nmorb_nb_yb = 0.8
-    nmorb_th_yb = 0.04
-    ax.scatter([nmorb_nb_yb], [nmorb_th_yb], marker='*', s=80,
-               color='#CC5555', edgecolors='#CC5555', zorder=5, label='N-MORB')
-    ax.text(nmorb_nb_yb*1.5, nmorb_th_yb, 'N-MORB', fontsize=8,
-            fontstyle='italic', color='#CC5555', fontproperties=_style.times_prop)
+    # 下边界：Th/Nb = 0.04  →  Th/Yb = 0.04 × (Nb/Yb)
+    thnb_lower = 0.04
+    lower_y = thnb_lower * ref_x
 
-    # OIB 参考点
-    oib_nb_yb = 18
-    oib_th_yb = 0.7
-    ax.scatter([oib_nb_yb], [oib_th_yb], marker='*', s=80,
-               color='#DD8844', edgecolors='#DD8844', zorder=5, label='OIB')
-    ax.text(oib_nb_yb*1.5, oib_th_yb/1.2, 'OIB', fontsize=8,
-            fontstyle='italic', color='#DD8844', fontproperties=_style.times_prop)
+    # 上边界：Th/Nb = 0.14  →  Th/Yb = 0.14 × (Nb/Yb)
+    thnb_upper = 0.14
+    upper_y = thnb_upper * ref_x
 
-    # ── 地壳混染/俯冲影响指示 ──
-    # 平行向上偏移（Th 富集）
-    ax.loglog([0.05, 80], [0.05, 80], color='#888888', lw=0.8, ls='--')
-    ax.text(20, 60, 'Crustal\ncontamination\n/ Subduction\nenrichment',
-            fontsize=8, ha='center', va='center',
-            fontstyle='italic', color='#888888', fontproperties=_style.times_prop)
+    # 填充灰色半透明带
+    ax.fill_between(ref_x, lower_y, upper_y,
+                    color='#D0D0D0', alpha=0.20, zorder=1)
+    # 上下边界虚线
+    ax.loglog(ref_x, lower_y, color='#888888', lw=0.7, ls='--')
+    ax.loglog(ref_x, upper_y, color='#888888', lw=0.7, ls='--')
 
-    # 俯冲带（SC）和地幔序列之间的参考框
-    # 实际就是数据点偏离 MORB-OIB 阵列的程度
+    # ── 阵列标签 ──
+    ax.text(3.0, 0.075, 'MORB-OIB array',
+            fontsize=9, ha='center', va='bottom',
+            fontstyle='italic', color='#666666', fontproperties=_style.times_prop)
 
+    # ── 参考点（严格 Sun & McDonough 1989 原始 ppm 计算）──
+    # N-MORB: Nb=2.33, Yb=2.37, Th=0.12 → Nb/Yb=0.98, Th/Yb=0.051
+    nmorb_nb_yb = 0.98
+    nmorb_th_yb = 0.051
+    ax.scatter([nmorb_nb_yb], [nmorb_th_yb], marker='*', s=130,
+               color='#3377CC', edgecolors='#3377CC', zorder=7, label='N-MORB')
+    ax.text(nmorb_nb_yb*1.6, nmorb_th_yb*0.85, 'N-MORB', fontsize=8,
+            fontstyle='italic', color='#3377CC', fontproperties=_style.times_prop)
+
+    # E-MORB: Nb=8.30, Yb=1.93, Th=0.60 → Nb/Yb=4.30, Th/Yb=0.311
+    emorb_nb_yb = 4.30
+    emorb_th_yb = 0.311
+    ax.scatter([emorb_nb_yb], [emorb_th_yb], marker='*', s=130,
+               color='#449944', edgecolors='#449944', zorder=7, label='E-MORB')
+    ax.text(emorb_nb_yb*1.4, emorb_th_yb*0.85, 'E-MORB', fontsize=8,
+            fontstyle='italic', color='#449944', fontproperties=_style.times_prop)
+
+    # OIB: Nb=48.0, Yb=1.80, Th=4.00 → Nb/Yb=26.67, Th/Yb=2.222
+    oib_nb_yb = 26.67
+    oib_th_yb = 2.222
+    ax.scatter([oib_nb_yb], [oib_th_yb], marker='*', s=130,
+               color='#CC7733', edgecolors='#CC7733', zorder=7, label='OIB')
+    ax.text(oib_nb_yb*1.3, oib_th_yb*0.85, 'OIB', fontsize=8,
+            fontstyle='italic', color='#CC7733', fontproperties=_style.times_prop)
+
+    # ── 地壳混染端元：UCC (Rudnick & Gao 2003) ──
+    # Nb=12.0, Yb=2.2, Th=10.5 → Nb/Yb=5.45, Th/Yb=4.77, Th/Nb=0.875
+    ucc_nb_yb = 5.45
+    ucc_th_yb = 4.77
+    ax.scatter([ucc_nb_yb], [ucc_th_yb], marker='D', s=60,
+               color='#993333', edgecolors='#660000', zorder=7, label='UCC')
+    ax.text(ucc_nb_yb*0.7, ucc_th_yb*1.15, 'UCC', fontsize=8,
+            fontstyle='italic', color='#993333', fontproperties=_style.times_prop,
+            ha='center', va='bottom')
+
+    # ── 俯冲/地壳混染指示 ──
+    # 1:1 参考线（Th/Yb = Nb/Yb），用于视觉参考——明显高 Th 的样品显示混染/俯冲
+    ax.loglog([0.05, 80], [0.05, 80], color='#AAAAAA', lw=0.6, ls=':')
+
+    # 向上偏移指示箭头 + 文字
+    ax.annotate('', xy=(1.0, 12), xytext=(1.0, 1.5),
+                arrowprops=dict(arrowstyle='->', color='#993333', lw=1.8))
+    ax.text(1.2, 5.5, 'Volcanic arc\\nbasalts &\\ncrustally\\ncontaminated\\nbasalts',
+            fontsize=7.5, ha='left', va='center',
+            fontstyle='italic', color='#993333', fontproperties=_style.times_prop)
+
+    # ── 投点 ──
     _style.scatter_samples(ax, nb_yb, th_yb, labels, groups=gd.groups)
     _style.add_legend(ax)
 
