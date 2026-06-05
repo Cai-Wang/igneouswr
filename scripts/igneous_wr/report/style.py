@@ -20,81 +20,28 @@ import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 
 
-# ── 注册表短名→长名映射（自动为文件名补编号前缀） ───
-_SHORT_TO_LONG = {
-    # CLS
-    'TAS.png':                                'CLS-01_TAS.png',
-    'Middlemost1985_K2O_SiO2.png':            'CLS-02_Middlemost1985_K2O_SiO2.png',
-    'AFM_IB1971.png':                         'CLS-03_AFM_IB1971.png',
-    'Shand_ACNK_ANK.png':                     'CLS-04_Shand_ACNK_ANK.png',
-    'Winchester_Floyd1977_NbY_ZrTiO2.png':    'CLS-05_Winchester_Floyd1977_NbY_ZrTiO2.png',
-    'Co_Th_Hastie2007.png':                   'CLS-06_Co_Th_Hastie2007.png',
-    'An_Ab_Or_OConnor1965.png':               'CLS-07_An_Ab_Or_OConnor1965.png',
-    'QAPF_Streckeisen1976.png':               'CLS-08_QAPF_Streckeisen1976.png',
-    'Cabanis1986_LaY_Nb_ternary.png':         'CLS-09_Cabanis1986_LaY_Nb_ternary.png',
-    'Mullen1983_TiO2_MnO_P2O5.png':           'CLS-10_Mullen1983_TiO2_MnO_P2O5.png',
-    'Jensen1976_cation_ternary.png':          'CLS-11_Jensen1976_cation_ternary.png',
-    'OConnor_Volc_An_Ab_Or.png':              'CLS-12_OConnor_Volc_An_Ab_Or.png',
-    'TAS_Middlemost1994_Plutonic.png':        'CLS-13_TAS_Middlemost1994_Plutonic.png',
-    'TAS_Middlemost1994_Volcanic.png':        'CLS-14_TAS_Middlemost1994_Volcanic.png',
-    'TAS_Cox1979_Plutonic.png':               'CLS-15_TAS_Cox1979_Plutonic.png',
-    'TAS_Cox1979_Volcanic.png':               'CLS-16_TAS_Cox1979_Volcanic.png',
-    'Frost2001_Fenum_SiO2.png':               'CLS-17_Frost2001_Fenum_SiO2.png',
-    'Whalen1987_GaAl_Zr.png':                 'CLS-18_Whalen1987_GaAl_Zr.png',
-    'Whalen1987_GaAl_Nb.png':                 'CLS-19_Whalen1987_GaAl_Nb.png',
-    'Whalen1987_GaAl_CeYZr.png':              'CLS-20_Whalen1987_GaAl_CeYZr.png',
-    'Villaseca1998_ASI_FMM.png':              'CLS-21_Villaseca1998_ASI_FMM.png',
-    'Debon1983_BA_diagram.png':               'CLS-22_Debon1983_BA_diagram.png',
-    'Debon1983_PQ_diagram.png':               'CLS-23_Debon1983_PQ_diagram.png',
-    'LaRoche1980_R1_R2_plutonic.png':         'CLS-26_LaRoche1980_R1_R2_plutonic.png',
-    'LaRoche1980_R1_R2_volcanic.png':         'CLS-27_LaRoche1980_R1_R2_volcanic.png',
-    'Middlemost1991_Plutonic.png':            'CLS-28_Middlemost1991_Plutonic.png',
-    'Pearce1996_NbY_ZrTi.png':                'CLS-29_Pearce1996_NbY_ZrTi.png',
-    # SRC
-    'REE_chondrite.png':                      'SRC-01_REE_chondrite.png',
-    'Spider_PM.png':                          'SRC-02_Spider_PM.png',
-    'Pearce2008_ThYb_NbYb.png':              'SRC-03_Pearce2008_ThYb_NbYb.png',
-    'UTh_ZrNb_Stern2006.png':                 'SRC-04_UTh_ZrNb_Stern2006.png',
-    'SmYb_LaSm_partial_melting.png':          'SRC-05_SmYb_LaSm_partial_melting.png',
-    'Sc_V_HickeyVargas2018.png':              'SRC-06_Sc_V_HickeyVargas2018.png',
-    'BaTh_LaSm_PearceRobinson2010.png':       'SRC-07_BaTh_LaSm_PearceRobinson2010.png',
-    'GdYb_DyDystar_Davidson2013.png':          'SRC-08_GdYb_DyDystar_Davidson2013.png',
-    'DyYb_LaYb_garnet_depth.png':              'SRC-09_DyYb_LaYb_garnet_depth.png',
-    'Ohta_Arai2007_MFW.png':                  'SRC-10_Ohta_Arai2007_MFW.png',
-    'Pearce1995_NbYb_ThYb.png':               'SRC-11_Pearce1995_NbYb_ThYb.png',
-    'Pearce1995_TiYb_NbYb.png':               'SRC-12_Pearce1995_TiYb_NbYb.png',
-    'Sylvester1989_CaONa2O_Al2O3.png':        'SRC-13_Sylvester1989_CaONa2O_Al2O3.png',
-    'LaYb_vs_Yb.png':                          'SRC-14_LaYb_vs_Yb.png',
-    'Ross2009_LaSm_LaYb.png':                  'SRC-15_Ross2009_LaSm_LaYb.png',
-    # EVO
-    'Harker_6panel.png':                       'EVO-01_Harker_6panel.png',
-    'Miyashiro1974_FeOtMgO_SiO2.png':          'EVO-02_Miyashiro1974_FeOtMgO_SiO2.png',
-    'MgNo_vs_SiO2.png':                        'EVO-03_MgNo_vs_SiO2.png',
-    'Zr_covariance.png':                       'EVO-04_Zr_covariance.png',
-    'Hollocher2012_VSc.png':                   'EVO-05_Hollocher2012_VSc.png',
-    'Hollocher2012_VSc_ZrCe.png':              'EVO-06_Hollocher2012_VSc_ZrCe.png',
-    # TEC
-    'Meschede1986_ternary.png':                'TEC-01_Meschede1986_ternary.png',
-    'Wood1980_Hf3_Th_Ta.png':                  'TEC-02_Wood1980_Hf3_Th_Ta.png',
-    'PearceCann1973_TiZrY.png':                'TEC-03_PearceCann1973_TiZrY.png',
-    'V_Ti_Sc_ThNb_BaTh_4panel.png':            'TEC-04_V_Ti_Sc_ThNb_BaTh_4panel.png',
-    'Shervais1982_Ti_V.png':                   'TEC-05_Shervais1982_Ti_V.png',
-    'ThYb_TaYb_Pearce1983.png':                'TEC-06_ThYb_TaYb_Pearce1983.png',
-    'NbN_ThN_Saccani2015.png':                 'TEC-07_NbN_ThN_Saccani2015.png',
-    'ZrY_Zr_Xia2014.png':                      'TEC-08_ZrY_Zr_Xia2014.png',
-    'NbLa_ThLa_Cabanis1986.png':               'TEC-09_NbLa_ThLa_Cabanis1986.png',
-    'Pearce1977_FeOt_MgO_Al2O3.png':           'TEC-10_Pearce1977_FeOt_MgO_Al2O3.png',
-    'Harris1986_Rb30_Hf_3Ta.png':              'TEC-11_Harris1986_Rb30_Hf_3Ta.png',
-    'Muller2000_Kternary.png':                 'TEC-12_Muller2000_Kternary.png',
-    'Pearce_Norry1979_ZrY_Zr.png':             'TEC-13_Pearce_Norry1979_ZrY_Zr.png',
-    'Pearce1982_ZrY_Zr.png':                   'TEC-14_Pearce1982_ZrY_Zr.png',
-    'Pearce1984_Granite_Rb_YNb.png':           'TEC-15_Pearce1984_Granite_Rb_YNb.png',
-    'Schandl2004_Y_Zr.png':                    'TEC-16_Schandl2004_Y_Zr.png',
-    'Batchelor1985_R1_R2.png':                 'TEC-17_Batchelor1985_R1_R2.png',
-    'Maniar1989_Granite_disc.png':             'TEC-18_Maniar1989_Granite_disc.png',
-    'Agrawal2004_DF1_DF2.png':                 'TEC-19_Agrawal2004_DF1_DF2.png',
-    'Verma_discriminant_DF1_DF2.png':          'TEC-20_Verma_discriminant_DF1_DF2.png',
-}
+# ── 注册表短名→长名映射（由 _build_short_to_long_index() 自动从 registry 构建） ───
+# 这不是硬编码表。每次首次调用 save_fig 时从 DIAGRAM_REGISTRY 自动生成。
+# 避免 _SHORT_TO_LONG 与 FILENAME_MAP 双源不同步问题。
+_SHORT_TO_LONG = None  # lazy init
+
+def _build_short_to_long_index():
+    """从 DIAGRAM_REGISTRY 构建短名→长名映射。"""
+    from igneous_wr.diagrams.registry import DIAGRAM_REGISTRY
+    index = {}
+    for d in DIAGRAM_REGISTRY:
+        # d.filename 如 'CLS-01_TAS.png' → 短名 'TAS.png'
+        short = d.filename.split('_', 1)[1] if '_' in d.filename else d.filename
+        index[short] = d.filename
+    return index
+
+
+def _get_long_name(short_name):
+    """由 DIAGRAM_REGISTRY 自动反查长名。找不到则返回原文件名。"""
+    global _SHORT_TO_LONG
+    if _SHORT_TO_LONG is None:
+        _SHORT_TO_LONG = _build_short_to_long_index()
+    return _SHORT_TO_LONG.get(short_name, short_name)
 
 
 # ── Times New Roman 字体查找 ───────────────────────────────
@@ -568,7 +515,7 @@ def save_fig(fig, filename, out_dir=None, dpi=600):
     out = out_dir or _OUT_DIR or DEFAULT_OUT_DIR
     os.makedirs(out, exist_ok=True)
     # 自动补注册表编号前缀：短名 → 长名（如 TAS.png → CLS-01_TAS.png）
-    long_name = _SHORT_TO_LONG.get(filename, filename)
+    long_name = _get_long_name(filename)
     path = os.path.join(out, long_name)
 
     # ── 自动加引用 imprint ────────────────────────────
@@ -638,42 +585,22 @@ def generate_report_html(success, skipped, gd=None, out_dir=None, rock_type=None
     n_samples = len(getattr(gd, 'labels', [])) if gd else 0
     rock_label = rock_type or ('自动判定' if gd else '未知')
 
-    # 图件名称 → 方向映射（与 DIAGRAM_REGISTRY 注释对齐）
-    DIRECTION_MAP = {
-        # 📋 分类
-        'plot_tas': '岩石系列 / 分类',
-        'plot_k2o_sio2': '岩石系列 / 分类',
-        'plot_afm': '岩石系列 / 分类',
-        'plot_shand': '岩石系列 / 分类',
-        'plot_winchester_floyd': '岩石系列 / 分类',
-        'plot_co_th': '岩石系列 / 分类',
-        'plot_an_ab_or': '岩石系列 / 分类',
-        'plot_qapf': '岩石系列 / 分类',
-        # 🔬 源区
-        'plot_ree': '源区性质',
-        'plot_spider': '源区性质',
-        'plot_pearce_2008': '源区性质',
-        'plot_u_th_zr_nb': '源区性质',
-        'plot_pearce_1983': '源区性质',
-        'plot_sm_yb_la_sm': '源区性质',
-        'plot_sc_v': '源区性质',
-        'plot_ba_th_la_sm': '源区性质',
-        'plot_gdyb_dydystar': '源区性质',
-        'plot_dyyb_layb': '源区性质',
-        # 🧬 演化
-        'plot_harker': '岩浆演化过程',
-        'plot_miyashiro': '岩浆演化过程',
-        'plot_mgno': '岩浆演化过程',
-        'plot_zr_covariance': '岩浆演化过程',
-        # 🌍 构造
-        'plot_meschede': '构造环境判别',
-        'plot_wood': '构造环境判别',
-        'plot_pearce_cann': '构造环境判别',
-        'plot_4panel': '构造环境判别',
-        'plot_shervais': '构造环境判别',
-        'plot_saccani_2015': '构造环境判别',
-        'plot_zr_y_zr': '构造环境判别',
-    }
+    # 方向前缀映射（从 DIAGRAM_REGISTRY 自动推断）
+    def _get_direction(fn_name):
+        """从注册表反查图件方向。"""
+        from igneous_wr.diagrams.registry import DIAGRAM_REGISTRY
+        prefixes = {
+            'CLS': '岩石系列 / 分类',
+            'SRC': '源区性质',
+            'EVO': '岩浆演化过程',
+            'TEC': '构造环境判别',
+        }
+        for d in DIAGRAM_REGISTRY:
+            if d.fn.__name__ == fn_name and d.filename:
+                prefix = d.filename.split('-')[0]
+                return prefixes.get(prefix, '其他')
+        # fallback: 从长名前缀猜
+        return '其他'
 
     # 按方向分组
     sections = {
@@ -683,7 +610,7 @@ def generate_report_html(success, skipped, gd=None, out_dir=None, rock_type=None
         '构造环境判别': [],
     }
     for fn_name, fname in success:
-        sec = DIRECTION_MAP.get(fn_name, '其他')
+        sec = _get_direction(fn_name)
         if sec not in sections:
             sections[sec] = []
         sections[sec].append((fn_name, fname))

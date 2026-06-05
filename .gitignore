@@ -17,5 +17,12 @@ geochem_output/
 # Git
 .git/
 
+# Backup
+*.bak
+*.json.bak
+
+# Dev notes (internal development records, not for open-source)
+references/dev-notes/
+
 # Temp
 /tmp/
