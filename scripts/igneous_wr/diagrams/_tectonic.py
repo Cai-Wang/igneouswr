@@ -331,20 +331,9 @@ def plot_4panel(gd, out_dir=None, save=True):
 # ────────────────────────────────────────────────────────────
 
 def plot_shervais(gd, out_dir=None, save=True):
-    """
-    Ti vs V 构造判别图（Shervais, 1982）🔥基性岩
-
-    用 Ti/V 比值区分弧/ MORB / OIB 玄武岩。
-    Ti 从微量 ppm 列直接读取，不需转换。
-    V 是对氧化还原敏感的元素，Ti 是不活动元素。
-
-    底图按 Shervais (1982) 原始线性坐标（改自 GCDkit 版）：
-      X 轴: Ti/1000 (范围 0~25)
-      Y 轴: V (ppm) (范围 0~600)
-      Ti/V 比射线: 10(虚线), 20(虚线), 50(实线), 100(虚线)
-
+    """Ti vs V 构造判别图（Shervais, 1982）🔥基性岩
+    底图数据来自 boundaries/tec/shervais.json
     分区: ARC (Ti/V < 20), OFB (Ti/V 20~50), WPB/OIB (Ti/V > 50)
-
     所需元素: Ti, V
     """
     missing = gd.check_elements('Ti', 'V', strict=True)
@@ -356,55 +345,31 @@ def plot_shervais(gd, out_dir=None, save=True):
         return None, None
     labels = gd.labels
 
-    # Shervais (1982) 横轴为 Ti/1000，原始 Ti(ppm) 要除以 1000
     ti_1000 = ti_arr / 1000.0
-
-    # ── 版面设置 ──
     fig, ax = plt.subplots(figsize=(9, 7))
 
-    # ── Ti/V 比值射线 ──
-    # Shervais (1982) Figure 2 四根 Ti/V 比射线，从原点出发
-    # 在 Ti/1000 (x) vs V (y) 坐标系下，V = (Ti/1000 * 1000) / ratio
-    # Ti/V = 10 -> y = 100*x  (虚线)
-    # Ti/V = 20 -> y =  50*x  (虚线)
-    # Ti/V = 50 -> y =  20*x  (实线)
-    # Ti/V = 100 -> y = 10*x  (虚线)
-    _xt = np.array([0.0, 25.0])
-    ax.plot(_xt, 100.0 * _xt, 'k--', lw=0.8, zorder=3)
-    ax.plot(_xt, 50.0 * _xt,  'k--', lw=0.8, zorder=3)
-    ax.plot(_xt, 20.0 * _xt,  'k-',  lw=1.0, zorder=3)
-    ax.plot(_xt, 10.0 * _xt,  'k--', lw=0.8, zorder=3)
+    # ── 加载边界数据 ──
+    bd = load_boundary('tec', 'shervais')
+    ax.set_xlim(bd['axes']['xlim']); ax.set_ylim(bd['axes']['ylim'])
 
-    # ── Ti/V 比标注 ──
-    ax.text(2.0,  265,  'Ti/V=10', fontsize=7.5, ha='center', va='center',
-            color='#333', fontstyle='italic')
-    ax.text(4.5,  270,  'Ti/V=20', fontsize=7.5, ha='center', va='center',
-            color='#333', fontstyle='italic')
-    ax.text(12.0, 275,  'Ti/V=50', fontsize=7.5, ha='center', va='center',
-            color='#333', fontstyle='italic')
-    ax.text(21.0, 285,  'Ti/V=100', fontsize=7.5, ha='center', va='center',
-            color='#333', fontstyle='italic')
+    _xt = np.array([0.0, bd['axes']['xlim'][1]])
+    for ray in bd.get('rays', []):
+        ax.plot(_xt, ray['slope'] * _xt, ray['ls'], color=ray['color'],
+                lw=ray['lw'], zorder=3)
+    for rl in bd.get('ray_labels', []):
+        ax.text(rl['x'], rl['y'], rl['text'],
+                fontsize=rl.get('fontsize', 7.5), ha=rl.get('ha', 'center'),
+                va=rl.get('va', 'center'), color=rl['color'],
+                fontstyle=rl.get('fontstyle', 'italic'))
+    for rgl in bd.get('region_labels', []):
+        ax.text(rgl['x'], rgl['y'], rgl['text'],
+                fontsize=rgl.get('fontsize', 11), ha=rgl.get('ha', 'center'),
+                va=rgl.get('va', 'center'), fontweight=rgl.get('fontweight', 'bold'),
+                color=rgl['color'], zorder=5)
 
-    # ── 构造环境标签 ──
-    ax.text(4.0,  560,  'ARC', fontsize=11, ha='center', va='center',
-            fontweight='bold', color='#2979FF', zorder=5)
-    ax.text(15.0, 560,  'OFB', fontsize=11, ha='center', va='center',
-            fontweight='bold', color='#558B2F', zorder=5)
-    ax.text(12.0, 80,   'WPB', fontsize=11, ha='center', va='center',
-            fontweight='bold', color='#E65100', zorder=5)
-
-    # ── 数据投点 ──
     _style.scatter_samples(ax, ti_1000, v_arr, labels, groups=gd.groups)
     _style.add_legend(ax)
-
-    # ── 坐标轴（线性，非 log）──
-    ax.set_xlabel('Ti/1000', fontsize=12)
-    ax.set_ylabel('V (ppm)', fontsize=12)
-    ax.set_xlim(0.0, 25.0)
-    ax.set_ylim(0.0, 600.0)
-    ax.set_xticks(range(0, 26, 5))
-    ax.set_yticks(range(0, 601, 100))
-    _style.style_ax(ax, 'Ti/1000', 'V (ppm)')
+    _style.style_ax(ax, bd['axes']['xlabel'], bd['axes']['ylabel'])
 
     # ── 文献引用 ──
     ax.text(0.5, -0.10, 'After Shervais (1982)', fontsize=8,

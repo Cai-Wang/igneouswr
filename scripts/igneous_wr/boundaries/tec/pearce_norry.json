@@ -1,0 +1,64 @@
+{
+  "_meta": {
+    "name": "Pearce & Norry (1979) Zr/Y vs Zr 构造判别图",
+    "type": "XY_annotations",
+    "unit": "Zr (ppm), Zr/Y (log-log)",
+    "source": "Pearce & Norry (1979) Fig. 2"
+  },
+  "axes": {
+    "xlim": [5, 2000],
+    "ylim": [0.5, 50],
+    "xscale": "log",
+    "xlabel": "Zr (ppm)",
+    "ylabel": "Zr/Y"
+  },
+  "reference_lines": [
+    {
+      "type": "hline",
+      "y": 3,
+      "color": "k",
+      "ls": "--",
+      "lw": 0.8
+    },
+    {
+      "type": "hline",
+      "y": 7,
+      "color": "k",
+      "ls": "--",
+      "lw": 0.8
+    },
+    {
+      "type": "vline",
+      "x": 150,
+      "color": "k",
+      "ls": ":",
+      "lw": 0.8
+    }
+  ],
+  "region_labels": [
+    {
+      "text": "WPB",
+      "x": 10,
+      "y": 9,
+      "fontsize": 10,
+      "ha": "left",
+      "style": "italic"
+    },
+    {
+      "text": "MORB",
+      "x": 10,
+      "y": 5,
+      "fontsize": 10,
+      "ha": "left",
+      "style": "italic"
+    },
+    {
+      "text": "IAB",
+      "x": 10,
+      "y": 1.5,
+      "fontsize": 10,
+      "ha": "left",
+      "style": "italic"
+    }
+  ]
+}

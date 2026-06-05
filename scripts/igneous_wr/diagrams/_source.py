@@ -119,20 +119,8 @@ def plot_spider(gd, out_dir=None, save=True):
 # ────────────────────────────────────────────────────────────
 
 def plot_pearce_2008(gd, out_dir=None, save=True):
-    """
-    Th/Yb vs Nb/Yb 源区判别图（Pearce, 2008）🔥基性岩
-
-    核心原理：Th-Nb 地壳输入替代指标。
-    - 大洋玄武岩（MORB、OIB、大洋高原）几乎全部落于 MORB-OIB 阵列内
-    - 受地壳混染或俯冲影响的样品会偏离阵列向上（高 Th/Yb）
-    - N-MORB/E-MORB/OIB 三个参考点标记典型大洋端元
-    - 火山弧及地壳混染玄武岩位于阵列上方
-
-    底图参数来自 GCDkit 6.3.0 Diaries/Geotectonic/PearceNbThYb.r
-    N-MORB, E-MORB, OIB 来自 Sun & McDonough 1989 (GCDkit reservoirs.data)
-
-    关键参考：Pearce (2008) Lithos Fig. 2a; Pearce (2014) Elements Fig. 5a
-
+    """Th/Yb vs Nb/Yb 源区判别图（Pearce, 2008）🔥基性岩
+    底图数据来自 boundaries/src/pearce_2008.json
     所需元素: Th, Nb, Yb
     """
     missing = gd.check_elements('Th', 'Nb', 'Yb', strict=True)
@@ -149,74 +137,53 @@ def plot_pearce_2008(gd, out_dir=None, save=True):
 
     fig, ax = plt.subplots(figsize=(8, 7))
 
-    # ── 坐标范围 (from GCDkit) ──
-    xlim = (0.1, 100)
-    ylim = (0.01, 10)
+    # ── 加载边界数据 ──
+    bd = load_boundary('src', 'pearce_2008')
+    ax.set_xlim(bd['axes']['xlim'])
+    ax.set_ylim(bd['axes']['ylim'])
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    ax.set_xticks(bd['axes']['xticks'])
+    ax.set_xticklabels(['0.1', '1', '10', '100'])
+    ax.set_yticks(bd['axes']['yticks'])
+    ax.set_yticklabels(['0.01', '0.1', '1', '10'])
 
-    # ── MORB-OIB 阵列（来自 GCDkit PearceNbThYb.r）──
-    # 斜率: b = (log10(10)-log10(1.2)) / (log10(0.8)-log10(0.1))
-    b = (np.log10(10) - np.log10(1.2)) / (np.log10(0.8) - np.log10(0.1))
-    # 截距(log空间): a = log10(10) - b * log10(0.8)
-    a_intercept = np.log10(10) - b * np.log10(0.8)
-    # y = 10^a * x^b
-    x_line = np.logspace(np.log10(0.1), np.log10(100), 500)
-    y_line = 10 ** a_intercept * (x_line ** b)
+    # ── 背景多边形 ──
+    for p in bd.get('polygon_fills', []):
+        ax.fill(p['fill_x'], p['fill_y'],
+                color=p['color'], alpha=p['alpha'], zorder=p.get('zorder', 1))
 
-    # 背景多边形 (from GCDkit polygon1)
-    fill_x = [0.1, 0.3, 100, 100, 80, 0.1]
-    fill_y = [0.01, 0.01, 4.8, 10, 10, 0.01]
-    ax.fill(fill_x, fill_y, color='#B0D4F1', alpha=0.35, zorder=1)
+    # ── MORB-OIB 阵列线 ──
+    arr = bd['line_annotations'][0]
+    f = arr['formula']
+    x_line = np.logspace(np.log10(arr['x_range'][0]), np.log10(arr['x_range'][1]), 500)
+    y_line = 10 ** f['a_intercept'] * (x_line ** f['b'])
+    ax.plot(x_line, y_line, arr['line_style'], color=arr['color'],
+            linewidth=arr['linewidth'], zorder=arr.get('zorder', 3))
 
-    # MORB-OIB 阵列虚线
-    ax.plot(x_line, y_line, '--', color='gray', linewidth=1.5, zorder=3)
+    # ── 文字标注 ──
+    for ann in bd.get('annotations', []):
+        ax.text(ann['x'], ann['y'], ann['text'],
+                fontsize=ann.get('fontsize', 10), color=ann.get('color', 'gray'),
+                rotation=ann.get('rotation', 0), ha=ann.get('ha', 'left'),
+                va=ann.get('va', 'bottom'), rotation_mode='anchor', zorder=5)
 
-    # ── 标签 ──
-    ax.text(0.15, 1, 'Volcanic arc array', fontsize=10, color='gray',
-            rotation=42, ha='left', va='bottom', rotation_mode='anchor', zorder=5)
-    ax.text(7, 0.5, 'MORB-OIB array', fontsize=10, color='gray',
-            rotation=42, ha='left', va='bottom', rotation_mode='anchor', zorder=5)
-
-    # ── 参考点（Sun & McDonough 1989，ppm 原始值来自 GCDkit reservoirs.data）──
-    # N-MORB: Nb=2.33, Th=0.12, Yb=3.05 → Nb/Yb=0.764, Th/Yb=0.0393
-    # E-MORB: Nb=8.3,  Th=0.6,  Yb=2.37 → Nb/Yb=3.502, Th/Yb=0.2532
-    # OIB:    Nb=48,   Th=4,    Yb=2.16 → Nb/Yb=22.222, Th/Yb=1.852
-
-    reservoirs = {
-        'N-MORB':  {'nb_yb': 2.33 / 3.05,   'th_yb': 0.12 / 3.05,   'color': '#2196F3'},
-        'E-MORB':  {'nb_yb': 8.3  / 2.37,   'th_yb': 0.6  / 2.37,   'color': '#FF9800'},
-        'OIB':     {'nb_yb': 48   / 2.16,   'th_yb': 4    / 2.16,   'color': '#F44336'},
-    }
-
-    for name, v in reservoirs.items():
-        ax.scatter([v['nb_yb']], [v['th_yb']], marker='s', s=80,
-                   color=v['color'], edgecolors='black', linewidths=0.8,
-                   zorder=10)
-        offset_x, offset_y = 1.2, 1.2
-        if name == 'N-MORB':
-            offset_x, offset_y = 0.65, 1.35
-        ax.text(v['nb_yb'] * offset_x, v['th_yb'] * offset_y, name,
-                fontsize=9, fontweight='bold', color=v['color'],
+    # ── 参考点 ──
+    for rp in bd.get('reference_points', []):
+        ax.scatter([rp['x']], [rp['y']], marker=rp.get('marker', 's'), s=rp.get('size', 80),
+                   color=rp['color'], edgecolors='black', linewidths=0.8, zorder=10)
+        ox = rp.get('offset_x', 1.2); oy = rp.get('offset_y', 1.2)
+        ax.text(rp['x'] * ox, rp['y'] * oy, rp['name'],
+                fontsize=9, fontweight='bold', color=rp['color'],
                 va='bottom', ha='left', zorder=11)
 
     # ── 投点 ──
     _style.scatter_samples(ax, nb_yb, th_yb, labels, groups=gd.groups)
     _style.add_legend(ax)
 
-    # ── 坐标轴 ──
-    ax.set_xlim(xlim)
-    ax.set_ylim(ylim)
-    ax.set_xscale('log')
-    ax.set_yscale('log')
-
-    ax.set_xticks([0.1, 1, 10, 100])
-    ax.set_xticklabels(['0.1', '1', '10', '100'])
-    ax.set_yticks([0.01, 0.1, 1, 10])
-    ax.set_yticklabels(['0.01', '0.1', '1', '10'])
-
-    _style.style_ax(ax, 'Nb/Yb', 'Th/Yb')
-
-    # 去除网格线（源区图不要网格）
-    ax.grid(False)
+    _style.style_ax(ax, bd['axes']['xlabel'], bd['axes']['ylabel'])
+    if not bd.get('grid', True):
+        ax.grid(False)
 
     plt.tight_layout(pad=0.3)
     if save:

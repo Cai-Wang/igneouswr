@@ -117,14 +117,13 @@ def plot_harker(gd, out_dir=None, save=True, only_oxides=None, trendline=True):
 
 
 def plot_miyashiro(gd, out_dir=None, save=True):
-    """
-    Miyashiro (1974) FeOt/MgO vs SiO₂ 🔥火山岩
+    """Miyashiro (1974) FeOt/MgO vs SiO₂ 🔥火山岩
+    底图数据来自 boundaries/evo/miyashiro.json
     所需元素: SiO2, FeO, TFe2O3, MgO
     """
     missing = gd.check_elements('SiO2', 'MgO', strict=True)
     if missing:
         return None, None
-    # FeO/TFe2O3 至少其一即可
     feo_ok = not gd.check_elements('FeO')
     tfe2_ok = not gd.check_elements('TFe2O3')
     if not (feo_ok or tfe2_ok):
@@ -137,20 +136,31 @@ def plot_miyashiro(gd, out_dir=None, save=True):
     labels = gd.labels
 
     fig, ax = plt.subplots(figsize=(8, 6))
-    x_line = np.array([40, 80])
-    y_line = 0.1578 * x_line - 6.016
-    ax.plot(x_line, y_line, 'k-', lw=1.0)
-    ax.fill_between(x_line, y_line, 0, alpha=0.06, color='#1565C0')
-    ax.fill_between(x_line, y_line, 20, alpha=0.06, color='#D62728')
 
-    ax.text(50, 0.8, 'Calc-alkaline', fontsize=10, fontstyle='italic',
-            ha='center', va='center', color='#1565C0', fontproperties=_style.times_prop)
-    ax.text(65, 6.0, 'Tholeiitic', fontsize=10, fontstyle='italic',
-            ha='center', va='center', color='#D62728', fontproperties=_style.times_prop)
+    # ── 加载边界数据 ──
+    bd = load_boundary('evo', 'miyashiro')
+    for ln in bd.get('lines', []):
+        pts = ln['points']
+        ax.plot([pts[0][0], pts[1][0]], [pts[0][1], pts[1][1]],
+                ln['style'], color=ln['color'], lw=ln['linewidth'], zorder=ln.get('zorder', 3))
+    for fr in bd.get('fill_regions', []):
+        x_fill = np.array(fr['x'])
+        if fr.get('y_formula') == '0.1578*x-6.016':
+            y_fill = 0.1578 * x_fill - 6.016
+        else:
+            y_fill = np.array([fr.get('y_bottom', 0), fr.get('y_bottom', 0)])
+        y_bottom = fr.get('y_bottom', 0)
+        y_top = fr.get('y_top', 20)
+        ax.fill_between(x_fill, y_fill, y_bottom if 'y_bottom' in fr else y_top,
+                        alpha=fr['alpha'], color=fr['color'])
+    for ann in bd.get('annotations', []):
+        ax.text(ann['x'], ann['y'], ann['text'],
+                fontsize=ann.get('fontsize', 10), fontstyle=ann.get('fontstyle', 'italic'),
+                ha=ann.get('ha', 'center'), va=ann.get('va', 'center'),
+                color=ann['color'], fontproperties=_style.times_prop)
 
-    ax.set_xlim(38, 80); ax.set_ylim(0, 10)
-    _style.style_ax(ax, r'SiO$_2$ (wt.%)', 'FeOt/MgO')
-
+    ax.set_xlim(bd['axes']['xlim']); ax.set_ylim(bd['axes']['ylim'])
+    _style.style_ax(ax, bd['axes']['xlabel'], bd['axes']['ylabel'])
     _style.scatter_samples(ax, sio2, feot_mgo, labels, groups=gd.groups)
     _style.add_legend(ax)
 

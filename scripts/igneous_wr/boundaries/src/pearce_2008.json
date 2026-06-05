@@ -1,0 +1,103 @@
+{
+  "_meta": {
+    "name": "Pearce (2008) Th/Yb vs Nb/Yb 源区判别图",
+    "type": "XY_annotations",
+    "unit": "log-log, Nb/Yb vs Th/Yb",
+    "source": "GCDkit 6.3.0 Diaries/Geotectonic/PearceNbThYb.r; Pearce (2008) Lithos Fig. 2a"
+  },
+  "axes": {
+    "xlim": [0.1, 100],
+    "ylim": [0.01, 10],
+    "xscale": "log",
+    "yscale": "log",
+    "xticks": [0.1, 1, 10, 100],
+    "yticks": [0.01, 0.1, 1, 10],
+    "xlabel": "Nb/Yb",
+    "ylabel": "Th/Yb"
+  },
+  "line_annotations": [
+    {
+      "type": "array_line",
+      "name": "MORB-OIB array",
+      "style": "dashed",
+      "formula": {
+        "type": "power_log",
+        "a_intercept": 1.098812,
+        "b": 1.019631
+      },
+      "x_range": [0.1, 100],
+      "line_style": "--",
+      "color": "gray",
+      "linewidth": 1.5,
+      "zorder": 3
+    }
+  ],
+  "polygon_fills": [
+    {
+      "name": "background",
+      "fill_x": [0.1, 0.3, 100, 100, 80, 0.1],
+      "fill_y": [0.01, 0.01, 4.8, 10, 10, 0.01],
+      "color": "#B0D4F1",
+      "alpha": 0.35,
+      "zorder": 1
+    }
+  ],
+  "reference_points": [
+    {
+      "name": "N-MORB",
+      "x": 0.7639,
+      "y": 0.03934,
+      "label_scale": 1.0,
+      "offset_x": 0.65,
+      "offset_y": 1.35,
+      "color": "#2196F3",
+      "marker": "s",
+      "size": 80
+    },
+    {
+      "name": "E-MORB",
+      "x": 3.5021,
+      "y": 0.25316,
+      "label_scale": 1.2,
+      "offset_x": 1.2,
+      "offset_y": 1.2,
+      "color": "#FF9800",
+      "marker": "s",
+      "size": 80
+    },
+    {
+      "name": "OIB",
+      "x": 22.2222,
+      "y": 1.85185,
+      "label_scale": 1.2,
+      "offset_x": 1.2,
+      "offset_y": 1.2,
+      "color": "#F44336",
+      "marker": "s",
+      "size": 80
+    }
+  ],
+  "annotations": [
+    {
+      "text": "Volcanic arc array",
+      "x": 0.15,
+      "y": 1.0,
+      "fontsize": 10,
+      "color": "gray",
+      "rotation": 42,
+      "ha": "left",
+      "va": "bottom"
+    },
+    {
+      "text": "MORB-OIB array",
+      "x": 7.0,
+      "y": 0.5,
+      "fontsize": 10,
+      "color": "gray",
+      "rotation": 42,
+      "ha": "left",
+      "va": "bottom"
+    }
+  ],
+  "grid": false
+}

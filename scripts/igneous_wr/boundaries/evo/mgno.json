@@ -1,0 +1,76 @@
+{
+  "_meta": {
+    "name": "Mg# vs SiO2 演化图",
+    "type": "XY_annotations",
+    "unit": "SiO2 wt%, Mg# (molar)",
+    "source": "Roeder & Emslie (1970); Mg# = 100 x Mg/(Mg+Fe2+)",
+    "note": "Mg# = 50 是原始岩浆vs分异岩浆主判别线; SiO2 竖线是岩类划分参考"
+  },
+  "axes": {
+    "xlim": [38, 80],
+    "ylim": [0, 100],
+    "xlabel": "SiO$_2$ (wt.%)",
+    "ylabel": "Mg#"
+  },
+  "reference_lines": [
+    {
+      "type": "hline",
+      "y": 50,
+      "color": "#333333",
+      "ls": "--",
+      "lw": 1.5,
+      "label": "Mg# = 50"
+    },
+    {
+      "type": "vline",
+      "x": 45,
+      "color": "#aaaaaa",
+      "ls": ":",
+      "lw": 0.5
+    },
+    {
+      "type": "vline",
+      "x": 52,
+      "color": "#aaaaaa",
+      "ls": ":",
+      "lw": 0.5
+    },
+    {
+      "type": "vline",
+      "x": 57,
+      "color": "#aaaaaa",
+      "ls": ":",
+      "lw": 0.5
+    },
+    {
+      "type": "vline",
+      "x": 63,
+      "color": "#aaaaaa",
+      "ls": ":",
+      "lw": 0.5
+    }
+  ],
+  "fill_regions": [
+    {
+      "name": "分异岩浆区",
+      "y_bottom": 0,
+      "y_top": 50,
+      "x_left": 38,
+      "x_right": 80,
+      "color": "#e6e0d4",
+      "alpha": 0.15
+    }
+  ],
+  "annotations": [
+    {
+      "text": "Mg# = 50",
+      "x": 76,
+      "y": 52,
+      "fontsize": 9,
+      "ha": "right",
+      "va": "bottom",
+      "fontweight": "bold",
+      "color": "#333333"
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "_meta": {
+    "name": "Miyashiro (1974) FeOt/MgO vs SiO2 钙碱性-拉斑判别",
+    "type": "XY_annotations",
+    "unit": "SiO2 wt%, FeOt/MgO",
+    "source": "Miyashiro (1974) Fig. 1; line y=0.1578x-6.016"
+  },
+  "axes": {
+    "xlim": [38, 80],
+    "ylim": [0, 10],
+    "xlabel": "SiO$_2$ (wt.%)",
+    "ylabel": "FeOt/MgO"
+  },
+  "lines": [
+    {
+      "name": "TH/CA boundary",
+      "style": "-",
+      "points": [[40, 0.296], [80, 6.608]],
+      "color": "k",
+      "linewidth": 1.0,
+      "zorder": 3,
+      "formula": "y=0.1578*x-6.016"
+    }
+  ],
+  "fill_regions": [
+    {
+      "name": "Calc-alkaline",
+      "x": [40, 80],
+      "y_bottom": 0,
+      "y_formula": "0.1578*x-6.016",
+      "color": "#1565C0",
+      "alpha": 0.06
+    },
+    {
+      "name": "Tholeiitic",
+      "x": [40, 80],
+      "y_top": 20,
+      "y_formula": "0.1578*x-6.016",
+      "color": "#D62728",
+      "alpha": 0.06
+    }
+  ],
+  "annotations": [
+    {
+      "text": "Calc-alkaline",
+      "x": 50,
+      "y": 0.8,
+      "fontsize": 10,
+      "fontstyle": "italic",
+      "color": "#1565C0",
+      "ha": "center",
+      "va": "center"
+    },
+    {
+      "text": "Tholeiitic",
+      "x": 65,
+      "y": 6.0,
+      "fontsize": 10,
+      "fontstyle": "italic",
+      "color": "#D62728",
+      "ha": "center",
+      "va": "center"
+    }
+  ]
+}
