@@ -11,9 +11,9 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from scipy import stats
 
-import _style
-from _chem import feot_calc
-from _ternary import (
+import igneous_wr.report.style as _style
+from igneous_wr.core.chem import feot_calc
+from igneous_wr.core.ternary import (
     SQRT3_2, ternary_to_xy, ternary_corners,
     draw_ternary_frame, draw_ternary_grid,
     draw_ternary_ticks, label_ternary_vertices,
@@ -897,34 +897,35 @@ def plot_mullen(gd, out_dir=None, save=True):
     ax.plot(m2_xy[0], m2_xy[1], 'k--', lw=1.2, zorder=4)  # L3 虚线
     ax.plot(m3_xy[0], m3_xy[1], 'k--', lw=1.2, zorder=4)  # L4 虚线
 
-    # ── 区域标注 ──
-    lbl_oit = ternary_to_xy(np.array([15]), np.array([55]), np.array([30]))
+    # ── 区域标注（坐标来自 GCDkit Mullen.r 源码翻译） ──
+    # ternary_to_xy(a,b,c): a=顶角(TiO₂), b=左下(10×MnO), c=右下(10×P₂O₅)
+    lbl_oit = ternary_to_xy(np.array([57.7]), np.array([16.1]), np.array([26.1]))
     ax.text(lbl_oit[0][0], lbl_oit[1][0], 'OIT',
             fontsize=11, ha='center', va='center',
             color='#1b5e20', fontweight='bold', zorder=5)
 
-    lbl_iat = ternary_to_xy(np.array([50]), np.array([20]), np.array([30]))
+    lbl_iat = ternary_to_xy(np.array([34.6]), np.array([50.7]), np.array([14.7]))
     ax.text(lbl_iat[0][0], lbl_iat[1][0], 'IAT',
             fontsize=11, ha='center', va='center',
             color='#e65100', fontweight='bold', zorder=5)
 
-    lbl_morb = ternary_to_xy(np.array([18]), np.array([10]), np.array([72]))
+    lbl_morb = ternary_to_xy(np.array([46.2]), np.array([33.9]), np.array([19.9]))
     ax.text(lbl_morb[0][0], lbl_morb[1][0], 'MORB',
             fontsize=11, ha='center', va='center',
             color='#1565c0', fontweight='bold', zorder=5)
 
-    lbl_cab = ternary_to_xy(np.array([20]), np.array([18]), np.array([62]))
+    lbl_cab = ternary_to_xy(np.array([11.5]), np.array([49.2]), np.array([39.2]))
     ax.text(lbl_cab[0][0], lbl_cab[1][0], 'CAB',
             fontsize=11, ha='center', va='center',
             color='#c62828', fontweight='bold', zorder=5)
 
-    lbl_oia = ternary_to_xy(np.array([8]), np.array([42]), np.array([50]))
+    lbl_oia = ternary_to_xy(np.array([25.4]), np.array([10.3]), np.array([64.3]))
     ax.text(lbl_oia[0][0], lbl_oia[1][0], 'OIA',
             fontsize=11, ha='center', va='center',
             color='#6a1b9a', fontweight='bold', zorder=5)
 
-    lbl_bon = ternary_to_xy(np.array([10]), np.array([12]), np.array([78]))
-    ax.text(lbl_bon[0][0], lbl_bon[1][0], 'BON',
+    lbl_bon = ternary_to_xy(np.array([17.3]), np.array([71.3]), np.array([11.3]))
+    ax.text(lbl_bon[0][0], lbl_bon[1][0], 'Bon',
             fontsize=11, ha='center', va='center',
             color='#b71c1c', fontweight='bold', zorder=5)
 
@@ -1278,6 +1279,8 @@ def plot_pearce1977(gd, out_dir=None, save=True):
 
 def plot_tasmiddlemostplut(gd, out_dir=None, save=True):
     """TAS Plutonic (Middlemost 1994) — 深成岩全碱-硅分类图
+    多边形坐标源自 GCDkit 6.3.0 TASMiddlemostPlut.r 源码翻译
+    16 个主分类区，无叠加层
     所需元素: SiO2, Na2O, K2O
     """
     missing = gd.check_elements('SiO2', 'Na2O', 'K2O', strict=True)
@@ -1285,19 +1288,54 @@ def plot_tasmiddlemostplut(gd, out_dir=None, save=True):
         return None, None
     sio2 = gd.get('SiO2'); alk = gd.get('Na2O') + gd.get('K2O')
     labels = gd.labels
-    fig, ax = plt.subplots(figsize=(10, 7))
 
-    # Middlemost (1994) 深成岩系列分界线
-    # 平行的斜线群：石英二长岩/二长岩/二长闪长岩等之间的边界
-    xs = np.linspace(42, 80, 20)
-    ax.plot(xs, 0.07*xs - 1.8, 'k-', lw=0.8)   # 碱性/亚碱性分界
-    ax.plot([45, 95], [5, 5], 'k--', lw=0.8)     # 低碱/中碱
-    ax.plot([45, 95], [9.5, 17], 'k--', lw=0.8)  # 中碱/高碱
+    fig, ax = plt.subplots(figsize=(10, 7.5))
 
+    # 从 JSON 加载 Middlemost Plutonic 分类边界
+    _mm_data = load_boundary('cls', 'tas_middlemost_plut')
+    _MM_FIELDS = {k: [tuple(p) for p in v] for k, v in _mm_data['fields'].items()}
+    _MM_LABELS = _mm_data['labels']
+    _MM_FILLS = _mm_data['fills']
+
+    # 绘制 16 个主分类多边形（互斥填充）
+    for name, poly in _MM_FIELDS.items():
+        xs = [p[0] for p in poly]
+        ys = [p[1] for p in poly]
+        fc = _MM_FILLS.get(name, '#D8D8D8')
+        ax.fill(xs, ys, facecolor=fc, edgecolor='none',
+                alpha=0.35, zorder=1)
+
+    # 去重边绘制
+    segments = set()
+    for name, poly in _MM_FIELDS.items():
+        n = len(poly)
+        for i in range(n):
+            seg = tuple(sorted([poly[i], poly[(i+1) % n]]))
+            segments.add(seg)
+    for seg in segments:
+        ax.plot([seg[0][0], seg[1][0]], [seg[0][1], seg[1][1]],
+                'k-', lw=0.6, zorder=4)
+
+    # 分类标签
+    for name, poly in _MM_FIELDS.items():
+        cx = sum(p[0] for p in poly) / len(poly)
+        cy = sum(p[1] for p in poly) / len(poly)
+        label = _MM_LABELS.get(name, name)
+        ax.text(cx, cy, label, ha='center', va='center',
+                fontsize=6.5, fontweight='bold', color='#333333', zorder=6)
+
+    # 样品点
     _style.scatter_samples(ax, sio2, alk, labels, groups=gd.groups)
     _style.add_legend(ax)
-    ax.set_xlim(35, 82); ax.set_ylim(0, 18)
-    _style.style_ax(ax, r'SiO$_2$ (wt.%)', r'Na$_2$O+K$_2$O (wt.%)')
+
+    ax.set_xlim(35, 90); ax.set_ylim(0, 19)
+    # 手动设置刻度，避免 style_ax 的 dash bug
+    ax.set_xticks(range(35, 95, 5))
+    ax.set_yticks(range(0, 21, 3))
+    ax.set_xlabel(r'SiO$_2$ (wt.%)', fontsize=11)
+    ax.set_ylabel(r'Na$_2$O+K$_2$O (wt.%)', fontsize=11)
+    ax.minorticks_on()
+    ax.grid(True, which='major', alpha=0.15, lw=0.3)
     plt.tight_layout(pad=0.3)
     if save:
         _style.save_fig(fig, 'TAS_Middlemost1994_Plutonic.png', out_dir)
@@ -1829,8 +1867,8 @@ def plot_pearce1996(gd, out_dir=None, save=True):
 
     ax.set_xscale('log', base=10)
     ax.set_yscale('log', base=10)
-    ax.set_xlim(0.008, 120)
-    ax.set_ylim(0.0007, 3)
+    ax.set_xlim(0.01, 100)
+    ax.set_ylim(0.001, 2)
     ax.set_xticks([0.01, 0.1, 1, 10, 100])
     ax.set_yticks([0.001, 0.01, 0.1, 1])
     ax.set_xticklabels(['0.01', '0.1', '1', '10', '100'])
@@ -1868,26 +1906,29 @@ def plot_pearce1996(gd, out_dir=None, save=True):
     # ── 边界线 ──
     ax.plot(bx1, by1, 'k-', lw=2.0, zorder=4)
     ax.plot(bx2, by2, 'k-', lw=2.0, zorder=4)
-    ax.axvline(x=0.67, color='k', ls='--', lw=2.0, zorder=4)
-    ax.axvline(x=2.81, color='k', ls='--', lw=2.0, zorder=4)
+    # x=0.67 从底部到顶部斜线交点 (0.67,0.20) 截断
+    ax.plot([0.67, 0.67], [0.001, 0.20], 'k-', lw=2.0, zorder=4)
+    # x=2.81 从底部到 phonolite 边界交点 (2.81,0.99) 截断
+    ax.plot([2.81, 2.81], [0.001, 0.99], 'k-', lw=2.0, zorder=4)
     ax.plot(top_x, top_y, 'k-', lw=2.0, zorder=4)
 
     # ── 岩石类型标签 ──
+    # R 源码中 andesite/trachyandesite/tephriphonolite 带 17° 旋转 (srt=17)
     text_cfgs = [
-        ('basalt', 0.08, 0.003),
-        ('alkali\nbasalt', 1.5, 0.01),
-        ('foidite', 8, 0.01),
-        ('andesite\nbasaltic andesite', 0.1, 0.03),
-        ('trachy-\nandesite', 1.5, 0.06),
-        ('tephriphonolite', 10, 0.095),
-        ('rhyolite\ndacite', 0.1, 0.2),
-        ('trachyte', 1.5, 0.2),
-        ('phonolite', 10, 0.4),
-        ('alkali\nrhyolite', 0.8, 0.6),
+        ('basalt', 0.08, 0.003, 0),
+        ('alkali\\nbasalt', 1.5, 0.01, 0),
+        ('foidite', 8, 0.01, 0),
+        ('andesite\\nbasaltic andesite', 0.1, 0.03, 17),
+        ('trachy-\\nandesite', 1.5, 0.06, 17),
+        ('tephriphonolite', 10, 0.095, 17),
+        ('rhyolite\\ndacite', 0.1, 0.2, 0),
+        ('trachyte', 1.5, 0.2, 0),
+        ('phonolite', 10, 0.4, 0),
+        ('alkali\\nrhyolite', 0.8, 0.6, 0),
     ]
-    for txt, x, y in text_cfgs:
+    for txt, x, y, rot in text_cfgs:
         ax.text(x, y, txt, fontsize=10, ha='center', va='center',
-                style='italic', color='#444',
+                style='italic', color='#444', rotation=rot,
                 bbox=dict(boxstyle='round,pad=0.2', fc='white',
                           ec='none', alpha=0.7))
 

@@ -46,9 +46,74 @@ class GeochemData:
         if sample_filter:
             self._filter(sample_filter, strict=strict_filter)
         self._report_missing()
+        self._post_load_sanity_check()
+
+    def _detect_layout(self, ws):
+        """
+        检测 Excel 数据布局，返回 (mode, reason)。
+
+        mode='standard' → Row1=样品名，Col A=元素名
+        mode='transposed' → Row1=元素名，Col A=样品名
+        mode='wide' → Row1=元素名横铺(A1除外)，Col A=样品名(即你的标准宽表)
+
+        通过统计 Row1 和 Col A 两轴的 KNOWN_ELEMENTS 匹配数来判断，
+        而不是只靠单个格子。
+        """
+        KNOWN_SET = set(KNOWN_ELEMENTS)
+
+        # ── 统计 Row1（第1行第2列起）的元素列数 ──
+        row1_elem_count = 0
+        row1_sample_hint = False
+        for c in range(2, min(ws.max_column + 1, 81)):
+            v = str(ws.cell(1, c).value or '').strip()
+            if v in KNOWN_SET:
+                row1_elem_count += 1
+            elif v.lower() in ('sample', 'sample id', 'sample_id', 'id', 'name'):
+                row1_sample_hint = True
+
+        # ── 统计 Col A（第2行起）的元素名数量 ──
+        col_a_elem_count = 0
+        col_a_non_blank = 0
+        for r in range(2, min(ws.max_row + 1, 20)):
+            v = str(ws.cell(r, 1).value or '').strip()
+            if v:
+                col_a_non_blank += 1
+                if v in KNOWN_SET:
+                    col_a_elem_count += 1
+
+        # ── 判断 ──
+        # 情况 A: Row1 全是元素名（比如 B1=Al2O3, C1=Ba...），A1 通常是 "Sample" 或无意义
+        #         → 这是最常见的"宽表"格式：Row1=元素横铺，Col A=样品名
+        #         判断标准：Row1 元素列多，Col A 几乎没有元素名
+        if row1_elem_count >= 3 and col_a_elem_count == 0:
+            return 'wide', f"Row1 含 {row1_elem_count} 个元素，Col A 无元素"
+
+        # 情况 B: Row1 有样品名（A1=无关, B1=24TJ02-1...），Col A 有元素名
+        #         → 这是"标准转置"格式：Row1=样品横铺，Col A=元素名
+        if col_a_elem_count >= 3 and row1_elem_count == 0:
+            return 'standard', f"Col A 含 {col_a_elem_count} 个元素，Row1 无元素"
+
+        # 情况 C: 两者都有——Row1 有些元素也有些样品，或者都少
+        #         看 Row1 中元素占比 vs Col A 中元素占比
+        row1_total = min(ws.max_column - 1, 80)  # 检查的有效列
+        row1_ratio = row1_elem_count / max(row1_total, 1)
+        col_a_ratio = col_a_elem_count / max(col_a_non_blank, 1)
+
+        if col_a_ratio > row1_ratio and col_a_elem_count >= row1_elem_count:
+            return 'standard', f"Col A 元素占比 {col_a_ratio:.0%} > Row1 {row1_ratio:.0%}"
+        elif row1_ratio >= col_a_ratio and row1_elem_count >= 3:
+            return 'wide', f"Row1 元素占比 {row1_ratio:.0%} >= Col A {col_a_ratio:.0%}"
+        elif row1_sample_hint and row1_elem_count >= 3:
+            return 'wide', f"A1 有 Sample 标记 + Row1 含 {row1_elem_count} 个元素"
+
+        # 情况 D: 都很少，fallback 到老逻辑——看 B1
+        if row1_elem_count >= 1:
+            return 'transposed', f"fallback: Row1 含 {row1_elem_count} 个元素"
+        return 'standard', f"fallback: 默认标准格式"
 
     def _load(self, sheet):
         wb = openpyxl.load_workbook(self.path, data_only=True)
+        self._raw_max_row = None  # 留给事后校验用
 
         if sheet and sheet in wb.sheetnames:
             ws = wb[sheet]
@@ -61,28 +126,23 @@ class GeochemData:
                 ws = wb[wb.sheetnames[0]]
                 print(f"[IgneousWR] 使用工作表: {ws.title}")
 
-        r1_c2 = ws.cell(1, 2).value
-        r2_c1 = ws.cell(2, 1).value
+        self._raw_max_row = ws.max_row
+        self._raw_max_col = ws.max_column
 
-        transposed = False
-        if r1_c2 is not None and str(r1_c2).strip() in KNOWN_ELEMENTS:
-            transposed = True
-        elif r2_c1 is not None and str(r2_c1).strip() in KNOWN_ELEMENTS:
-            transposed = False
-        else:
-            transposed = any(
-                str(ws.cell(1, c).value or '').strip() in KNOWN_ELEMENTS
-                for c in range(2, min(ws.max_column + 1, 20))
-            )
+        mode, reason = self._detect_layout(ws)
+        self._detected_mode = mode
+        print(f"[IgneousWR] 布局检测: {mode} ({reason})")
 
-        if transposed:
+        if mode == 'wide':
+            self._load_wide(ws)
+        elif mode == 'transposed':
             self._load_transposed(ws)
         else:
             self._load_standard(ws)
 
     def _load_standard(self, ws):
         """标准格式：Row 1=样品名，Col A=元素名"""
-        from _normalize import REE_ORDER
+        from igneous_wr.core.normalize import REE_ORDER
         KNOWN_ELEMENTS_SET = set(KNOWN_ELEMENTS)
 
         sample_cols = []
@@ -136,8 +196,103 @@ class GeochemData:
         print(f"[IgneousWR] 标准格式，{len(self.all_labels)} 样品，{len(self._elem_data)} 元素"
               f"{' (含 Lithology)' if self._lithology else ''}")
 
+    def _load_wide(self, ws):
+        """宽表格式：Row 1=元素名横铺(A1=Sample或类似标记)，Col A=样品名
+
+        这是最常见的地球化学Excel表格布局：
+          A1=Sample   B1=Al2O3   C1=Ba   D1=CaO ...
+          A2=24TJ02-1 B2=8.119   C2=56.2 ...
+          A3=24TJ02-2 ...
+        """
+        KNOWN_SET = set(KNOWN_ELEMENTS)
+
+        # 找元素列——Row1 中匹配 KNOWN_ELEMENTS 的列
+        elem_cols = {}
+        for c in range(2, ws.max_column + 1):
+            v = str(ws.cell(1, c).value or '').strip()
+            if v in KNOWN_SET:
+                elem_cols[v] = c
+
+        if not elem_cols:
+            print("[IgneousWR] ⚠️ 宽表格式未在 Row1 找到元素列，回退到 transposed")
+            self._load_transposed(ws)
+            return
+
+        # 读样品——Col A 从第2行起
+        sample_names = []
+        elem_data = {}
+        for r in range(2, ws.max_row + 1):
+            label = str(ws.cell(r, 1).value or '').strip()
+            if not label:
+                continue
+            # 跳过标准样和 RE 参考位置的标记
+            if label.upper().startswith(('BCR', 'BHVO', 'AGV', 'GSP', 'G-2', 'JB-', 'JA-',
+                                          'JG-', 'JP-', 'JR-', 'GSB', 'NIST', 'SRM', 'SY-',
+                                          'MRG', 'PCC', 'DTS', 'W-2', 'DNC', 'BIR', 'UB-N',
+                                          'ACE', 'SARM', 'IMA', 'SDC', 'DL-', 'GSR', 'GSS')):
+                continue
+            sample_names.append(label)
+            for elem, col in elem_cols.items():
+                canon = ELEM_ALIAS.get(elem, elem)
+                val = parse_value(ws.cell(r, col).value, self.dl_strategy)
+                if canon not in elem_data:
+                    elem_data[canon] = []
+                elem_data[canon].append(val)
+
+        self.all_labels = sample_names
+        self._elem_data = {}
+        for k in elem_data:
+            self._elem_data[k] = np.array(elem_data[k])
+        self._lithology = None
+
+        print(f"[IgneousWR] 宽表格式，{len(self.all_labels)} 样品，{len(self._elem_data)} 元素")
+
+    def _post_load_sanity_check(self):
+        """加载完成后的一致性检查"""
+        issues = []
+
+        # 检查样品数是否合理（和文件的物理行数对比）
+        # 只在 wide 模式下做：因为 wide 每行 = 一个样品
+        if self._raw_max_row and self._detected_mode == 'wide':
+            file_data_rows = self._raw_max_row - 1  # 去掉表头
+            loaded = len(self.all_labels)
+            if loaded < file_data_rows * 0.6:
+                issues.append(
+                    f"样品数异常：文件有 ~{file_data_rows} 行数据，只读到了 {loaded} 个样品。"
+                    f"数据读取可能不完整。"
+                )
+
+        # 检查缺失的关键元素
+        core_elements = ['SiO2', 'Al2O3', 'CaO', 'MgO', 'Na2O', 'K2O', 'FeO', 'TiO2']
+        missing_core = [e for e in core_elements if e not in self._elem_data
+                        and e not in self._elem_data.get(ELEM_ALIAS.get(e, e), {})]
+        # 实际上用 get 检查
+        missing_actual = []
+        for e in core_elements:
+            canon = ELEM_ALIAS.get(e, e)
+            # 检查任何别名
+            found = False
+            for key in self._elem_data:
+                if key == e or key == canon:
+                    found = True
+                    break
+                if ELEM_ALIAS.get(key, key) == canon:
+                    found = True
+                    break
+            if not found:
+                missing_actual.append(e)
+        if len(missing_actual) >= 4:
+            issues.append(
+                f"主量元素大面积缺失 ({len(missing_actual)}/8): {', '.join(missing_actual[:6])}..."
+                f" 数据读取可能有误。"
+            )
+
+        for issue in issues:
+            print(f"[IgneousWR] ⚠️ {issue}")
+        return issues
+
     def _load_transposed(self, ws):
-        """转置格式：Row 1 横铺元素名，Row 4+ 每行一个样品"""
+        """转置格式：Row 1 横铺元素名，Row 2+ 每行一个样品"""
         KNOWN_SET = set(KNOWN_ELEMENTS)
 
         elem_count = 0
@@ -179,7 +334,17 @@ class GeochemData:
                 elif all(ws.cell(1, c + k).value is None for k in range(1, 4)):
                     break
 
-        for r in range(4, ws.max_row + 1):
+        # 自适应数据起始行：从 Row 2 开始，跳过空行和标记行
+        data_start = 2
+        for r in range(2, min(ws.max_row + 1, 10)):
+            v = str(ws.cell(r, 1).value or '').strip()
+            if not v or v.lower() in ('element', 'unit', 'sample', 'major elements (wt%)',
+                                       'trace elements (ppm)', 'minor elements (ppm)'):
+                data_start = r + 1
+            else:
+                break
+
+        for r in range(data_start, ws.max_row + 1):
             label = str(ws.cell(r, 1).value or '').strip()
             if not label or label.lower() in ('', 'element', 'unit', 'sample',
                                                'major elements (wt%)', 'trace elements (ppm)',
@@ -195,7 +360,7 @@ class GeochemData:
         self.all_labels = []
         self._elem_data = {}
 
-        for r in range(4, ws.max_row + 1):
+        for r in range(data_start, ws.max_row + 1):
             label = str(ws.cell(r, 1).value or '').strip()
             if not label or label.lower() in ('', 'element', 'unit', 'sample',
                                                'major elements (wt%)', 'trace elements (ppm)',

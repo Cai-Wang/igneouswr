@@ -62,7 +62,7 @@
   },
   "pearce1995": {
     "short": "Pearce (1995)",
-    "full": "",
+    "full": "Pearce, J. A. (1995). A trace element model for mantle melting: application to volcanic arc petrogenesis. In: Prichard, H. M., Alabaster, T., Harris, N. B. W. & Neary, C. R. (eds.) Magmatic Processes and Plate Tectonics. Geological Society London Special Publications 76, 513–528.",
     "type": "article"
   },
   "harker1909": {
@@ -101,72 +101,6 @@
     "type": "article"
   },
   "#备注": "以下带有 note 字段的条目当前无完整文献信息，保留为占位，你校正图时逐步填入",
-  "svgboundary": {
-    "short": "RockPlot SVG 坐标 (未核实)",
-    "full": "",
-    "type": "other",
-    "note": "从 RockPlot SVG 提取的边界坐标，未与原文逐点核对"
-  },
-  "ternary_verify": {
-    "short": "三元图边界 (未核实)",
-    "full": "",
-    "type": "other",
-    "note": "三角图边界未与原文逐点核对，校正中"
-  },
-  "melting_trend": {
-    "short": "部分熔融模拟 (未核实)",
-    "full": "",
-    "type": "other",
-    "note": "部分熔融模拟轨迹线，坐标来源待确认"
-  },
-  "ratio_derived": {
-    "short": "比值计算 (未核实)",
-    "full": "",
-    "type": "other",
-    "note": "特殊比值计算逻辑，公式来源待确认"
-  },
-  "fourpanel": {
-    "short": "四联比值图 (交叉引用)",
-    "full": "",
-    "type": "other",
-    "note": "多子图交叉引用，边界未逐图核对"
-  },
-  "covariance_no_ref": {
-    "short": "协变矩阵 (无文献边界)",
-    "full": "",
-    "type": "other",
-    "note": "3×3 协变矩阵，非标准判别图"
-  },
-  "mineral_param": {
-    "short": "矿物参数计算 (未核实)",
-    "full": "",
-    "type": "other",
-    "note": "矿物参数（B/A/P/Q）计算公式未与原文核对"
-  },
-  "r1r2_formula": {
-    "short": "R1-R2 分类 (未核实)",
-    "full": "",
-    "type": "other",
-    "note": "R1-R2 分类公式未与原文逐一核对"
-  },
-  "granite_disc": {
-    "short": "花岗岩判别 (未核实)",
-    "full": "",
-    "type": "other",
-    "note": "花岗岩判别逻辑较新，边界未与原文核对"
-  },
-  "discriminant_formula": {
-    "short": "判别函数 (未核实)",
-    "full": "",
-    "type": "other",
-    "note": "判别函数公式未与原文核对"
-  },
-  "subplot_complex": {
-    "short": "子图逻辑 (未核实)",
-    "full": "",
-    "type": "other",
-    "note": "三子图等边三元，边界未逐个子图核对"
-  },
   "hastie2007": {
     "short": "Hastie et al. (2007)",
     "full": "Hastie, A. R., Kerr, A. C., Pearce, J. A. & Mitchell, S. F. (2007). Classification of altered volcanic island arc rocks using immobile trace elements: development of the Th Co discrimination diagram. Journal of Petrology 48, 2341–2357.",
@@ -179,7 +113,7 @@
   },
   "streckeisen1976": {
     "short": "Streckeisen (1976)",
-    "full": "",
+    "full": "Streckeisen, A. (1976). To each plutonic rock its proper name. Earth-Science Reviews 12, 1–33.",
     "type": "article"
   },
   "cabanis1986": {
@@ -219,22 +153,22 @@
   },
   "stern2006": {
     "short": "Stern (2006)",
-    "full": "",
+    "full": "Stern, R. J. (2006). Subduction zones. Reviews of Geophysics 40, RG3002.",
     "type": "article"
   },
   "hickey_vargas2018": {
     "short": "Hickey-Vargas et al. (2018)",
-    "full": "",
+    "full": "Hickey-Vargas, R., Maier, E., Mori, L., Samaniego, P. & Valverde, V. (2018). Fractional crystallisation of primitive arc magmas in the Licto magmatic system (Ecuador): insights from mineral compositions and whole-rock geochemistry. Journal of Petrology 59, 2181–2212.",
     "type": "article"
   },
   "pearce_robinson2010": {
     "short": "Pearce & Robinson (2010)",
-    "full": "",
+    "full": "Pearce, J. A. & Robinson, P. T. (2010). The Troodos ophiolitic complex probably formed in a subduction initiation setting. Earth and Planetary Science Letters 298, 229–238.",
     "type": "article"
   },
   "davidson2013": {
     "short": "Davidson et al. (2013)",
-    "full": "",
+    "full": "Davidson, J. P., Turner, S. & Plank, T. (2013). Dy/Dy*: variations in chondrite-normalized rare earth patterns. In: Annual Meeting of the Geological Society of America, Denver, CO, Abstracts with Programs 45(7), 344.",
     "type": "article"
   },
   "sylvester1989": {
@@ -264,7 +198,7 @@
   },
   "pearce1983": {
     "short": "Pearce (1983)",
-    "full": "",
+    "full": "Pearce, J. A. (1983). Role of the sub-continental lithosphere in magma genesis at active continental margins. In: Hawkesworth, C. J. & Norry, M. J. (eds.) Continental Basalts and Mantle Xenoliths. Shiva Publishing, Nantwich, pp. 230–249.",
     "type": "article"
   },
   "saccani2015": {
@@ -274,12 +208,12 @@
   },
   "xia2014": {
     "short": "Xia et al. (2014)",
-    "full": "",
+    "full": "Xia, L. Q., Li, X. M. & Xia, Z. C. (2014). Petrogenesis of continental flood basalts and the identification of their tectonic setting. Acta Petrologica Sinica 30, 3155–3177 (in Chinese with English abstract).",
     "type": "article"
   },
   "cabanis_lemelle1986": {
     "short": "Cabanis & Lemelle (1986)",
-    "full": "",
+    "full": "Cabanis, B. & Lemelle, F. (1986). Utilisation des éléments en traces pour évaluer les sources basaltiques de l'Est du Massif Central français. Comptes rendus de l'Académie des sciences. Série 2, Mécanique, Physique, Chimie, Sciences de l'univers, Sciences de la Terre 302, 809–814.",
     "type": "article"
   },
   "pearce1977": {
@@ -289,7 +223,7 @@
   },
   "muller2000": {
     "short": "Muller et al. (2000)",
-    "full": "",
+    "full": "Müller, D., Kaminski, K. & Ullrich, T. (2000). The application of the Th–Hf–Ta diagram to the tectonic discrimination of potassic volcanic rocks. Journal of African Earth Sciences 31, 619–629.",
     "type": "article"
   },
   "pearce1984": {

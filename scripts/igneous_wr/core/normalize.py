@@ -1,62 +1,1510 @@
 """
 _normalize.py — 标准化参考值常量 + 标准化函数
 
-包含：
-- CHONDRITE: 球粒陨石标准化参考值
-- REE_ORDER: REE 元素排序
-- PRIMITIVE_MANTLE: 原始地幔标准化参考值
-- SPIDER_ORDER: 蛛网图元素排序
-- normalize(data_dict, ref): 按参考值标准化的通用函数
+包含所有 GCDkit 6.3.0 内置的标准化参考值：
+- reservoirs.data (主要来源，全元素版)
+- spider.data (补充来源，元素顺序不同)
 
-纯数据层，无 matplotlib 依赖。
+选择指南：
+  - REE配分图: CHONDRITE_MS95 (默认) 或 CHONDRITE_NAKAMURA1974
+  - 蛛网图: PRIMITIVE_MANTLE_MS95 (默认) 或 PRIMITIVE_MANTLE_LONG_SM89
+  - MORB标准化: NMORB_SM89 / EMORB_SM89 / NMORB_IMMOBILE
+  - OIB: OIB_SM89
+  - 地壳: UCC_TM95 / MCC_RG2003 / LCC_TM95
+  - 沉积物: GLOSS_PLANK1998 / GLOSS_II_PLANK2014
+  - 地幔端元: DMM_SALTERS2004 / EM1 / EM2 / HIMU
 """
+
 import numpy as np
 
 # ============================================================
-# 球粒陨石标准化参考值（Sun & McDonough 1989）
+# 主力标准化方案（日常使用）
 # ============================================================
-CHONDRITE = {
-    'La': 0.237, 'Ce': 0.613, 'Pr': 0.0928, 'Nd': 0.457,
-    'Sm': 0.148, 'Eu': 0.0563, 'Gd': 0.199, 'Tb': 0.0361,
-    'Dy': 0.246, 'Ho': 0.0546, 'Er': 0.160, 'Tm': 0.0248,
-    'Yb': 0.161, 'Lu': 0.0247,
+
+# REE chondrite (McDonough & Sun 1995) -- 14 个元素
+REE_CHONDRITE_MS_AND_SUN_1995 = {
+    'Ce': 0.613,
+    'Dy': 0.246,
+    'Er': 0.16,
+    'Eu': 0.0563,
+    'Gd': 0.199,
+    'Ho': 0.0546,
+    'La': 0.237,
+    'Lu': 0.0246,
+    'Nd': 0.457,
+    'Pr': 0.0928,
+    'Sm': 0.148,
+    'Tb': 0.0361,
+    'Tm': 0.0247,
+    'Yb': 0.161,
 }
-REE_ORDER = ['La','Ce','Pr','Nd','Sm','Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu']
+
+# Primitive mantle (McDonough & Sun 1995) -- 76 个元素
+PRIMITIVE_MANTLE_MS_AND_SUN_1995 = {
+    'Ag': 0.008,
+    'Al': 23500,
+    'As': 0.05,
+    'Au': 0.001,
+    'B': 0.3,
+    'Ba': 6.6000,
+    'Be': 0.068,
+    'Bi': 0.0025,
+    'Br': 0.05,
+    'C': 120.0000,
+    'Ca': 25300,
+    'Cd': 0.04,
+    'Ce': 1.6750,
+    'Cl': 17.0000,
+    'Co': 105.0000,
+    'Cr': 2625.0,
+    'Cs': 0.021,
+    'Cu': 30.0000,
+    'Dy': 0.674,
+    'Er': 0.438,
+    'Eu': 0.154,
+    'F': 25.0000,
+    'Fe': 62600,
+    'Ga': 4.0000,
+    'Gd': 0.544,
+    'Ge': 1.1000,
+    'Hf': 0.283,
+    'Hg': 0.01,
+    'Ho': 0.149,
+    'I': 0.01,
+    'In': 0.011,
+    'Ir': 0.0032,
+    'K': 240.0000,
+    'La': 0.648,
+    'Li': 1.6000,
+    'Lu': 0.0675,
+    'Mg': 228000,
+    'Mn': 1045.0,
+    'Mo': 0.05,
+    'N': 2.0000,
+    'Na': 2670.0,
+    'Nb': 0.658,
+    'Nd': 1.2500,
+    'Ni': 1960.0,
+    'Os': 0.0034,
+    'P': 90.0000,
+    'Pb': 0.15,
+    'Pd': 0.0039,
+    'Pr': 0.254,
+    'Pt': 0.0071,
+    'Rb': 0.6,
+    'Re': 0.00028,
+    'Rh': 0.0009,
+    'Ru': 0.005,
+    'S': 250.0000,
+    'Sb': 0.0055,
+    'Sc': 16.2000,
+    'Se': 0.075,
+    'Si': 210000,
+    'Sm': 0.406,
+    'Sn': 0.13,
+    'Sr': 19.9000,
+    'Ta': 0.037,
+    'Tb': 0.099,
+    'Te': 0.012,
+    'Th': 0.0795,
+    'Ti': 1205.0,
+    'Tl': 0.0035,
+    'Tm': 0.068,
+    'U': 0.0203,
+    'V': 82.0000,
+    'W': 0.029,
+    'Y': 4.3000,
+    'Yb': 0.441,
+    'Zn': 55.0000,
+    'Zr': 10.5000,
+}
+
 
 # ============================================================
-# 原始地幔标准化参考值（Sun & McDonough 1989）
+# 全部标准化方案（按字母序）
 # ============================================================
-PRIMITIVE_MANTLE = {
-    'Rb': 0.635, 'Ba': 6.989, 'Th': 0.0851, 'U': 0.0214,
-    'Nb': 0.713, 'Ta': 0.0411, 'La': 0.687, 'Ce': 1.775,
-    'Pb': 0.185, 'Pr': 0.276, 'Nd': 1.354, 'Sr': 21.1,
-    'Sm': 0.444, 'Zr': 11.33, 'Hf': 0.309, 'Eu': 0.168,
-    'Ti': 1300.0, 'Gd': 0.596, 'Tb': 0.108, 'Dy': 0.737,
-    'Ho': 0.164, 'Y': 4.55, 'Er': 0.480, 'Tm': 0.0741,
-    'Yb': 0.493, 'Lu': 0.0740,
+
+# REE Primitive mantle (McDonough & Sun 1995) -- 15 个元素
+REE_PRIMITIVE_MANTLE_MS_AND_SUN_1995 = {
+    'Ce': 1.6750,
+    'Dy': 0.674,
+    'Er': 0.438,
+    'Eu': 0.154,
+    'Gd': 0.544,
+    'Ho': 0.149,
+    'La': 0.648,
+    'Lu': 0.068,
+    'Nd': 1.2500,
+    'Pm': 1.0000,
+    'Pr': 0.254,
+    'Sm': 0.406,
+    'Tb': 0.099,
+    'Tm': 0.068,
+    'Yb': 0.441,
 }
-SPIDER_ORDER = ['Rb','Ba','Th','U','Nb','Ta','La','Ce','Pb','Pr','Nd','Sr',
-                'Sm','Zr','Hf','Eu','Ti','Gd','Tb','Dy','Ho','Y','Er','Tm','Yb','Lu']
+
+# Cl Chondrite (McDonough & Sun 1995) -- 76 个元素
+CL_CHONDRITE_MS_AND_SUN_1995 = {
+    'Ag': 0.2,
+    'Al': 8600.0,
+    'As': 1.8500,
+    'Au': 0.14,
+    'B': 0.9,
+    'Ba': 2.4100,
+    'Be': 0.025,
+    'Bi': 0.11,
+    'Br': 3.5700,
+    'C': 35000,
+    'Ca': 9250.0,
+    'Cd': 0.71,
+    'Ce': 0.613,
+    'Cl': 680.0000,
+    'Co': 500.0000,
+    'Cr': 2650.0,
+    'Cs': 0.19,
+    'Cu': 120.0000,
+    'Dy': 0.246,
+    'Er': 0.16,
+    'Eu': 0.0563,
+    'F': 60.0000,
+    'Fe': 181000,
+    'Ga': 9.2000,
+    'Gd': 0.199,
+    'Ge': 31.0000,
+    'Hf': 0.103,
+    'Hg': 0.3,
+    'Ho': 0.0546,
+    'I': 0.45,
+    'In': 1.6500,
+    'Ir': 0.455,
+    'K': 550.0000,
+    'La': 0.237,
+    'Li': 1.5000,
+    'Lu': 0.0246,
+    'Mg': 96500,
+    'Mn': 1920.0,
+    'Mo': 0.9,
+    'N': 3180.0,
+    'Na': 5100.0,
+    'Nb': 0.24,
+    'Nd': 0.457,
+    'Ni': 10500,
+    'Os': 0.49,
+    'P': 1080.0,
+    'Pb': 2.4700,
+    'Pd': 0.55,
+    'Pr': 0.0928,
+    'Pt': 1.0100,
+    'Rb': 2.3000,
+    'Re': 0.04,
+    'Rh': 0.13,
+    'Ru': 0.71,
+    'S': 54000,
+    'Sb': 0.14,
+    'Sc': 5.9200,
+    'Se': 21.0000,
+    'Si': 106500,
+    'Sm': 0.148,
+    'Sn': 1.6500,
+    'Sr': 7.2500,
+    'Ta': 0.0136,
+    'Tb': 0.0361,
+    'Te': 2.3300,
+    'Th': 0.029,
+    'Ti': 440.0000,
+    'Tl': 0.14,
+    'Tm': 0.0247,
+    'U': 0.0074,
+    'V': 56.0000,
+    'W': 0.093,
+    'Y': 1.5700,
+    'Yb': 0.161,
+    'Zn': 310.0000,
+    'Zr': 3.8200,
+}
+
+# Bulk Continental Crust (Taylor & McLennan 1995) -- 20 个元素
+BULK_CONTINENTAL_CRUST_TAYLOR_AND_MCLENNAN_1995 = {
+    'Ba': 250.0000,
+    'Ce': 33.0000,
+    'Cs': 1.0000,
+    'Hf': 3.0000,
+    'K': 9100.0,
+    'La': 16.0000,
+    'Nb': 11.0000,
+    'Nd': 16.0000,
+    'Rb': 32.0000,
+    'Sm': 3.5000,
+    'Sr': 260.0000,
+    'Ta': 1.0000,
+    'Tb': 0.6,
+    'Th': 3.5000,
+    'Ti': 5400.0,
+    'Tm': 0.32,
+    'U': 0.91,
+    'Y': 20.0000,
+    'Yb': 2.2000,
+    'Zr': 100.0000,
+}
+
+# Chondrites (Sun et al. 1980) -- 16 个元素
+CHONDRITES_SUN_ET_AL__1980 = {
+    'Ba': 3.8000,
+    'Ce': 0.813,
+    'Gd': 0.28,
+    'K': 120.0000,
+    'La': 0.315,
+    'Nb': 0.35,
+    'Nd': 0.597,
+    'Rb': 0.35,
+    'Sm': 0.192,
+    'Sr': 11.0000,
+    'Ta': 0.02,
+    'Th': 0.05,
+    'Ti': 620.0000,
+    'U': 0.013,
+    'Y': 2.0000,
+    'Zr': 5.6000,
+}
+
+# Chondrites (Thompson 1982) -- 19 个元素
+CHONDRITES_THOMPSON_1982 = {
+    'Ba': 6.9000,
+    'Ce': 0.865,
+    'Hf': 0.2,
+    'K': 120.0000,
+    'La': 0.329,
+    'Nb': 0.35,
+    'Nd': 0.63,
+    'P': 46.0000,
+    'Rb': 0.35,
+    'Sm': 0.203,
+    'Sr': 11.8000,
+    'Ta': 0.02,
+    'Tb': 0.052,
+    'Th': 0.042,
+    'Ti': 620.0000,
+    'Tm': 0.034,
+    'Y': 2.0000,
+    'Yb': 0.22,
+    'Zr': 6.8400,
+}
+
+# Cl Chondrite (Palme & O'Neil 2014) -- 76 个元素
+CL_CHONDRITE_PALME_AND_ONEIL_2014 = {
+    'Ag': 0.201,
+    'Al': 8400.0,
+    'As': 1.7400,
+    'Au': 0.148,
+    'B': 0.775,
+    'Ba': 2.4200,
+    'Be': 0.0219,
+    'Bi': 0.11,
+    'Br': 3.2600,
+    'C': 34800,
+    'Ca': 0.911,
+    'Cd': 0.674,
+    'Ce': 0.6194,
+    'Cl': 698.0000,
+    'Co': 513.0000,
+    'Cr': 2623.0,
+    'Cs': 0.188,
+    'Cu': 133.0000,
+    'Dy': 0.2558,
+    'Er': 0.1655,
+    'Eu': 0.05883,
+    'F': 58.2000,
+    'Fe': 18.6600,
+    'Ga': 9.6200,
+    'Gd': 0.2069,
+    'Ge': 32.6000,
+    'Hf': 0.1065,
+    'Hg': 0.35,
+    'Ho': 0.05644,
+    'I': 0.53,
+    'In': 0.0778,
+    'Ir': 0.469,
+    'K': 546.0000,
+    'La': 0.2414,
+    'Li': 1.4500,
+    'Lu': 0.02503,
+    'Mg': 95400,
+    'Mn': 1916.0,
+    'Mo': 0.961,
+    'N': 2950.0,
+    'Na': 4962.0,
+    'Nb': 0.283,
+    'Nd': 0.4737,
+    'Ni': 1.0910,
+    'Os': 0.495,
+    'P': 985.0000,
+    'Pb': 2.6200,
+    'Pd': 0.56,
+    'Pr': 0.0939,
+    'Pt': 0.925,
+    'Rb': 2.3200,
+    'Re': 0.04,
+    'Rh': 0.132,
+    'Ru': 0.69,
+    'S': 53500,
+    'Sb': 0.145,
+    'Sc': 5.8100,
+    'Se': 20.3000,
+    'Si': 107000,
+    'Sm': 0.1536,
+    'Sn': 1.6300,
+    'Sr': 7.7900,
+    'Ta': 0.015,
+    'Tb': 0.03797,
+    'Te': 2.2800,
+    'Th': 0.03,
+    'Ti': 447.0000,
+    'Tl': 0.14,
+    'Tm': 0.02609,
+    'U': 0.0081,
+    'V': 54.6000,
+    'W': 0.096,
+    'Y': 1.4600,
+    'Yb': 0.1687,
+    'Zn': 309.0000,
+    'Zr': 3.6300,
+}
+
+# Cl Chondrite (Palme & O'Neill 2014) -- 30 个元素
+CL_CHONDRITE_PALME_AND_ONEILL_2014 = {
+    'Ba': 2.4200,
+    'Be': 0.0219,
+    'Ce': 0.6194,
+    'Cs': 0.188,
+    'Dy': 0.2558,
+    'Er': 0.1655,
+    'Eu': 0.05883,
+    'Gd': 0.2069,
+    'Hf': 0.1065,
+    'Ho': 0.05644,
+    'K': 546.0000,
+    'La': 0.2414,
+    'Li': 1.4500,
+    'Lu': 0.02503,
+    'Nb': 0.283,
+    'Nd': 0.4737,
+    'Pb': 2.6200,
+    'Pr': 0.0939,
+    'Rb': 2.3200,
+    'Sm': 0.1536,
+    'Sr': 7.7900,
+    'Ta': 0.015,
+    'Tb': 0.03797,
+    'Th': 0.03,
+    'Ti': 447.0000,
+    'Tm': 0.02609,
+    'U': 0.0081,
+    'Y': 1.4600,
+    'Yb': 0.1687,
+    'Zr': 3.6300,
+}
+
+# Continental arc and active margin sediments (Floyd et al. 1991) -- 32 个元素
+CONTINENTAL_ARC_AND_ACTIVE_MARGIN_SEDIMENTS_FLOYD_ET_AL__1991 = {
+    'Al2O3': 13.0000,
+    'Ba': 481.0000,
+    'CaO': 2.7600,
+    'Ce': 48.0000,
+    'Cr': 55.0000,
+    'Cs': 4.7000,
+    'Cu': 22.0000,
+    'Fe2O3': 5.3500,
+    'Ga': 15.0000,
+    'Hf': 4.7000,
+    'K2O': 1.6500,
+    'La': 23.0000,
+    'MgO': 2.6000,
+    'MnO': 0.08,
+    'Na2O': 2.4100,
+    'Nb': 9.0000,
+    'Nd': 24.0000,
+    'Ni': 31.0000,
+    'P2O5': 0.14,
+    'Pb': 15.0000,
+    'Rb': 62.0000,
+    'Sc': 16.0000,
+    'SiO2': 68.7300,
+    'Sr': 274.0000,
+    'Ta': 0.8,
+    'Th': 8.5000,
+    'TiO2': 0.58,
+    'U': 2.0000,
+    'V': 106.0000,
+    'Y': 17.0000,
+    'Zn': 73.0000,
+    'Zr': 146.0000,
+}
+
+# DMM component -- 7 个元素
+DMM_COMPONENT = {
+    '143Nd/144Nd': 0.5133,
+    '176Hf/177Hf': 0.2834,
+    '187Os/188Os': 0.125,
+    '206Pb/204Pb': 18.2000,
+    '208Pb/204Pb': 37.7000,
+    '87Sr/86Sr': 0.7022,
+    'EpsNd': 12.9100,
+}
+
+# Depleted Mantle (Salters & Stracke 2004) -- 72 个元素
+DEPLETED_MANTLE_SALTERS_AND_STRACKE_2004 = {
+    'Ag': 0.006,
+    'Al2O3': 4.2800,
+    'As': 0.0074,
+    'Au': 0.001,
+    'B': 0.06,
+    'Ba': 1.2000,
+    'Be': 0.025,
+    'Bi': 0.00039,
+    'CO2': 0.00503,
+    'CaO': 3.5000,
+    'Cd': 0.014,
+    'Ce': 0.772,
+    'Co': 106.0000,
+    'Cr': 2500.0,
+    'Cs': 0.00132,
+    'Cu': 30.0000,
+    'Dy': 0.531,
+    'Er': 0.371,
+    'Eu': 0.107,
+    'F': 0.0011,
+    'FeO': 8.0700,
+    'Ga': 3.2000,
+    'Gd': 0.395,
+    'Ge': 1.0000,
+    'H2O': 0.0116,
+    'Hf': 0.199,
+    'Hg': 0.01,
+    'Ho': 0.122,
+    'In': 0.0122,
+    'Ir': 0.0029,
+    'K': 60.0000,
+    'La': 0.234,
+    'Li': 0.7,
+    'Lu': 0.063,
+    'MgO': 38.2200,
+    'Mn': 1045.0,
+    'Mo': 0.025,
+    'Na2O': 0.29,
+    'Nb': 0.21,
+    'Nd': 0.713,
+    'Ni': 1960.0,
+    'Os': 0.00299,
+    'P': 40.7000,
+    'Pb': 0.0232,
+    'Pd': 0.0052,
+    'Pr': 0.131,
+    'Pt': 0.0062,
+    'Rb': 0.088,
+    'Re': 0.000157,
+    'Rh': 0.001,
+    'Ru': 0.0057,
+    'Sb': 0.0026,
+    'Sc': 16.3000,
+    'Se': 0.072,
+    'SiO2': 44.9000,
+    'Sm': 0.27,
+    'Sn': 0.1,
+    'Sr': 9.8000,
+    'Ta': 0.0138,
+    'Tb': 0.075,
+    'Te': 0.0151,
+    'Th': 0.0137,
+    'Ti': 798.0000,
+    'Tl': 0.00038,
+    'Tm': 0.06,
+    'U': 0.0047,
+    'V': 79.0000,
+    'W': 0.0035,
+    'Y': 4.0700,
+    'Yb': 0.401,
+    'Zn': 56.0000,
+    'Zr': 7.9400,
+}
+
+# EM1 component -- 7 个元素
+EM1_COMPONENT = {
+    '143Nd/144Nd': 0.5123,
+    '176Hf/177Hf': 0.2827,
+    '187Os/188Os': 0.152,
+    '206Pb/204Pb': 17.5000,
+    '208Pb/204Pb': 38.1000,
+    '87Sr/86Sr': 0.7055,
+    'EpsNd': -5.6200,
+}
+
+# EM2 component -- 7 个元素
+EM2_COMPONENT = {
+    '143Nd/144Nd': 0.5126,
+    '176Hf/177Hf': 0.2828,
+    '187Os/188Os': 0.136,
+    '206Pb/204Pb': 19.2000,
+    '208Pb/204Pb': 39.3000,
+    '87Sr/86Sr': 0.7075,
+    'EpsNd': 0.039,
+}
+
+# EMORB (Sun & McDonough 1989) -- 22 个元素
+EMORB_SUN_AND_MS_1989 = {
+    'Ba': 57.0000,
+    'Ce': 15.0000,
+    'Cs': 0.063,
+    'Dy': 3.5500,
+    'Eu': 0.91,
+    'K': 2100.0,
+    'La': 6.3000,
+    'Lu': 0.354,
+    'Nb': 8.3000,
+    'Nd': 9.0000,
+    'P': 620.0000,
+    'Pb': 0.6,
+    'Pr': 2.0500,
+    'Rb': 5.0400,
+    'Sm': 2.6000,
+    'Sr': 155.0000,
+    'Th': 0.6,
+    'Ti': 6000.0,
+    'U': 0.18,
+    'Y': 22.0000,
+    'Yb': 2.3700,
+    'Zr': 73.0000,
+}
+
+# GLOSS (Plank & Langmuir 1998) -- 41 个元素
+GLOSS_PLANK_AND_LANGMUIR_1998 = {
+    'Al2O3': 11.9100,
+    'Ba': 776.0000,
+    'CO2': 3.0100,
+    'CaO': 5.9500,
+    'Ce': 57.3000,
+    'Co': 21.9000,
+    'Cr': 78.9000,
+    'Cs': 3.4800,
+    'Cu': 75.0000,
+    'Dy': 4.9900,
+    'Er': 2.9200,
+    'Eu': 1.3100,
+    'FeO': 5.2100,
+    'Gd': 5.2600,
+    'H2O': 7.2900,
+    'Hf': 4.0600,
+    'K2O': 2.0400,
+    'La': 28.8000,
+    'Lu': 0.413,
+    'MgO': 2.4800,
+    'MnO': 0.32,
+    'Na2O': 2.4300,
+    'Nb': 8.9400,
+    'Nd': 27.0000,
+    'Ni': 70.5000,
+    'P2O5': 0.19,
+    'Pb': 19.9000,
+    'Rb': 57.2000,
+    'Sc': 13.1000,
+    'SiO2': 58.5700,
+    'Sm': 5.7800,
+    'Sr': 327.0000,
+    'Ta': 0.63,
+    'Th': 6.9100,
+    'TiO2': 0.62,
+    'U': 1.6800,
+    'V': 110.0000,
+    'Y': 29.8000,
+    'Yb': 2.7600,
+    'Zn': 86.4000,
+    'Zr': 130.0000,
+}
+
+# GLOSS-II (Plank 2014) -- 53 个元素
+GLOSS_II_PLANK_2014 = {
+    '143Nd/144Nd': 0.5122,
+    '206Pb/204Pb': 18.9290,
+    '207Pb/204Pb': 15.6940,
+    '208Pb/204Pb': 39.1210,
+    '87Sr/86Sr': 0.7124,
+    'Al2O3': 12.5100,
+    'B': 67.9000,
+    'Ba': 786.0000,
+    'Be': 1.9900,
+    'CO2': 3.0700,
+    'CaO': 6.2200,
+    'Ce': 57.6000,
+    'Co': 26.9000,
+    'Cr': 68.8000,
+    'Cs': 4.9000,
+    'Cu': 116.0000,
+    'Dy': 5.4300,
+    'Er': 3.0900,
+    'Eu': 1.3700,
+    'FeOt': 5.6700,
+    'Gd': 5.8100,
+    'H2O.PLUS': 7.0900,
+    'Hf': 3.4200,
+    'Ho': 1.1000,
+    'K2O': 2.2100,
+    'La': 29.1000,
+    'Li': 44.8000,
+    'Lu': 0.459,
+    'MgO': 2.7500,
+    'MnO': 0.43,
+    'Na2O': 2.5000,
+    'Nb': 9.4200,
+    'Nd': 27.6000,
+    'Ni': 73.0000,
+    'P2O5': 0.2,
+    'Pb': 21.2000,
+    'Pr': 7.1500,
+    'Rb': 83.7000,
+    'Sc': 15.0000,
+    'SiO2': 56.6000,
+    'Sm': 6.0000,
+    'Sr': 302.0000,
+    'Ta': 0.698,
+    'Tb': 0.92,
+    'Th': 8.1000,
+    'TiO2': 0.64,
+    'U': 1.7300,
+    'V': 116.0000,
+    'Y': 33.3000,
+    'Yb': 3.0100,
+    'Zn': 93.0000,
+    'Zr': 129.0000,
+    'delta7Li': 2.4200,
+}
+
+# HIMU component -- 7 个元素
+HIMU_COMPONENT = {
+    '143Nd/144Nd': 0.5129,
+    '176Hf/177Hf': 0.2829,
+    '187Os/188Os': 0.15,
+    '206Pb/204Pb': 21.7000,
+    '208Pb/204Pb': 40.7000,
+    '87Sr/86Sr': 0.7028,
+    'EpsNd': 4.1350,
+}
+
+# HSE Primitive mantle - concentrations (Becker et al. 2006) -- 6 个元素
+HSE_PRIMITIVE_MANTLE_CONCENTRATIONS_BECKER_ET_AL__2006 = {
+    'Ir': 0.0035,
+    'Os': 0.0039,
+    'Pd': 0.0071,
+    'Pt': 0.0076,
+    'Re': 0.00035,
+    'Ru': 0.007,
+}
+
+# HSE chondrite - concentrations (Jochum 1996) -- 6 个元素
+HSE_CHONDRITE_CONCENTRATIONS_JOCHUM_1996 = {
+    'Ir': 0.48,
+    'Os': 0.492,
+    'Pd': 0.56,
+    'Pt': 0.982,
+    'Re': 0.0395,
+    'Ru': 0.683,
+}
+
+# Lower Continental Crust (Taylor & McLennan 1995) -- 20 个元素
+LOWER_CONTINENTAL_CRUST_TAYLOR_AND_MCLENNAN_1995 = {
+    'Ba': 150.0000,
+    'Ce': 23.0000,
+    'Cs': 0.1,
+    'Hf': 2.1000,
+    'K': 2800.0,
+    'La': 11.0000,
+    'Nb': 6.0000,
+    'Nd': 12.7000,
+    'Rb': 5.3000,
+    'Sm': 3.1700,
+    'Sr': 230.0000,
+    'Ta': 0.6,
+    'Tb': 0.59,
+    'Th': 1.0600,
+    'Ti': 6000.0,
+    'Tm': 0.32,
+    'U': 0.28,
+    'Y': 19.0000,
+    'Yb': 2.2000,
+    'Zr': 70.0000,
+}
+
+# MORB (Pearce 1983) -- 15 个元素
+MORB_PEARCE_1983 = {
+    'Ba': 20.0000,
+    'Ce': 10.0000,
+    'Hf': 2.4000,
+    'K': 1245.0,
+    'Nb': 3.5000,
+    'P': 534.0000,
+    'Rb': 2.0000,
+    'Sm': 3.3000,
+    'Sr': 120.0000,
+    'Ta': 0.18,
+    'Th': 0.2,
+    'Ti': 8992.0,
+    'Y': 30.0000,
+    'Yb': 3.4000,
+    'Zr': 90.0000,
+}
+
+# MORB (Pearce 1996) -- 6 个元素
+MORB_PEARCE_1996 = {
+    'Ce': 10.0000,
+    'Nb': 2.7000,
+    'Th': 0.2,
+    'Ti': 8692.8,
+    'Y': 30.0000,
+    'Zr': 90.0000,
+}
+
+# Middle Continental Crust (Rudnick & Gao 2003) -- 65 个元素
+MIDDLE_CONTINENTAL_CRUST_RUDNICK_AND_GAO_2003 = {
+    'Ag': 48.0000,
+    'Al2O3': 15.0000,
+    'As': 3.1000,
+    'Au': 0.66,
+    'B': 17.0000,
+    'Ba': 532.0000,
+    'Be': 2.2900,
+    'Bi': 0.17,
+    'CaO': 5.2500,
+    'Cd': 0.061,
+    'Ce': 53.0000,
+    'Cl': 182.0000,
+    'Co': 22.0000,
+    'Cr': 76.0000,
+    'Cs': 2.2000,
+    'Cu': 26.0000,
+    'Dy': 3.8000,
+    'Er': 2.3000,
+    'Eu': 1.4000,
+    'F': 524.0000,
+    'FeOt': 6.0200,
+    'Ga': 17.5000,
+    'Gd': 4.0000,
+    'Ge': 1.1300,
+    'Hf': 4.4000,
+    'Hg': 0.0079,
+    'Ho': 0.82,
+    'K2O': 2.3000,
+    'La': 24.0000,
+    'Li': 12.0000,
+    'Lu': 0.4,
+    'MgO': 3.5900,
+    'MnO': 0.1,
+    'Mo': 0.6,
+    'Na2O': 3.3900,
+    'Nb': 10.0000,
+    'Nd': 25.0000,
+    'Ni': 33.5000,
+    'P2O5': 0.15,
+    'Pb': 15.2000,
+    'Pd': 0.76,
+    'Pr': 5.8000,
+    'Pt': 0.85,
+    'Rb': 65.0000,
+    'S': 20.0000,
+    'Sb': 0.28,
+    'Sc': 19.0000,
+    'Se': 0.064,
+    'SiO2': 63.5000,
+    'Sm': 4.6000,
+    'Sn': 1.3000,
+    'Sr': 282.0000,
+    'Ta': 0.6,
+    'Tb': 0.7,
+    'Th': 6.5000,
+    'TiO2': 0.69,
+    'Tl': 0.27,
+    'Tm': 0.32,
+    'U': 1.3000,
+    'V': 107.0000,
+    'W': 0.6,
+    'Y': 20.0000,
+    'Yb': 2.2000,
+    'Zn': 69.5000,
+    'Zr': 149.0000,
+}
+
+# NMORB (Sun & McDonough 1989) -- 30 个元素
+NMORB_SUN_AND_MS_1989 = {
+    'Ba': 6.3000,
+    'Ce': 7.5000,
+    'Cs': 0.007,
+    'Dy': 4.5500,
+    'Er': 2.9700,
+    'Eu': 1.0200,
+    'Gd': 3.6800,
+    'Hf': 2.0500,
+    'Ho': 1.0100,
+    'K': 600.0000,
+    'La': 2.5000,
+    'Li': 4.3000,
+    'Lu': 0.455,
+    'Nb': 2.3300,
+    'Nd': 7.3000,
+    'P': 510.0000,
+    'Pb': 0.3,
+    'Pr': 1.3200,
+    'Rb': 0.56,
+    'Sm': 2.6300,
+    'Sr': 90.0000,
+    'Ta': 0.132,
+    'Tb': 0.67,
+    'Th': 0.12,
+    'Ti': 7600.0,
+    'Tm': 0.456,
+    'U': 0.047,
+    'Y': 28.0000,
+    'Yb': 3.0500,
+    'Zr': 74.0000,
+}
+
+# NMORB Long (Sun & McDonough 1989) -- 30 个元素
+NMORB_LONG_SUN_AND_MS_1989 = {
+    'Ba': 6.3000,
+    'Ce': 7.5000,
+    'Cs': 0.007,
+    'Dy': 4.5500,
+    'Er': 2.9700,
+    'Eu': 1.0200,
+    'Gd': 3.6800,
+    'Hf': 2.0500,
+    'Ho': 1.0100,
+    'K': 600.0000,
+    'La': 2.5000,
+    'Li': 4.3000,
+    'Lu': 0.455,
+    'Nb': 2.3300,
+    'Nd': 7.3000,
+    'P': 510.0000,
+    'Pb': 0.3,
+    'Pr': 1.3200,
+    'Rb': 0.56,
+    'Sm': 2.6300,
+    'Sr': 90.0000,
+    'Ta': 0.132,
+    'Tb': 0.67,
+    'Th': 0.12,
+    'Ti': 7600.0,
+    'Tm': 0.456,
+    'U': 0.047,
+    'Y': 28.0000,
+    'Yb': 3.0500,
+    'Zr': 74.0000,
+}
+
+# NMORB immobile (Sun & McDonough 1989 in Pearce 2014) -- 19 个元素
+NMORB_IMMOBILE_SUN_AND_MS_1989_IN_PEARCE_2014 = {
+    'Ce': 7.5000,
+    'Dy': 4.5500,
+    'Er': 2.9700,
+    'Gd': 3.6800,
+    'Hf': 2.0500,
+    'Ho': 1.0100,
+    'La': 2.5000,
+    'Nb': 2.3300,
+    'Nd': 7.3000,
+    'Pr': 1.3200,
+    'Sm': 2.6300,
+    'Ta': 0.132,
+    'Tb': 0.67,
+    'Th': 0.12,
+    'Ti': 7600.0,
+    'Tm': 0.456,
+    'Y': 28.0000,
+    'Yb': 3.0500,
+    'Zr': 74.0000,
+}
+
+# OIB (Sun & McDonough 1989) -- 22 个元素
+OIB_SUN_AND_MS_1989 = {
+    'Ba': 350.0000,
+    'Ce': 80.0000,
+    'Cs': 0.387,
+    'Dy': 5.6000,
+    'Eu': 3.0000,
+    'K': 12000,
+    'La': 37.0000,
+    'Lu': 0.3,
+    'Nb': 48.0000,
+    'Nd': 38.5000,
+    'P': 2700.0,
+    'Pb': 3.2000,
+    'Pr': 9.7000,
+    'Rb': 31.0000,
+    'Sm': 10.0000,
+    'Sr': 660.0000,
+    'Th': 4.0000,
+    'Ti': 17200,
+    'U': 1.0200,
+    'Y': 29.0000,
+    'Yb': 2.1600,
+    'Zr': 280.0000,
+}
+
+# ORG (Pearce et al. 1984) -- 12 个元素
+ORG_PEARCE_ET_AL__1984 = {
+    'Ba': 50.0000,
+    'Ce': 35.0000,
+    'Hf': 9.0000,
+    'K2O': 0.4,
+    'Nb': 10.0000,
+    'Rb': 4.0000,
+    'Sm': 9.0000,
+    'Ta': 0.7,
+    'Th': 0.8,
+    'Y': 70.0000,
+    'Yb': 8.0000,
+    'Zr': 340.0000,
+}
+
+# Oceanic island-arc sediments (Floyd et al. 1991) -- 32 个元素
+OCEANIC_ISLAND_ARC_SEDIMENTS_FLOYD_ET_AL__1991 = {
+    'Al2O3': 15.5500,
+    'Ba': 370.0000,
+    'CaO': 5.5100,
+    'Ce': 22.0000,
+    'Cr': 49.0000,
+    'Cs': 0.6,
+    'Cu': 29.0000,
+    'Fe2O3': 7.7000,
+    'Ga': 20.0000,
+    'Hf': 1.7000,
+    'K2O': 1.1700,
+    'La': 10.0000,
+    'MgO': 3.1000,
+    'MnO': 0.18,
+    'Na2O': 4.1300,
+    'Nb': 5.0000,
+    'Nd': 10.0000,
+    'Ni': 22.0000,
+    'P2O5': 0.23,
+    'Pb': 15.0000,
+    'Rb': 30.0000,
+    'Sc': 27.0000,
+    'SiO2': 58.2500,
+    'Sr': 362.0000,
+    'Ta': 0.4,
+    'Th': 1.9000,
+    'TiO2': 0.98,
+    'U': 0.8,
+    'V': 188.0000,
+    'Y': 15.0000,
+    'Zn': 88.0000,
+    'Zr': 99.0000,
+}
+
+# PGE chondrite - concentrations (Jochum 1996) -- 6 个元素
+PGE_CHONDRITE_CONCENTRATIONS_JOCHUM_1996 = {
+    'Ir': 0.48,
+    'Os': 0.492,
+    'Pd': 0.56,
+    'Pt': 0.982,
+    'Rh': 0.14,
+    'Ru': 0.683,
+}
+
+# PGE primitive mantle - concentrations (McDonough & Sun 1995) -- 6 个元素
+PGE_PRIMITIVE_MANTLE_CONCENTRATIONS_MS_AND_SUN_1995 = {
+    'Ir': 0.0032,
+    'Os': 0.0034,
+    'Pd': 0.0039,
+    'Pt': 0.0071,
+    'Rh': 0.0009,
+    'Ru': 0.005,
+}
+
+# Passive margin sediments (Floyd et al. 1991) -- 32 个元素
+PASSIVE_MARGIN_SEDIMENTS_FLOYD_ET_AL__1991 = {
+    'Al2O3': 7.1600,
+    'Ba': 255.0000,
+    'CaO': 0.19,
+    'Ce': 56.0000,
+    'Cr': 29.0000,
+    'Cs': 4.9000,
+    'Cu': 8.0000,
+    'Fe2O3': 3.6200,
+    'Ga': 8.0000,
+    'Hf': 8.8000,
+    'K2O': 1.0900,
+    'La': 22.0000,
+    'MgO': 1.7200,
+    'MnO': 0.15,
+    'Na2O': 1.0200,
+    'Nb': 7.0000,
+    'Nd': 39.0000,
+    'Ni': 15.0000,
+    'P2O5': 0.11,
+    'Pb': 11.0000,
+    'Rb': 50.0000,
+    'Sc': 8.0000,
+    'SiO2': 82.5900,
+    'Sr': 72.0000,
+    'Ta': 0.6,
+    'Th': 8.1000,
+    'TiO2': 0.62,
+    'U': 3.2000,
+    'V': 44.0000,
+    'Y': 24.0000,
+    'Zn': 49.0000,
+    'Zr': 302.0000,
+}
+
+# Primitive Mantle (Sun & McDonough 1989) -- 30 个元素
+PRIMITIVE_MANTLE_SUN_AND_MS_1989 = {
+    'Ba': 6.9890,
+    'Ce': 1.7750,
+    'Cs': 0.0079,
+    'Dy': 0.737,
+    'Er': 0.48,
+    'Eu': 0.168,
+    'Gd': 0.596,
+    'Hf': 0.309,
+    'Ho': 0.164,
+    'K': 250.0000,
+    'La': 0.687,
+    'Li': 1.6000,
+    'Lu': 0.074,
+    'Nb': 0.713,
+    'Nd': 1.3540,
+    'P': 95.0000,
+    'Pb': 0.071,
+    'Pr': 0.276,
+    'Rb': 0.635,
+    'Sm': 0.444,
+    'Sr': 21.1000,
+    'Ta': 0.041,
+    'Tb': 0.108,
+    'Th': 0.085,
+    'Ti': 1300.0,
+    'Tm': 0.074,
+    'U': 0.021,
+    'Y': 4.5500,
+    'Yb': 0.493,
+    'Zr': 11.2000,
+}
+
+# Primitive Mantle Long (Sun & McDonough 1989) -- 30 个元素
+PRIMITIVE_MANTLE_LONG_SUN_AND_MS_1989 = {
+    'Ba': 6.9890,
+    'Ce': 1.7750,
+    'Cs': 0.0079,
+    'Dy': 0.737,
+    'Er': 0.48,
+    'Eu': 0.168,
+    'Gd': 0.596,
+    'Hf': 0.309,
+    'Ho': 0.164,
+    'K': 250.0000,
+    'La': 0.687,
+    'Li': 1.6000,
+    'Lu': 0.074,
+    'Nb': 0.713,
+    'Nd': 1.3540,
+    'P': 95.0000,
+    'Pb': 0.071,
+    'Pr': 0.276,
+    'Rb': 0.635,
+    'Sm': 0.444,
+    'Sr': 21.1000,
+    'Ta': 0.041,
+    'Tb': 0.108,
+    'Th': 0.085,
+    'Ti': 1300.0,
+    'Tm': 0.074,
+    'U': 0.021,
+    'Y': 4.5500,
+    'Yb': 0.493,
+    'Zr': 11.2000,
+}
+
+# Primitive Mantle immobile (Sun & McDonough 1989) -- 16 个元素
+PRIMITIVE_MANTLE_IMMOBILE_SUN_AND_MS_1989 = {
+    'Ce': 1.7750,
+    'Eu': 0.168,
+    'Gd': 0.596,
+    'Hf': 0.309,
+    'La': 0.687,
+    'Nb': 0.713,
+    'Nd': 1.3540,
+    'P': 95.0000,
+    'Sm': 0.444,
+    'Ta': 0.041,
+    'Tb': 0.108,
+    'Th': 0.085,
+    'Ti': 1300.0,
+    'Y': 4.5500,
+    'Yb': 0.493,
+    'Zr': 11.2000,
+}
+
+# Primordial Mantle (Wood et al. 1979) -- 19 个元素
+PRIMORDIAL_MANTLE_WOOD_ET_AL__1979 = {
+    'Ba': 7.5600,
+    'Ce': 1.9000,
+    'Cs': 0.019,
+    'Hf': 0.35,
+    'K': 252.0000,
+    'La': 0.71,
+    'Nb': 0.62,
+    'Nd': 1.2900,
+    'P': 90.4000,
+    'Rb': 0.86,
+    'Sm': 0.385,
+    'Sr': 23.0000,
+    'Ta': 0.043,
+    'Tb': 0.099,
+    'Th': 0.096,
+    'Ti': 1527.0,
+    'U': 0.027,
+    'Y': 4.8700,
+    'Zr': 11.0000,
+}
+
+# REE Upper Continental Crust (Taylor & McLennan 1995) -- 15 个元素
+REE_UPPER_CONTINENTAL_CRUST_TAYLOR_AND_MCLENNAN_1995 = {
+    'Ce': 64.0000,
+    'Dy': 3.5000,
+    'Er': 2.3000,
+    'Eu': 0.88,
+    'Gd': 3.8000,
+    'Ho': 0.8,
+    'La': 30.0000,
+    'Lu': 0.32,
+    'Nd': 26.0000,
+    'Pm': 1.0000,
+    'Pr': 7.1000,
+    'Sm': 4.5000,
+    'Tb': 0.64,
+    'Tm': 0.33,
+    'Yb': 2.2000,
+}
+
+# REE chondrite (Anders & Grevesse 1989) -- 15 个元素
+REE_CHONDRITE_ANDERS_AND_GREVESSE_1989 = {
+    'Ce': 0.6032,
+    'Dy': 0.2427,
+    'Er': 0.1589,
+    'Eu': 0.056,
+    'Gd': 0.1966,
+    'Ho': 0.0556,
+    'La': 0.2347,
+    'Lu': 0.0243,
+    'Nd': 0.4524,
+    'Pm': 1.0000,
+    'Pr': 0.0891,
+    'Sm': 0.1471,
+    'Tb': 0.0363,
+    'Tm': 0.0242,
+    'Yb': 0.1625,
+}
+
+# REE chondrite (Boynton 1984) -- 15 个元素
+REE_CHONDRITE_BOYNTON_1984 = {
+    'Ce': 0.808,
+    'Dy': 0.322,
+    'Er': 0.21,
+    'Eu': 0.0735,
+    'Gd': 0.259,
+    'Ho': 0.0718,
+    'La': 0.31,
+    'Lu': 0.0322,
+    'Nd': 0.6,
+    'Pm': 1.0000,
+    'Pr': 0.122,
+    'Sm': 0.195,
+    'Tb': 0.0474,
+    'Tm': 0.0324,
+    'Yb': 0.209,
+}
+
+# REE chondrite (Nakamura 1974) -- 15 个元素
+REE_CHONDRITE_NAKAMURA_1974 = {
+    'Ce': 0.865,
+    'Dy': 0.343,
+    'Er': 0.225,
+    'Eu': 0.077,
+    'Gd': 0.276,
+    'Ho': 0.07,
+    'La': 0.33,
+    'Lu': 0.034,
+    'Nd': 0.63,
+    'Pm': 1.0000,
+    'Pr': 0.112,
+    'Sm': 0.203,
+    'Tb': 0.047,
+    'Tm': 0.03,
+    'Yb': 0.22,
+}
+
+# REE chondrite (O'Neill 2016) -- 14 个元素
+REE_CHONDRITE_ONEILL_2016 = {
+    'Ce': 0.6308,
+    'Dy': 0.254,
+    'Er': 0.1645,
+    'Eu': 0.0592,
+    'Gd': 0.2059,
+    'Ho': 0.0554,
+    'La': 0.2472,
+    'Lu': 0.0251,
+    'Nd': 0.4793,
+    'Pr': 0.095,
+    'Sm': 0.1542,
+    'Tb': 0.0375,
+    'Tm': 0.0258,
+    'Yb': 0.1684,
+}
+
+# REE chondrite (Palme & O'Neil 2014) -- 14 个元素
+REE_CHONDRITE_PALME_AND_ONEIL_2014 = {
+    'Ce': 0.6194,
+    'Dy': 0.2558,
+    'Er': 0.1655,
+    'Eu': 0.05883,
+    'Gd': 0.2069,
+    'Ho': 0.05644,
+    'La': 0.2414,
+    'Lu': 0.02503,
+    'Nd': 0.4737,
+    'Pr': 0.0939,
+    'Sm': 0.1536,
+    'Tb': 0.03797,
+    'Tm': 0.02609,
+    'Yb': 0.1687,
+}
+
+# REE chondrite (Palme & O'Neill 2014) -- 14 个元素
+REE_CHONDRITE_PALME_AND_ONEILL_2014 = {
+    'Ce': 0.6194,
+    'Dy': 0.2558,
+    'Er': 0.1655,
+    'Eu': 0.05883,
+    'Gd': 0.2069,
+    'Ho': 0.05644,
+    'La': 0.2414,
+    'Lu': 0.02503,
+    'Nd': 0.4737,
+    'Pr': 0.0939,
+    'Sm': 0.1536,
+    'Tb': 0.03797,
+    'Tm': 0.02609,
+    'Yb': 0.1687,
+}
+
+# SEDIMENTS GLOSS-II (Plank 2014) -- 38 个元素
+SEDIMENTS_GLOSS_II_PLANK_2014 = {
+    'B': 67.9000,
+    'Ba': 786.0000,
+    'Be': 1.9900,
+    'Ce': 57.6000,
+    'Co': 26.9000,
+    'Cr': 68.8000,
+    'Cs': 4.9000,
+    'Cu': 116.0000,
+    'Dy': 5.4300,
+    'Er': 3.0900,
+    'Eu': 1.3700,
+    'Gd': 5.8100,
+    'Hf': 3.4200,
+    'Ho': 1.1000,
+    'K': 18345,
+    'La': 29.1000,
+    'Li': 44.8000,
+    'Lu': 0.459,
+    'Nb': 9.4200,
+    'Nd': 27.6000,
+    'Ni': 73.0000,
+    'P': 872.9200,
+    'Pb': 21.2000,
+    'Pr': 7.1500,
+    'Rb': 83.7000,
+    'Sc': 15.0000,
+    'Sm': 6.0000,
+    'Sr': 302.0000,
+    'Ta': 0.698,
+    'Tb': 0.92,
+    'Th': 8.1000,
+    'Ti': 3836.8,
+    'U': 1.7300,
+    'V': 116.0000,
+    'Y': 33.3000,
+    'Yb': 3.0100,
+    'Zn': 93.0000,
+    'Zr': 129.0000,
+}
+
+# SEDIMENTS Upper Continental Crust (Taylor & McLennan 1995) -- 21 个元素
+SEDIMENTS_UPPER_CONTINENTAL_CRUST_TAYLOR_AND_MCLENNAN_1995 = {
+    'Ba': 550.0000,
+    'Ce': 64.0000,
+    'Cr': 35.0000,
+    'Cs': 3.7000,
+    'Hf': 5.8000,
+    'K': 28000,
+    'La': 30.0000,
+    'Nb': 25.0000,
+    'Ni': 20.0000,
+    'P': 700.0000,
+    'Rb': 112.0000,
+    'Sc': 11.0000,
+    'Sr': 350.0000,
+    'Ta': 2.2000,
+    'Th': 10.7000,
+    'Ti': 3000.0,
+    'U': 2.8000,
+    'V': 60.0000,
+    'Y': 22.0000,
+    'Yb': 2.2000,
+    'Zr': 190.0000,
+}
+
+# Upper Continental Crust (Taylor & McLennan 1995) -- 21 个元素
+UPPER_CONTINENTAL_CRUST_TAYLOR_AND_MCLENNAN_1995 = {
+    'Ba': 550.0000,
+    'Ce': 64.0000,
+    'Cs': 3.7000,
+    'Hf': 5.8000,
+    'K': 28000,
+    'La': 30.0000,
+    'Nb': 25.0000,
+    'Nd': 26.0000,
+    'P': 700.0000,
+    'Rb': 112.0000,
+    'Sm': 4.5000,
+    'Sr': 350.0000,
+    'Ta': 2.2000,
+    'Tb': 0.64,
+    'Th': 10.7000,
+    'Ti': 3000.0,
+    'Tm': 0.33,
+    'U': 2.8000,
+    'Y': 22.0000,
+    'Yb': 2.2000,
+    'Zr': 190.0000,
+}
+
+# 常用元素顺序
+REE_ORDER = ['La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu']
+SPIDER_ORDER = ['Cs', 'Rb', 'Ba', 'Th', 'U', 'Nb', 'Ta', 'K', 'La', 'Ce', 'Pb', 'Pr', 'Sr', 'P', 'Nd', 'Zr', 'Hf', 'Sm', 'Eu', 'Ti', 'Gd', 'Tb', 'Dy', 'Ho', 'Y', 'Er', 'Tm', 'Yb', 'Lu']
+
+# 名称到常量的映射表
+NORM_DICT = {
+    'Bulk Continental Crust (Taylor & McLennan 1995)': BULK_CONTINENTAL_CRUST_TAYLOR_AND_MCLENNAN_1995,
+    'Chondrites (Sun et al. 1980)': CHONDRITES_SUN_ET_AL__1980,
+    'Chondrites (Thompson 1982)': CHONDRITES_THOMPSON_1982,
+    'Cl Chondrite (McDonough & Sun 1995)': CL_CHONDRITE_MS_AND_SUN_1995,
+    "Cl Chondrite (Palme & O'Neil 2014)": CL_CHONDRITE_PALME_AND_ONEIL_2014,
+    "Cl Chondrite (Palme & O'Neill 2014)": CL_CHONDRITE_PALME_AND_ONEILL_2014,
+    'Continental arc and active margin sediments (Floyd et al. 1991)': CONTINENTAL_ARC_AND_ACTIVE_MARGIN_SEDIMENTS_FLOYD_ET_AL__1991,
+    'DMM component': DMM_COMPONENT,
+    'Depleted Mantle (Salters & Stracke 2004)': DEPLETED_MANTLE_SALTERS_AND_STRACKE_2004,
+    'EM1 component': EM1_COMPONENT,
+    'EM2 component': EM2_COMPONENT,
+    'EMORB (Sun & McDonough 1989)': EMORB_SUN_AND_MS_1989,
+    'GLOSS (Plank & Langmuir 1998)': GLOSS_PLANK_AND_LANGMUIR_1998,
+    'GLOSS-II (Plank 2014)': GLOSS_II_PLANK_2014,
+    'HIMU component': HIMU_COMPONENT,
+    'HSE Primitive mantle - concentrations (Becker et al. 2006)': HSE_PRIMITIVE_MANTLE_CONCENTRATIONS_BECKER_ET_AL__2006,
+    'HSE chondrite - concentrations (Jochum 1996)': HSE_CHONDRITE_CONCENTRATIONS_JOCHUM_1996,
+    'Lower Continental Crust (Taylor & McLennan 1995)': LOWER_CONTINENTAL_CRUST_TAYLOR_AND_MCLENNAN_1995,
+    'MORB (Pearce 1983)': MORB_PEARCE_1983,
+    'MORB (Pearce 1996)': MORB_PEARCE_1996,
+    'Middle Continental Crust (Rudnick & Gao 2003)': MIDDLE_CONTINENTAL_CRUST_RUDNICK_AND_GAO_2003,
+    'NMORB (Sun & McDonough 1989)': NMORB_SUN_AND_MS_1989,
+    'NMORB Long (Sun & McDonough 1989)': NMORB_LONG_SUN_AND_MS_1989,
+    'NMORB immobile (Sun & McDonough 1989 in Pearce 2014)': NMORB_IMMOBILE_SUN_AND_MS_1989_IN_PEARCE_2014,
+    'OIB (Sun & McDonough 1989)': OIB_SUN_AND_MS_1989,
+    'ORG (Pearce et al. 1984)': ORG_PEARCE_ET_AL__1984,
+    'Oceanic island-arc sediments (Floyd et al. 1991)': OCEANIC_ISLAND_ARC_SEDIMENTS_FLOYD_ET_AL__1991,
+    'PGE chondrite - concentrations (Jochum 1996)': PGE_CHONDRITE_CONCENTRATIONS_JOCHUM_1996,
+    'PGE primitive mantle - concentrations (McDonough & Sun 1995)': PGE_PRIMITIVE_MANTLE_CONCENTRATIONS_MS_AND_SUN_1995,
+    'Passive margin sediments (Floyd et al. 1991)': PASSIVE_MARGIN_SEDIMENTS_FLOYD_ET_AL__1991,
+    'Primitive Mantle (Sun & McDonough 1989)': PRIMITIVE_MANTLE_SUN_AND_MS_1989,
+    'Primitive Mantle Long (Sun & McDonough 1989)': PRIMITIVE_MANTLE_LONG_SUN_AND_MS_1989,
+    'Primitive Mantle immobile (Sun & McDonough 1989)': PRIMITIVE_MANTLE_IMMOBILE_SUN_AND_MS_1989,
+    'Primitive mantle (McDonough & Sun 1995)': PRIMITIVE_MANTLE_MS_AND_SUN_1995,
+    'Primordial Mantle (Wood et al. 1979)': PRIMORDIAL_MANTLE_WOOD_ET_AL__1979,
+    'REE Primitive mantle (McDonough & Sun 1995)': REE_PRIMITIVE_MANTLE_MS_AND_SUN_1995,
+    'REE Upper Continental Crust (Taylor & McLennan 1995)': REE_UPPER_CONTINENTAL_CRUST_TAYLOR_AND_MCLENNAN_1995,
+    'REE chondrite (Anders & Grevesse 1989)': REE_CHONDRITE_ANDERS_AND_GREVESSE_1989,
+    'REE chondrite (Boynton 1984)': REE_CHONDRITE_BOYNTON_1984,
+    'REE chondrite (McDonough & Sun 1995)': REE_CHONDRITE_MS_AND_SUN_1995,
+    'REE chondrite (Nakamura 1974)': REE_CHONDRITE_NAKAMURA_1974,
+    "REE chondrite (O'Neill 2016)": REE_CHONDRITE_ONEILL_2016,
+    "REE chondrite (Palme & O'Neil 2014)": REE_CHONDRITE_PALME_AND_ONEIL_2014,
+    "REE chondrite (Palme & O'Neill 2014)": REE_CHONDRITE_PALME_AND_ONEILL_2014,
+    'SEDIMENTS GLOSS-II (Plank 2014)': SEDIMENTS_GLOSS_II_PLANK_2014,
+    'SEDIMENTS Upper Continental Crust (Taylor & McLennan 1995)': SEDIMENTS_UPPER_CONTINENTAL_CRUST_TAYLOR_AND_MCLENNAN_1995,
+    'Upper Continental Crust (Taylor & McLennan 1995)': UPPER_CONTINENTAL_CRUST_TAYLOR_AND_MCLENNAN_1995,
+}
+
+
 
 # ============================================================
-# N-MORB 标准化参考值（Sun & McDonough 1989）
-# 用于 Saccani (2015) NbN vs ThN 判别图等
+# 旧接口兼容（已有代码引用 CHONDRITE / PRIMITIVE_MANTLE）
+CHONDRITE = REE_CHONDRITE_MS_AND_SUN_1995
+PRIMITIVE_MANTLE = PRIMITIVE_MANTLE_MS_AND_SUN_1995
+
+# 常用别名（方便日常引用）
 # ============================================================
-N_MORB = {
-    'Th': 0.12, 'Nb': 2.33, 'La': 2.5, 'Ce': 7.5, 'Pr': 1.32,
-    'Nd': 7.3, 'Sm': 2.63, 'Eu': 1.02, 'Gd': 3.77, 'Tb': 0.736,
-    'Dy': 5.19, 'Ho': 1.17, 'Er': 3.56, 'Tm': 0.546, 'Yb': 3.6,
-    'Lu': 0.546, 'Y': 31.0, 'Zr': 84.0, 'Hf': 2.21, 'Ti': 8760,
-    'V': 250, 'Sc': 38.3, 'Ni': 110, 'Cr': 250, 'Co': 45.0,
-}
+CHONDRITE_MS95 = REE_CHONDRITE_MS_AND_SUN_1995
+CHONDRITE_NAKAMURA1974 = REE_CHONDRITE_NAKAMURA_1974
+CHONDRITE_BOYNTON1984 = REE_CHONDRITE_BOYNTON_1984
+CHONDRITE_ANDERS1989 = REE_CHONDRITE_ANDERS_AND_GREVESSE_1989
+CHONDRITE_PALME2014 = REE_CHONDRITE_PALME_AND_ONEILL_2014
+PRIMITIVE_MANTLE_MS95 = PRIMITIVE_MANTLE_MS_AND_SUN_1995
+PRIMITIVE_MANTLE_LONG_SM89 = PRIMITIVE_MANTLE_LONG_SUN_AND_MS_1989
+PRIMITIVE_MANTLE_IMMOBILE = PRIMITIVE_MANTLE_IMMOBILE_SUN_AND_MS_1989
+PM_MS95 = PRIMITIVE_MANTLE_MS95
+REE_PM_MS95 = REE_PRIMITIVE_MANTLE_MS_AND_SUN_1995
+NMORB_SM89 = NMORB_SUN_AND_MS_1989
+EMORB_SM89 = EMORB_SUN_AND_MS_1989
+NMORB_IMMOBILE = NMORB_IMMOBILE_SUN_AND_MS_1989_IN_PEARCE_2014
+OIB_SM89 = OIB_SUN_AND_MS_1989
+PM_SM89 = PRIMITIVE_MANTLE_SUN_AND_MS_1989
+MORB_PEARCE1983 = MORB_PEARCE_1983
+MORB_PEARCE1996 = MORB_PEARCE_1996
+DMM_SALTERS2004 = DEPLETED_MANTLE_SALTERS_AND_STRACKE_2004
+UCC_TM95 = UPPER_CONTINENTAL_CRUST_TAYLOR_AND_MCLENNAN_1995
+LCC_TM95 = LOWER_CONTINENTAL_CRUST_TAYLOR_AND_MCLENNAN_1995
+MCC_RG2003 = MIDDLE_CONTINENTAL_CRUST_RUDNICK_AND_GAO_2003
+GLOSS_PLANK1998 = GLOSS_PLANK_AND_LANGMUIR_1998
+GLOSS_II_PLANK2014 = GLOSS_II_PLANK_2014
+ORG_PEARCE1984 = ORG_PEARCE_ET_AL__1984
+N_MORB = NMORB_SM89
 
 
 def normalize(data_dict, ref):
-    """将元素浓度按参考值标准化，返回 dict。"""
+    """将元素浓度按参考值标准化。
+
+    Parameters
+    ----------
+    data_dict : dict
+        元素名 -> 浓度值的映射 (ppm)
+    ref : dict
+        标准化参考值字典（如 CHONDRITE_MS95）
+
+    Returns
+    -------
+    dict
+        标准化后的值。元素不在 ref 中或输入为 NaN 时返回 NaN。
+    """
+    import numpy as np
     result = {}
     for k, v in data_dict.items():
-        if k in ref and ref[k] > 0 and not np.isnan(v):
-            result[k] = v / ref[k]
+        if k in ref and ref[k] > 0:
+            try:
+                if not (isinstance(v, float) and np.isnan(v)):
+                    result[k] = v / ref[k]
+                else:
+                    result[k] = np.nan
+            except (TypeError, ZeroDivisionError):
+                result[k] = np.nan
         else:
             result[k] = np.nan
     return result

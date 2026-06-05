@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from scipy import stats
 
-import _style
-from _chem import feot_calc
-from _ternary import (
+import igneous_wr.report.style as _style
+from igneous_wr.core.chem import feot_calc
+from igneous_wr.core.ternary import (
     SQRT3_2, ternary_to_xy, ternary_corners,
     draw_ternary_frame, draw_ternary_grid,
     draw_ternary_ticks, label_ternary_vertices,
@@ -338,6 +338,13 @@ def plot_shervais(gd, out_dir=None, save=True):
     Ti 从微量 ppm 列直接读取，不需转换。
     V 是对氧化还原敏感的元素，Ti 是不活动元素。
 
+    底图按 Shervais (1982) 原始线性坐标（改自 GCDkit 版）：
+      X 轴: Ti/1000 (范围 0~25)
+      Y 轴: V (ppm) (范围 0~600)
+      Ti/V 比射线: 10(虚线), 20(虚线), 50(实线), 100(虚线)
+
+    分区: ARC (Ti/V < 20), OFB (Ti/V 20~50), WPB/OIB (Ti/V > 50)
+
     所需元素: Ti, V
     """
     missing = gd.check_elements('Ti', 'V', strict=True)
@@ -352,53 +359,57 @@ def plot_shervais(gd, out_dir=None, save=True):
     # Shervais (1982) 横轴为 Ti/1000，原始 Ti(ppm) 要除以 1000
     ti_1000 = ti_arr / 1000.0
 
-    # Ti/V 比值线（划分构造环境）
-    # Shervais (1982): Ti/V = 10, 20, 50, 100 为边界
-    # 注意：横轴 Ti/1000 下的 Ti/V 比值线，物理上等价但数值要对应
-    fig, ax = plt.subplots(figsize=(8, 7))
+    # ── 版面设置 ──
+    fig, ax = plt.subplots(figsize=(9, 7))
 
-    # ── Ti/V 比值线 ──
-    # 横轴是 Ti/1000，比值线 y = V = (Ti/1000)*1000 / ratio
-    ratio_lines = {
-        10: ('Ti/V = 10', '#990000'),
-        20: ('Ti/V = 20', '#CC6600'),
-        50: ('Ti/V = 50', '#009933'),
-        100: ('Ti/V = 100', '#3366CC'),
-    }
-    x_range_ti1000 = np.array([0.01, 50])  # 对应原始 Ti 10~50000 ppm
-    for ratio, (label_txt, color) in ratio_lines.items():
-        # 因为散点 = ti_arr/1000，要维持 Ti/V = ratio，V = ti_arr / ratio = ti_1000 * 1000 / ratio
-        # 但在 ti_1000 坐标系下，V 值不变（ppm 不变）
-        # 所以线：在 log(ti_1000) vs log(V) 空间，V = (ti_1000 * 1000) / ratio
-        y_vals = (x_range_ti1000 * 1000) / ratio
-        ax.loglog(x_range_ti1000, y_vals, color=color, lw=0.8, ls='--', alpha=0.7)
-        # 标注
-        mid_x = 2.0  # Ti/1000 = 2，对应原始 Ti = 2000 ppm
-        mid_y = (mid_x * 1000) / ratio
-        ax.text(mid_x * 1.3, mid_y * 1.3, label_txt, fontsize=7,
-                color=color, fontstyle='italic', fontproperties=_style.times_prop)
+    # ── Ti/V 比值射线 ──
+    # Shervais (1982) Figure 2 四根 Ti/V 比射线，从原点出发
+    # 在 Ti/1000 (x) vs V (y) 坐标系下，V = (Ti/1000 * 1000) / ratio
+    # Ti/V = 10 -> y = 100*x  (虚线)
+    # Ti/V = 20 -> y =  50*x  (虚线)
+    # Ti/V = 50 -> y =  20*x  (实线)
+    # Ti/V = 100 -> y = 10*x  (虚线)
+    _xt = np.array([0.0, 25.0])
+    ax.plot(_xt, 100.0 * _xt, 'k--', lw=0.8, zorder=3)
+    ax.plot(_xt, 50.0 * _xt,  'k--', lw=0.8, zorder=3)
+    ax.plot(_xt, 20.0 * _xt,  'k-',  lw=1.0, zorder=3)
+    ax.plot(_xt, 10.0 * _xt,  'k--', lw=0.8, zorder=3)
+
+    # ── Ti/V 比标注 ──
+    ax.text(2.0,  265,  'Ti/V=10', fontsize=7.5, ha='center', va='center',
+            color='#333', fontstyle='italic')
+    ax.text(4.5,  270,  'Ti/V=20', fontsize=7.5, ha='center', va='center',
+            color='#333', fontstyle='italic')
+    ax.text(12.0, 275,  'Ti/V=50', fontsize=7.5, ha='center', va='center',
+            color='#333', fontstyle='italic')
+    ax.text(21.0, 285,  'Ti/V=100', fontsize=7.5, ha='center', va='center',
+            color='#333', fontstyle='italic')
 
     # ── 构造环境标签 ──
-    # Shervais 的原始分区（横轴为 Ti/1000 刻度时的标注位置）
-    ax.text(0.05, 0.5, 'Arc\n(IAT,\nboninite)', fontsize=8, ha='left', va='bottom',
-            fontstyle='italic', color='#990000', fontproperties=_style.times_prop)
-    ax.text(0.5, 50, 'Arc\ntholeiite', fontsize=8, ha='center', va='bottom',
-            fontstyle='italic', color='#CC6600', fontproperties=_style.times_prop)
-    ax.text(3, 100, 'MORB', fontsize=9, ha='center', va='bottom',
-            fontstyle='italic', color='#009933', fontproperties=_style.times_prop)
-    ax.text(8, 120, 'WPB / OIB', fontsize=9, ha='center', va='bottom',
-            fontstyle='italic', color='#3366CC', fontproperties=_style.times_prop)
+    ax.text(4.0,  560,  'ARC', fontsize=11, ha='center', va='center',
+            fontweight='bold', color='#2979FF', zorder=5)
+    ax.text(15.0, 560,  'OFB', fontsize=11, ha='center', va='center',
+            fontweight='bold', color='#558B2F', zorder=5)
+    ax.text(12.0, 80,   'WPB', fontsize=11, ha='center', va='center',
+            fontweight='bold', color='#E65100', zorder=5)
 
+    # ── 数据投点 ──
     _style.scatter_samples(ax, ti_1000, v_arr, labels, groups=gd.groups)
     _style.add_legend(ax)
 
+    # ── 坐标轴（线性，非 log）──
     ax.set_xlabel('Ti/1000', fontsize=12)
     ax.set_ylabel('V (ppm)', fontsize=12)
-    ax.set_xscale('log')
-    ax.set_yscale('log')
-    ax.set_xlim(0.03, 60)
-    ax.set_ylim(0.3, 3000)
+    ax.set_xlim(0.0, 25.0)
+    ax.set_ylim(0.0, 600.0)
+    ax.set_xticks(range(0, 26, 5))
+    ax.set_yticks(range(0, 601, 100))
     _style.style_ax(ax, 'Ti/1000', 'V (ppm)')
+
+    # ── 文献引用 ──
+    ax.text(0.5, -0.10, 'After Shervais (1982)', fontsize=8,
+            fontstyle='italic', ha='center', va='top',
+            transform=ax.transAxes, color='#666666')
 
     plt.tight_layout(pad=0.3)
     if save:
@@ -426,7 +437,7 @@ def plot_saccani_2015(gd, out_dir=None, save=True):
     nb = gd.get('Nb'); th = gd.get('Th')
     labels = gd.labels
 
-    from _normalize import N_MORB
+    from igneous_wr.core.normalize import N_MORB
     nmorb_nb = N_MORB.get('Nb', 2.33)
     nmorb_th = N_MORB.get('Th', 0.12)
 

@@ -6,14 +6,14 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from scipy import stats
 
-import _style
-from _chem import feot_calc
-from _ternary import (
+import igneous_wr.report.style as _style
+from igneous_wr.core.chem import feot_calc
+from igneous_wr.core.ternary import (
     SQRT3_2, ternary_to_xy, ternary_corners,
     draw_ternary_frame, draw_ternary_grid,
     draw_ternary_ticks, label_ternary_vertices,
 )
-from _normalize import REE_ORDER, CHONDRITE, SPIDER_ORDER, PRIMITIVE_MANTLE, normalize
+from igneous_wr.core.normalize import REE_ORDER, CHONDRITE, SPIDER_ORDER, PRIMITIVE_MANTLE, normalize
 from igneous_wr.boundaries.core import load_boundary
 
 """
@@ -123,10 +123,13 @@ def plot_pearce_2008(gd, out_dir=None, save=True):
     Th/Yb vs Nb/Yb 源区判别图（Pearce, 2008）🔥基性岩
 
     核心原理：Th-Nb 地壳输入替代指标。
-    - 大洋玄武岩（MORB、OIB、大洋高原）几乎全部落于 MORB-OIB 阵列（灰色带）内
+    - 大洋玄武岩（MORB、OIB、大洋高原）几乎全部落于 MORB-OIB 阵列内
     - 受地壳混染或俯冲影响的样品会偏离阵列向上（高 Th/Yb）
-    - N-MORB/E-MORB/OIB 三个参考星号标记典型大洋端元
+    - N-MORB/E-MORB/OIB 三个参考点标记典型大洋端元
     - 火山弧及地壳混染玄武岩位于阵列上方
+
+    底图参数来自 GCDkit 6.3.0 Diaries/Geotectonic/PearceNbThYb.r
+    N-MORB, E-MORB, OIB 来自 Sun & McDonough 1989 (GCDkit reservoirs.data)
 
     关键参考：Pearce (2008) Lithos Fig. 2a; Pearce (2014) Elements Fig. 5a
 
@@ -146,90 +149,74 @@ def plot_pearce_2008(gd, out_dir=None, save=True):
 
     fig, ax = plt.subplots(figsize=(8, 7))
 
-    # ── MORB-OIB 阵列（灰色阴影带）──
-    # 参考 Pearce (2008) Fig. 2a
-    # 原文：>98% of oceanic basalts (MORB, OIB, oceanic plateau) lie within this array
-    # 带状区域通过两条 Th/Nb 比值对角线界定：
-    #   上界 Th/Nb = 0.14（富集地幔极限，略高于 PM ~0.12）
-    #   下界 Th/Nb = 0.04（极度亏损地幔下限，略低于 N-MORB ~0.05）
-    # 在对数坐标下，Th/Nb=const 表现为斜率为 1 的直线
-    ref_x = np.logspace(np.log10(0.08), np.log10(60), 50)
+    # ── 坐标范围 (from GCDkit) ──
+    xlim = (0.1, 100)
+    ylim = (0.01, 10)
 
-    # 下边界：Th/Nb = 0.04  →  Th/Yb = 0.04 × (Nb/Yb)
-    thnb_lower = 0.04
-    lower_y = thnb_lower * ref_x
+    # ── MORB-OIB 阵列（来自 GCDkit PearceNbThYb.r）──
+    # 斜率: b = (log10(10)-log10(1.2)) / (log10(0.8)-log10(0.1))
+    b = (np.log10(10) - np.log10(1.2)) / (np.log10(0.8) - np.log10(0.1))
+    # 截距(log空间): a = log10(10) - b * log10(0.8)
+    a_intercept = np.log10(10) - b * np.log10(0.8)
+    # y = 10^a * x^b
+    x_line = np.logspace(np.log10(0.1), np.log10(100), 500)
+    y_line = 10 ** a_intercept * (x_line ** b)
 
-    # 上边界：Th/Nb = 0.14  →  Th/Yb = 0.14 × (Nb/Yb)
-    thnb_upper = 0.14
-    upper_y = thnb_upper * ref_x
+    # 背景多边形 (from GCDkit polygon1)
+    fill_x = [0.1, 0.3, 100, 100, 80, 0.1]
+    fill_y = [0.01, 0.01, 4.8, 10, 10, 0.01]
+    ax.fill(fill_x, fill_y, color='#B0D4F1', alpha=0.35, zorder=1)
 
-    # 填充灰色半透明带
-    ax.fill_between(ref_x, lower_y, upper_y,
-                    color='#D0D0D0', alpha=0.20, zorder=1)
-    # 上下边界虚线
-    ax.loglog(ref_x, lower_y, color='#888888', lw=0.7, ls='--')
-    ax.loglog(ref_x, upper_y, color='#888888', lw=0.7, ls='--')
+    # MORB-OIB 阵列虚线
+    ax.plot(x_line, y_line, '--', color='gray', linewidth=1.5, zorder=3)
 
-    # ── 阵列标签 ──
-    ax.text(3.0, 0.075, 'MORB-OIB array',
-            fontsize=9, ha='center', va='bottom',
-            fontstyle='italic', color='#666666', fontproperties=_style.times_prop)
+    # ── 标签 ──
+    ax.text(0.15, 1, 'Volcanic arc array', fontsize=10, color='gray',
+            rotation=42, ha='left', va='bottom', rotation_mode='anchor', zorder=5)
+    ax.text(7, 0.5, 'MORB-OIB array', fontsize=10, color='gray',
+            rotation=42, ha='left', va='bottom', rotation_mode='anchor', zorder=5)
 
-    # ── 参考点（严格 Sun & McDonough 1989 原始 ppm 计算）──
-    # N-MORB: Nb=2.33, Yb=2.37, Th=0.12 → Nb/Yb=0.98, Th/Yb=0.051
-    nmorb_nb_yb = 0.98
-    nmorb_th_yb = 0.051
-    ax.scatter([nmorb_nb_yb], [nmorb_th_yb], marker='*', s=130,
-               color='#3377CC', edgecolors='#3377CC', zorder=7, label='N-MORB')
-    ax.text(nmorb_nb_yb*1.6, nmorb_th_yb*0.85, 'N-MORB', fontsize=8,
-            fontstyle='italic', color='#3377CC', fontproperties=_style.times_prop)
+    # ── 参考点（Sun & McDonough 1989，ppm 原始值来自 GCDkit reservoirs.data）──
+    # N-MORB: Nb=2.33, Th=0.12, Yb=3.05 → Nb/Yb=0.764, Th/Yb=0.0393
+    # E-MORB: Nb=8.3,  Th=0.6,  Yb=2.37 → Nb/Yb=3.502, Th/Yb=0.2532
+    # OIB:    Nb=48,   Th=4,    Yb=2.16 → Nb/Yb=22.222, Th/Yb=1.852
 
-    # E-MORB: Nb=8.30, Yb=1.93, Th=0.60 → Nb/Yb=4.30, Th/Yb=0.311
-    emorb_nb_yb = 4.30
-    emorb_th_yb = 0.311
-    ax.scatter([emorb_nb_yb], [emorb_th_yb], marker='*', s=130,
-               color='#449944', edgecolors='#449944', zorder=7, label='E-MORB')
-    ax.text(emorb_nb_yb*1.4, emorb_th_yb*0.85, 'E-MORB', fontsize=8,
-            fontstyle='italic', color='#449944', fontproperties=_style.times_prop)
+    reservoirs = {
+        'N-MORB':  {'nb_yb': 2.33 / 3.05,   'th_yb': 0.12 / 3.05,   'color': '#2196F3'},
+        'E-MORB':  {'nb_yb': 8.3  / 2.37,   'th_yb': 0.6  / 2.37,   'color': '#FF9800'},
+        'OIB':     {'nb_yb': 48   / 2.16,   'th_yb': 4    / 2.16,   'color': '#F44336'},
+    }
 
-    # OIB: Nb=48.0, Yb=1.80, Th=4.00 → Nb/Yb=26.67, Th/Yb=2.222
-    oib_nb_yb = 26.67
-    oib_th_yb = 2.222
-    ax.scatter([oib_nb_yb], [oib_th_yb], marker='*', s=130,
-               color='#CC7733', edgecolors='#CC7733', zorder=7, label='OIB')
-    ax.text(oib_nb_yb*1.3, oib_th_yb*0.85, 'OIB', fontsize=8,
-            fontstyle='italic', color='#CC7733', fontproperties=_style.times_prop)
-
-    # ── 地壳混染端元：UCC (Rudnick & Gao 2003) ──
-    # Nb=12.0, Yb=2.2, Th=10.5 → Nb/Yb=5.45, Th/Yb=4.77, Th/Nb=0.875
-    ucc_nb_yb = 5.45
-    ucc_th_yb = 4.77
-    ax.scatter([ucc_nb_yb], [ucc_th_yb], marker='D', s=60,
-               color='#993333', edgecolors='#660000', zorder=7, label='UCC')
-    ax.text(ucc_nb_yb*0.7, ucc_th_yb*1.15, 'UCC', fontsize=8,
-            fontstyle='italic', color='#993333', fontproperties=_style.times_prop,
-            ha='center', va='bottom')
-
-    # ── 俯冲/地壳混染指示 ──
-    # 1:1 参考线（Th/Yb = Nb/Yb），用于视觉参考——明显高 Th 的样品显示混染/俯冲
-    ax.loglog([0.05, 80], [0.05, 80], color='#AAAAAA', lw=0.6, ls=':')
-
-    # 向上偏移指示箭头 + 文字
-    ax.annotate('', xy=(1.0, 12), xytext=(1.0, 1.5),
-                arrowprops=dict(arrowstyle='->', color='#993333', lw=1.8))
-    ax.text(1.2, 5.5, 'Volcanic arc\\nbasalts &\\ncrustally\\ncontaminated\\nbasalts',
-            fontsize=7.5, ha='left', va='center',
-            fontstyle='italic', color='#993333', fontproperties=_style.times_prop)
+    for name, v in reservoirs.items():
+        ax.scatter([v['nb_yb']], [v['th_yb']], marker='s', s=80,
+                   color=v['color'], edgecolors='black', linewidths=0.8,
+                   zorder=10)
+        offset_x, offset_y = 1.2, 1.2
+        if name == 'N-MORB':
+            offset_x, offset_y = 0.65, 1.35
+        ax.text(v['nb_yb'] * offset_x, v['th_yb'] * offset_y, name,
+                fontsize=9, fontweight='bold', color=v['color'],
+                va='bottom', ha='left', zorder=11)
 
     # ── 投点 ──
     _style.scatter_samples(ax, nb_yb, th_yb, labels, groups=gd.groups)
     _style.add_legend(ax)
 
-    ax.set_xlim(0.04, 80)
-    ax.set_ylim(0.01, 80)
+    # ── 坐标轴 ──
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
     ax.set_xscale('log')
     ax.set_yscale('log')
+
+    ax.set_xticks([0.1, 1, 10, 100])
+    ax.set_xticklabels(['0.1', '1', '10', '100'])
+    ax.set_yticks([0.01, 0.1, 1, 10])
+    ax.set_yticklabels(['0.01', '0.1', '1', '10'])
+
     _style.style_ax(ax, 'Nb/Yb', 'Th/Yb')
+
+    # 去除网格线（源区图不要网格）
+    ax.grid(False)
 
     plt.tight_layout(pad=0.3)
     if save:
@@ -381,7 +368,7 @@ def plot_sm_yb_la_sm(gd, out_dir=None, save=True):
     la = gd.get('La'); sm = gd.get('Sm'); yb = gd.get('Yb')
     labels = gd.labels
 
-    from _normalize import PRIMITIVE_MANTLE
+    from igneous_wr.core.normalize import PRIMITIVE_MANTLE
     pm_la = PRIMITIVE_MANTLE.get('La', 0.687)
     pm_sm = PRIMITIVE_MANTLE.get('Sm', 0.444)
     pm_yb = PRIMITIVE_MANTLE.get('Yb', 0.493)
@@ -658,7 +645,7 @@ def plot_gdyb_dydystar(gd, out_dir=None, save=True):
     labels = gd.labels
 
     # 球粒陨石标准化
-    from _normalize import CHONDRITE
+    from igneous_wr.core.normalize import CHONDRITE
     la_n = la / CHONDRITE.get('La', 0.237)
     tb_n = tb / CHONDRITE.get('Tb', 0.058)
     dy_n = dy / CHONDRITE.get('Dy', 0.4)

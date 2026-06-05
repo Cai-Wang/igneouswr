@@ -4,10 +4,10 @@ _style.py — 样式、字体、配色、投点辅助、坐标轴风格、保存
 提供统一风格管理和分组着色功能：
 - 风格预设系统：set_style_preset(name) 一键切换整套风格
 - 分组着色：scatter_groups() 按组同色 + 合并图例
-- 所有绘图函数通过 import _style; _style.XXX 动态引用
+- 所有绘图函数通过 import igneous_wr.report.style as _style; _style.XXX 动态引用
 
 用法：
-    import _style
+    import igneous_wr.report.style as _style
     _style.set_style_preset('nature')    # 切换 Nature 期刊风格
     _style.scatter_groups(ax, x, y, labels, groups=['玄武岩','玄武岩','安山岩',...])
 """
@@ -330,7 +330,7 @@ def set_style_preset(name):
     可用的预设：'default', 'nature', 'lithos', 'journal_chinese', 'high_contrast'
 
     用法：
-        import _style
+        import igneous_wr.report.style as _style
         _style.set_style_preset('nature')
         plot_tas(gd)  # 自动使用 nature 风格
     """

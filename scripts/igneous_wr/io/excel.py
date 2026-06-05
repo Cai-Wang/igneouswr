@@ -25,7 +25,7 @@ ELEM_ALIAS = {
 
 KNOWN_ELEMENTS = {
     'SiO2','TiO2','Al2O3','TFe2O3','FeO','MnO','MgO','CaO','Na2O','K2O',
-    'P2O5','LOI','TOTAL','Li','Be','Sc','V','Cr','Mn','Co','Ni','Cu','Zn',
+    'P2O5','LOI','TOTAL','Li','Be','Sc','Ti','V','Cr','Mn','Co','Ni','Cu','Zn',
     'Ga','Rb','Sr','Y','Zr','Nb','Mo','Sn','Cs','Ba','La','Ce','Pr','Nd',
     'Sm','Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu','Hf','Ta','W','Tl','Pb','Th','U'
 }
