@@ -6,10 +6,9 @@ batch/recommend.py — 推荐图件调度
 - plot_recommended 一键出所有推荐图
 - 内部使用 DIAGRAM_REGISTRY 过滤缺元素图
 
-注意：内部 import 倒挂层（igneous_wr_core、_style 等是 scripts/ 下的模块）
+注意：内部 import 倒挂层 — 已全部改为 igneous_wr/ 包内引用（2026-06-05）
 """
 from igneous_wr.diagrams.registry import DIAGRAM_REGISTRY, MAFIC_DIAGRAMS, FELSIC_DIAGRAMS
-from igneous_wr.diagrams.registry import FILENAME_MAP as _FILENAME_MAP
 import numpy as np
 
 
@@ -92,7 +91,7 @@ def plot_recommended(gd, out_dir=None, rock_type='auto'):
     Returns:
         dict — {'success': [(fn_name, file), ...], 'skipped': [(desc, reason), ...]}
     """
-    from _style import DEFAULT_OUT_DIR, _OUT_DIR
+    from igneous_wr.report.style import DEFAULT_OUT_DIR, _OUT_DIR
     final_dir = out_dir or _OUT_DIR or DEFAULT_OUT_DIR
 
     diagrams, skipped_pre = recommended_diagrams(gd, rock_type=rock_type)
@@ -107,7 +106,13 @@ def plot_recommended(gd, out_dir=None, rock_type='auto'):
             if isinstance(fig_result, tuple) and len(fig_result) == 2 and fig_result[0] is None:
                 skipped.append((desc, "缺关键元素（strict check 未通过）"))
                 continue
-            fname = _FILENAME_MAP.get(fn.__name__, f'{fn.__name__}.png')
+            # 从 DIAGRAM_REGISTRY 查文件名，而非 FILENAME_MAP（已移除）
+            from igneous_wr.diagrams.registry import DIAGRAM_REGISTRY
+            fname = f'{fn.__name__}.png'
+            for d in DIAGRAM_REGISTRY:
+                if d.fn.__name__ == fn.__name__:
+                    fname = d.filename
+                    break
             success.append((fn.__name__, fname))
         except Exception as e:
             skipped.append((desc, str(e)))
@@ -124,7 +129,7 @@ def plot_recommended(gd, out_dir=None, rock_type='auto'):
     # 自动生成 HTML 报告
     gd_path = gd.path if hasattr(gd, 'path') else None
     try:
-        from _style import generate_report_html
+        from igneous_wr.report.style import generate_report_html
         generate_report_html(
             success, skipped, gd=gd, out_dir=final_dir, rock_type=rock_type)
     except Exception as e:

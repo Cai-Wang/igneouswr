@@ -102,19 +102,19 @@ DIAGRAM_REGISTRY = [
                 ),
     DiagramSpec(plot_cabanis,    "CLS-09_Cabanis1986_LaY_Nb_ternary.png",
                 "Cabanis La/10-Y/15-Nb/8 基性岩三角图",             ('La', 'Y', 'Nb'),                None,  ("mafic",),
-                review_status="experimental", source_ref="svgboundary"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_mullen,     "CLS-10_Mullen1983_TiO2_MnO_P2O5.png",
                 "Mullen TiO2-MnO-P2O5 基性岩三角图",                ('TiO2', 'MnO', 'P2O5'),         None,  ("mafic",),
-                review_status="experimental", source_ref="svgboundary"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_jensen,     "CLS-11_Jensen1976_cation_ternary.png",
                 "Jensen FeOt+TiO2-Al2O3-MgO 阳离子三角图",          ('MgO', 'Al2O3', 'TiO2'),                 ('FeO', 'TFe2O3'), ("mafic",),
-                review_status="experimental", source_ref="svgboundary"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_oconnor_volc,"CLS-12_OConnor_Volc_An_Ab_Or.png",
                 "O'Connor An-Ab-Or 火山岩三角图",                   ('Na2O', 'K2O', 'CaO'),          None,  ("felsic",),
-                review_status="experimental", source_ref="svgboundary"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_tasmiddlemostplut, "CLS-13_TAS_Middlemost1994_Plutonic.png",
                 "TAS 深成岩全碱-硅分类 (Middlemost 1994)",         ('SiO2', 'Na2O', 'K2O'),           None,  ("felsic",),
@@ -153,22 +153,22 @@ DIAGRAM_REGISTRY = [
     DiagramSpec(plot_debonba,    "CLS-22_Debon1983_BA_diagram.png",
                 "Debon B-A 花岗岩矿物分类图",                    ('Al2O3', 'K2O', 'Na2O', 'CaO', 'MgO', 'TiO2'),
                 ('FeO', 'TFe2O3'),                       ("felsic",),
-                review_status="experimental", source_ref="mineral_param"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_debonpq,    "CLS-23_Debon1983_PQ_diagram.png",
                 "Debon P-Q 花岗岩矿物分类图",                    ('SiO2', 'Al2O3', 'K2O', 'Na2O', 'CaO', 'MgO', 'TiO2'),
                 ('FeO', 'TFe2O3'),                       ("felsic",),
-                review_status="experimental", source_ref="mineral_param"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_larocheplut,"CLS-26_LaRoche1980_R1_R2_plutonic.png",
                 "La Roche R1-R2 侵入岩分类图",                  ('SiO2', 'Al2O3', 'K2O', 'Na2O', 'CaO', 'MgO', 'TiO2'),
                 ('FeO', 'TFe2O3'),                       ("felsic",),
-                review_status="experimental", source_ref="r1r2_formula"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_larochevolc,"CLS-27_LaRoche1980_R1_R2_volcanic.png",
                 "La Roche R1-R2 火山岩分类图",                  ('SiO2', 'Al2O3', 'K2O', 'Na2O', 'CaO', 'MgO', 'TiO2'),
                 ('FeO', 'TFe2O3'),                       ("mafic",),
-                review_status="experimental", source_ref="r1r2_formula"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_middlemostplut, "CLS-28_Middlemost1991_Plutonic.png",
                 "Middlemost Na₂O+K₂O–SiO₂ 深成岩分类",           ('SiO2', 'Na2O', 'K2O'),            None,  ("felsic",),
@@ -192,7 +192,7 @@ DIAGRAM_REGISTRY = [
     DiagramSpec(plot_u_th_zr_nb, "SRC-04_UTh_ZrNb_Stern2006.png",        "U/Th-Zr/Nb (Stern) 源区判别",        ('U', 'Th', 'Zr', 'Nb'),  None,                      ("mafic",), review_status="experimental", source_ref="stern2006"
                 ),
     DiagramSpec(plot_sm_yb_la_sm, "SRC-05_SmYb_LaSm_partial_melting.png","(Sm/Yb)PM-(La/Sm)PM 部分熔融图",    ('Sm', 'Yb', 'La'), None,                            ("mafic",),
-                review_status="experimental", source_ref="melting_trend"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_sc_v,     "SRC-06_Sc_V_HickeyVargas2018.png",    "Sc-V (Hickey-Vargas) 氧化条件判别",  ('Sc', 'V'),            None,                           ("mafic",), review_status="experimental", source_ref="hickey_vargas2018"
                 ),
@@ -200,15 +200,15 @@ DIAGRAM_REGISTRY = [
                 ),
     DiagramSpec(plot_gdyb_dydystar, "SRC-08_GdYb_DyDystar_Davidson2013.png",
                 "Gd/Yb vs Dy/Dy* 稀土分馏模式 (Davidson 2013)",   ('La', 'Gd', 'Tb', 'Dy', 'Ho', 'Yb'),  None,  ("mafic", "felsic"),
-                review_status="experimental", source_ref="ratio_derived"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_dyyb_layb,  "SRC-09_DyYb_LaYb_garnet_depth.png",
                 "Dy/Yb vs La/Yb 石榴石深度判别",                  ('Dy', 'Yb', 'La'),                 None,  ("mafic", "felsic"),
-                review_status="experimental", source_ref="ratio_derived"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_ohta_arai,  "SRC-10_Ohta_Arai2007_MFW.png",
                 "Ohta & Arai M-F-W 俯冲带源区三角图",               ('La', 'Sm', 'Nb', 'Ce', 'Zr', 'Y'),   None,  ("mafic",),
-                review_status="experimental", source_ref="svgboundary"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_pearcenbthyb, "SRC-11_Pearce1995_NbYb_ThYb.png",
                 "Pearce Nb/Yb–Th/Yb 源区判别",                   ('Nb', 'Th', 'Yb'),                None,  ("mafic",),
@@ -239,7 +239,7 @@ DIAGRAM_REGISTRY = [
                 review_status="verified", source_ref="miyashiro1974"
                 ),
     DiagramSpec(plot_zr_covariance, "EVO-04_Zr_covariance.png", "Zr 协变 3×3 图",                        ('Zr', 'Nb', 'Hf', 'Th', 'Y', 'Yb', 'La', 'Sm', 'Ba', 'Sr'),                None,                        ("mafic", "felsic"),
-                review_status="experimental", source_ref="covariance_no_ref"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_hollocher1, "EVO-05_Hollocher2012_VSc.png",
                 "Hollocher V/Sc–V+Sc 弧岩浆氧化条件判别",        ('V', 'Sc'),                        None,  ("mafic",), review_status="experimental", source_ref="hollocher2012"
@@ -253,23 +253,23 @@ DIAGRAM_REGISTRY = [
                 review_status="verified", source_ref="shervais1982"
                 ),
     DiagramSpec(plot_meschede,   "TEC-01_Meschede1986_ternary.png",      "Meschede Nb–Zr–Y 构造判别",        ('Nb', 'Zr', 'Y'),  None,                           ("mafic",),
-                review_status="experimental", source_ref="ternary_verify"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_wood,       "TEC-02_Wood1980_Hf3_Th_Ta.png",         "Wood Hf/3–Th–Ta 构造判别",          ('Hf', 'Th', 'Ta'), None,                           ("mafic",),
-                review_status="experimental", source_ref="ternary_verify"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_pearcegranite, "TEC-15_Pearce1984_Granite_Rb_YNb.png",
                 "Pearce Rb–Y+Nb 花岗岩构造判别",                  ('Rb', 'Y', 'Nb'),                 None,  ("felsic",), review_status="experimental", source_ref="pearce1984"
                 ),
     DiagramSpec(plot_harris,     "TEC-11_Harris1986_Rb30_Hf_3Ta.png",
                 "Harris Rb/30-Hf-3Ta 花岗岩构造判别三角图",         ('Rb', 'Hf', 'Ta'),               None,  ("felsic",),
-                review_status="experimental", source_ref="ternary_verify"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_pearce_cann,"TEC-03_PearceCann1973_TiZrY.png",       "Pearce & Cann Ti–Zr–Y 构造判别",    ('Ti', 'Zr', 'Y'),  None,                           ("mafic",),
-                review_status="experimental", source_ref="ternary_verify"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_4panel,     "TEC-04_V_Ti_Sc_ThNb_BaTh_4panel.png",  "四联比值构造判别图",                 ('Ti', 'V', 'Sc', 'Th', 'Nb', 'Ba', 'La', 'Sm', 'Yb'),  None,           ("mafic",),
-                review_status="experimental", source_ref="fourpanel"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_pearce_1983, "TEC-06_ThYb_TaYb_Pearce1983.png",     "Th/Yb-Ta/Yb (Pearce 1983) 构造判别", ('Th', 'Ta', 'Yb'), None,                             ("mafic",), review_status="experimental", source_ref="pearce1983"
                 ),
@@ -282,11 +282,11 @@ DIAGRAM_REGISTRY = [
                 ),
     DiagramSpec(plot_pearce1977, "TEC-10_Pearce1977_FeOt_MgO_Al2O3.png",
                 "Pearce FeOt-MgO-Al2O3 基性岩构造三角图",           ('MgO', 'Al2O3'),                 ('FeO', 'TFe2O3'), ("mafic",),
-                review_status="experimental", source_ref="svgboundary"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_muller_kternary, "TEC-12_Muller2000_Kternary.png",
                 "Muller Th-Ta-Hf 三子图等边三元构造判别图",         ('Th', 'Ta', 'Hf'),              None,  ("mafic",),
-                review_status="experimental", source_ref="subplot_complex"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_pearcenorry,"TEC-13_Pearce_Norry1979_ZrY_Zr.png",
                 "Pearce & Norry Zr/Y–Zr WPB/MORB/IAB 构造判别",               ('Zr', 'Y'),                       None,  ("mafic",),
@@ -303,22 +303,22 @@ DIAGRAM_REGISTRY = [
     DiagramSpec(plot_batchelor,  "TEC-17_Batchelor1985_R1_R2.png",
                 "Batchelor & Bowden R1-R2 花岗岩构造判别",       ('SiO2', 'Al2O3', 'K2O', 'Na2O', 'CaO', 'MgO', 'TiO2'),
                 ('FeO', 'TFe2O3'),                       ("felsic",),
-                review_status="experimental", source_ref="r1r2_formula"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_maniar,     "TEC-18_Maniar1989_Granite_disc.png",
                 "Maniar & Piccoli 花岗岩构造判别",               ('SiO2', 'Al2O3', 'MgO', 'CaO', 'Na2O', 'K2O', 'TiO2'),
                 ('FeO', 'TFe2O3'),                       ("felsic",),
-                review_status="experimental", source_ref="granite_disc"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_agrawal,    "TEC-19_Agrawal2004_DF1_DF2.png",
                 "Agrawal DF1-DF2 基性岩构造判别",               ('TiO2', 'Al2O3', 'MgO', 'CaO', 'Na2O', 'K2O', 'MnO', 'P2O5', 'SiO2'),
                 ('FeO', 'TFe2O3'),                       ("mafic",),
-                review_status="experimental", source_ref="discriminant_formula"
+                review_status="experimental", source_ref=""
                 ),
     DiagramSpec(plot_verma,      "TEC-20_Verma_discriminant_DF1_DF2.png",
                 "Verma 判别函数 基性岩构造判别",                 ('TiO2', 'Al2O3', 'MgO', 'CaO', 'Na2O', 'K2O', 'MnO', 'P2O5', 'SiO2'),
                 ('FeO', 'TFe2O3'),                       ("mafic",),
-                review_status="experimental", source_ref="discriminant_formula"
+                review_status="experimental", source_ref=""
                 )
 ]
 
@@ -336,5 +336,7 @@ def _is_felsic(d: DiagramSpec) -> bool:
 MAFIC_DIAGRAMS = [(d.fn, d.desc, d.needed, d.any_of) for d in DIAGRAM_REGISTRY if _is_mafic(d)]
 FELSIC_DIAGRAMS = [(d.fn, d.desc, d.needed, d.any_of) for d in DIAGRAM_REGISTRY if _is_felsic(d)]
 
-# 文件名映射：fn.__name__ → 输出文件名
-FILENAME_MAP = {d.fn.__name__: d.filename for d in DIAGRAM_REGISTRY}
+# 文件名映射：fn.__name__ → 输出文件名，由 recommend.py 从 DIAGRAM_REGISTRY 直接查询
+# FILENAME_MAP 已移除（2026-06-05）。使用时从 DIAGRAM_REGISTRY 获取：
+#   for d in DIAGRAM_REGISTRY:
+#       if d.fn.__name__ == fn_name: fname = d.filename

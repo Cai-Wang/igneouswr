@@ -12,11 +12,11 @@ igneous_wr_core.py — IgneousWR 绘图引擎门面（兼容入口）
 import os, numpy as np
 
 # ── re-export 子模块 ──────────────────────────────────────────
-from _chem import feot_calc
-from _ternary import (SQRT3_2, ternary_to_xy, ternary_corners,
+from igneous_wr.core.chem import feot_calc
+from igneous_wr.core.ternary import (SQRT3_2, ternary_to_xy, ternary_corners,
                        draw_ternary_frame, draw_ternary_grid,
                        draw_ternary_ticks, label_ternary_vertices)
-from _style import (times_prop, get_color, set_palette, set_style_preset, set_style,
+from igneous_wr.report.style import (times_prop, get_color, set_palette, set_style_preset, set_style,
                      scatter_samples, plot_samples_ternary, scatter_groups,
                      style_ax, save_fig, add_legend, set_out_dir,
                      generate_report_html,
@@ -35,7 +35,7 @@ from igneous_wr.io.excel import (
 )
 from igneous_wr.core.data import GeochemData
 
-from _normalize import (CHONDRITE, REE_ORDER,
+from igneous_wr.core.normalize import (CHONDRITE, REE_ORDER,
                          PRIMITIVE_MANTLE, SPIDER_ORDER,
                          normalize)
 
@@ -44,7 +44,6 @@ from igneous_wr.diagrams.registry import (
     DIAGRAM_REGISTRY,
     MAFIC_DIAGRAMS,
     FELSIC_DIAGRAMS,
-    FILENAME_MAP,
     # 所有绘图函数
     plot_tas, plot_k2o_sio2, plot_afm, plot_shand, plot_winchester_floyd,
     plot_cabanis, plot_mullen, plot_jensen, plot_oconnor_volc,

@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "igneouswr"
+version = "1.0.0"
+description = "Igneous Whole-Rock geochemical plotting engine — TAS, REE, spider diagrams, tectonic discrimination, and 60+ other publication-ready plots"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "IgneousWR Contributors"},
+]
+keywords = ["geochemistry", "petrology", "igneous", "plotting", "TAS", "REE"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "numpy>=1.24",
+    "matplotlib>=3.7",
+    "scipy>=1.10",
+    "openpyxl>=3.1",
+]
+
+[project.urls]
+Repository = "https://github.com/your-org/igneouswr"
+Documentation = "https://github.com/your-org/igneouswr#readme"
+
+[tool.setuptools.packages.find]
+where = ["scripts"]
+include = ["igneous_wr*", "igneous_wr.*"]
+
+[tool.setuptools.package-data]
+"igneous_wr" = ["boundaries/**/*.json", "references/*.json"]

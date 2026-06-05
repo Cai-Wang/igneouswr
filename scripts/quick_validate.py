@@ -58,7 +58,7 @@ from igneous_wr_core import (
     recommended_diagrams, plot_recommended,
     MAFIC_DIAGRAMS, FELSIC_DIAGRAMS,
 )
-import _style  # noqa: E402 — for set_out_dir/set_style access via module
+import igneous_wr.report.style as _style  # noqa: E402
 
 # ── 辅助函数 ──────────────────────────────────────────────
 _PASS = 0
@@ -255,7 +255,7 @@ def test_set_out_dir():
 
 def test_set_style():
     print("\n[7] 风格定制")
-    import _style
+    import igneous_wr.report.style as _style
     original = _style.MK_SIZE_SINGLE
     _style.set_style(MK_SIZE_SINGLE=99)
     test("set_style 影响 _style.MK_SIZE_SINGLE", _style.MK_SIZE_SINGLE == 99, f"got {_style.MK_SIZE_SINGLE}")
