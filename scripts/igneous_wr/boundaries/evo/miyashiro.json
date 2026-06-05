@@ -27,7 +27,8 @@
       "name": "Calc-alkaline",
       "x": [40, 80],
       "y_bottom": 0,
-      "y_formula": "0.1578*x-6.016",
+      "line_slope": 0.1578,
+      "line_intercept": -6.016,
       "color": "#1565C0",
       "alpha": 0.06
     },
@@ -35,7 +36,8 @@
       "name": "Tholeiitic",
       "x": [40, 80],
       "y_top": 20,
-      "y_formula": "0.1578*x-6.016",
+      "line_slope": 0.1578,
+      "line_intercept": -6.016,
       "color": "#D62728",
       "alpha": 0.06
     }

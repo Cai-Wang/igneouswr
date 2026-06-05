@@ -145,8 +145,8 @@ def plot_miyashiro(gd, out_dir=None, save=True):
                 ln['style'], color=ln['color'], lw=ln['linewidth'], zorder=ln.get('zorder', 3))
     for fr in bd.get('fill_regions', []):
         x_fill = np.array(fr['x'])
-        if fr.get('y_formula') == '0.1578*x-6.016':
-            y_fill = 0.1578 * x_fill - 6.016
+        if 'line_slope' in fr and 'line_intercept' in fr:
+            y_fill = fr['line_slope'] * x_fill + fr['line_intercept']
         else:
             y_fill = np.array([fr.get('y_bottom', 0), fr.get('y_bottom', 0)])
         y_bottom = fr.get('y_bottom', 0)
