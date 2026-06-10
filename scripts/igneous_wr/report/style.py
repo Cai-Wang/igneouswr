@@ -736,8 +736,8 @@ def generate_report_html(success, skipped, gd=None, out_dir=None, rock_type=None
         w(f'<h3> 已跳过 {len(skipped)} 张图</h3>')
         w('<ul>')
         for desc, reason in skipped:
-            safe_desc = str(desc).replace('<', '&lt;').replace('>', '&gt;')
-            safe_reason = str(reason).replace('<', '&lt;').replace('>', '&gt;')
+            safe_desc = html.escape(str(desc))
+            safe_reason = html.escape(str(reason))
             w(f'<li>{safe_desc} — {safe_reason}</li>')
         w('</ul>')
         w('</div>')

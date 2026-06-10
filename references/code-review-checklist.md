@@ -15,7 +15,20 @@
 - **跨包 import 路径** — 检查是否通过顶层门面（`igneous_wr_core`）import 子模块内容。应改为直接走包内路径（`igneous_wr.io.excel`），避免循环依赖风险。
 - **AGENTS.md 同步** — 如果新增/删除图件或改变验证方式，确保根目录 `AGENTS.md` 中的架构树、命令、计数同步更新。
 
-## pyproject.toml 配置陷阱
+## 科学正确性检查（2026-06-10 审查新增）
+
+- **Eu/Eu\* 和 Ce/Ce\*** — 必须用几何平均 `√(SmN × GdN)`，不是算术平均 `(SmN + GdN) / 2`。在 `merge_excel.py` 的 `compute_ratios()` 中检查。
+- **feot_calc NaN 传播** — `chem.py` 中当 FeO 有效但 TFe2O3 为 NaN 时，`feo + 0.8998 * NaN = NaN` 会丢弃有效值。修复：嵌套 `np.where` 将 NaN TFe2O3 替换为 0 再参与运算。
+- **Truthiness 陷阱** — `if ree_vals['Eu']` 在 Eu=0.0 时返回 False，跳过有效数据。检查所有 `if val` 的 float 条件，改为 `if val is not None`。
+- **ΣREE 部分求和** — 不要要求 ALL 14 REE 都存在才求和。对缺失部分元素的数据，仅对有效元素求和（`sum(v for v in ree_vals.values() if v is not None)`）。
+
+## 安全加固检查（2026-06-10 审查新增）
+
+- **HTML 报告** — `generate_report_html()` 中所有用户可控制的变量（`data_src`, `rock_label`, `fn_name`, `fname`）必须通过 `html.escape()` 后再写入输出。
+- **`open()` encoding** — 所有 `open(path)` 调用必须指定 `encoding='utf-8'`，避免 Windows 中文系统默认编码不一致导致崩溃。
+- **`globals()` 注入防护** — 任何通过 `globals()` 从外部数据写模块变量的路径必须有 `valid_keys` 白名单（如 `set_style_preset()` 的 15 个风格常量）。
+- **路径遍历防护** — `load_boundary()` 等拼接文件路径的函数必须：category 白名单校验、name 中拒绝 `..` `/` `\\`、`os.path.realpath()` 前缀验证。
+- **`matplotlib.use('Agg')`** — 只应在 `style.py` 中设置一次，各 diagrams 模块不应重复调用。
 
 ```python
 # ❌ 错误 — setuptools >= 75 已移除 setuptools.backends._legacy

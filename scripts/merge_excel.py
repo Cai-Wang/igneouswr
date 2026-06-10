@@ -139,8 +139,8 @@ def compute_ratios(sample_count, data):
         
         # 标准化比值
         def normalized_ratio(num_elem, denom_elem):
-            nv = ree_vals[num_elem] / CHONDRITE[num_elem] if (all_ok and ree_vals[num_elem]) else None
-            dv = ree_vals[denom_elem] / CHONDRITE[denom_elem] if (all_ok and ree_vals[denom_elem]) else None
+            nv = ree_vals[num_elem] / CHONDRITE[num_elem] if (all_ok and ree_vals[num_elem] is not None) else None
+            dv = ree_vals[denom_elem] / CHONDRITE[denom_elem] if (all_ok and ree_vals[denom_elem] is not None) else None
             if nv is not None and dv is not None and dv != 0:
                 return round(nv / dv, 3)
             return None

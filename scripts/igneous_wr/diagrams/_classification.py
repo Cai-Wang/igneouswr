@@ -3,7 +3,6 @@ _classification.py — 岩石系列 / 分类图（10 个绘图函数）
   原有: TAS, K2O-SiO2, AFM, Shand, W&F, Co-Th, An-Ab-Or, QAPF
   新增 RockPlot SVG: Cabanis, Mullen, Jensen, OConnorVolc, OhtaArai, Pearce1977
 """
-import os
 import numpy as np
 import matplotlib.pyplot as plt
 import igneous_wr.report.style as _style
@@ -491,11 +490,21 @@ def plot_frost_asi_ank(gd, out_dir=None, save=True):
     k2o = gd.get('K2O')
     p2o5 = gd.get('P2O5')
     labels = gd.labels
-    # ASI = Al2O3 / (2*CaO - 3.33*P2O5 + Na2O + K2O)
-    p = np.where(np.isnan(p2o5), 0, p2o5)
-    denom = 2 * cao - 3.33 * p + na2o + k2o
-    asi_val = np.where(denom > 0, al2o3 / denom, np.nan)
-    a_nk = al2o3 / (na2o + k2o)
+    # ASI = Al2O3/(CaO - 3.33*P2O5 + Na2O + K2O) 和 A/NK = Al2O3/(Na2O+K2O)
+    # 均须使用摩尔比例（Frost 2001 原文定义）
+    MW_Al2O3 = 101.96
+    MW_CaO = 56.08
+    MW_Na2O = 61.98
+    MW_K2O = 94.20
+    MW_P2O5 = 141.94
+    al_m = al2o3 / MW_Al2O3
+    ca_m = cao / MW_CaO
+    na_m = na2o / MW_Na2O
+    k_m = k2o / MW_K2O
+    p_m = np.where(np.isnan(p2o5), 0, p2o5) / MW_P2O5
+    denom = ca_m - 3.33 * p_m + na_m + k_m
+    asi_val = np.where(denom > 0, al_m / denom, np.nan)
+    a_nk = al_m / (na_m + k_m)
     fig, ax = plt.subplots(figsize=(9, 7))
     ax.set_xlim(0.5, 1.9)
     ax.set_ylim(0.6, 3.5)

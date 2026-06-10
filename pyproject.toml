@@ -38,4 +38,4 @@ where = ["scripts"]
 include = ["igneous_wr*", "igneous_wr.*"]
 
 [tool.setuptools.package-data]
-"igneous_wr" = ["boundaries/**/*.json", "references/*.json"]
+"igneous_wr" = ["boundaries/**/*.json", "references/*.json", "core/references/*.json"]

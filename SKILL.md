@@ -184,7 +184,12 @@ These are loaded on demand by Hermes when doing development work on the skill co
 2. Adjacent polygons must share **identical vertex sequences** on shared edges (no one-side-straight, other-side-polyline)
 3. GCDkit's filled polygons can mask misaligned shared edges — wireframe mode exposes them
 4. Log-space lines sometimes need extrapolation beyond GCDkit's fill-trimmed coordinates
-5. R strings `"text\\nwith\\nnewlines"` use real `\n` — Python must use `'text\\nwith\\nnewlines'` (single backslash-n), not `'text\\\\nwith\\\\nnewlines'`
+5. R strings `"text\nwith\nnewlines"` use real `\n` — Python must use `'text\nwith\nnewlines'` (single backslash-n), not `'text\\nwith\\nnewlines'`
+6. **Eu/Eu\* and Ce/Ce\* use geometric mean** (`√(SmN × GdN)`), not arithmetic mean (`(SmN + GdN) / 2`). Arithmetic mean in log-space interpolation produces scientifically wrong values. Caught in 2026-06-10 audit, fixed at `merge_excel.py:128,137`.
+7. **Truthiness on float values** — `if ree_vals['Eu']` skips Eu=0.0 (valid data!). Always use `is not None` for nullable float values. Same for any chondrite-normalised ratio that could be zero.
+8. **feot_calc NaN mixing** — when `FeO` is valid but `TFe2O3` is NaN, `feo + 0.8998 * NaN = NaN` silently drops valid data. The fixed logic at `chem.py:21` uses nested `np.where` to zero-out NaN before the multiply.
+9. **ΣREE partial-sum trap** — old code required ALL 14 REE present (`all_ok`) before summing, dropping valid data for samples missing a single trace REE. Fixed to sum whatever is available.
+10. **set_style_preset() globals() injection** — without a `valid_keys` whitelist, a corrupted `STYLE_PRESETS` dict can overwrite any module variable. Both `set_style()` and `set_style_preset()` now share a whitelist at `style.py:362`.
 
 ---
 

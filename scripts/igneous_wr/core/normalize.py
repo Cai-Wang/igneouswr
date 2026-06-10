@@ -126,6 +126,8 @@ def normalize(data_dict, ref):
     dict
         标准化后的值。元素不在 ref 中或输入为 NaN 时返回 NaN。
     """
+    if not isinstance(ref, dict):
+        raise TypeError(f"normalize() ref must be a dict, got {type(ref).__name__}")
     import numpy as np
     result = {}
     for k, v in data_dict.items():

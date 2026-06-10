@@ -1,10 +1,8 @@
-import os
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import igneous_wr.report.style as _style
-from igneous_wr.core.chem import feot_calc
 from igneous_wr.core.ternary import ternary_to_xy, ternary_corners, draw_ternary_frame, draw_ternary_grid, draw_ternary_ticks, label_ternary_vertices
 from igneous_wr.core.normalize import REE_ORDER, CHONDRITE, SPIDER_ORDER, PRIMITIVE_MANTLE, normalize
 from igneous_wr.boundaries.core import load_boundary
