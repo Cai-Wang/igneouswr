@@ -74,8 +74,6 @@ result = plot_recommended(gd)
 
 ## 参考文件
 
-- `references/gcdkit-polygon-translation.md` — GCDkit `lines` R 格式 → IgneousWR JSON 多边形坐标翻译手册
-
 ## 核心原则
 
 - **线段风格统一标准**（2026-06-09 统一）：
@@ -149,6 +147,43 @@ scripts/
 └── merge_excel.py              # 主量+微量 Excel 合并
 ```
 
+## 代码审查清单
+
+批改 IgneousWR 代码时（增删图件、重构后），按以下清单逐项检查：
+
+### 删除图件后补充检查
+已在"删除图件流程"中列出基础步骤。之外还要检查：
+
+- **无用 import** — `scipy` 的 `from scipy import stats` 是三个 diagrams 文件（`_classification.py`, `_tectonic.py`, `_source.py`）最常见的残留 import。删图后如果没新增 scipy 调用，直接删除这三处 import，然后从 `requirements.txt` 和 `pyproject.toml` 中移除 `scipy>=1.10`。
+- **死代码分支** — `data.py` 的 `get()` 方法中曾经有 `if elem_name == 'Pb' and 'Pb' in self._elem_data` 这种条件恒真的无用分支。检查函数返回值路径中有无自我冗余。
+- **私有属性访问** — 所有绘图函数必须通过 `gd.check_elements()` / `gd.get()` 访问数据，禁止直接读 `gd._elem_data`。用 `grep -rn 'gd\._elem_data' scripts/igneous_wr/diagrams/` 排查。
+- **FakeGeochemData 兼容性** — 新增或修改图后运行 `quick_validate.py`。如果 minimal mode 报 `'NoneType' object is not iterable`，则是 `FakeGeochemData.__init__` 中 `self.groups = None` 导致 —— REE/Spider 的 `get_group_colors(groups)` 需要 `groups` 是列表。改为 `self.groups = []`。
+
+### pyproject.toml 配置陷阱
+
+```python
+# ❌ 错误 — setuptools >= 75 已移除 setuptools.backends._legacy
+build-backend = "setuptools.backends._legacy:_Backend"
+
+# ✅ 正确
+build-backend = "setuptools.build_meta"
+```
+
+`setuptools.backends._legacy` 在 setuptools 75+ 已被删除，81+ 完全不存在。如果 `pip install -e .` 失败，检查 pyproject.toml 中的 build-backend。
+
+### 测试 / 验证脚本陷阱
+
+- **`plot_recommended()` 返回 dict 而非 list**：返回 `{'success': [(fn_name, fname), ...], 'skipped': [...]}`。不要用 `sorted(result)` 或 `len(result)` —— 前者只迭代 dict 的 key（输出 `['skipped', 'success']`），后者恒为 2。
+- **monkey-patch 必须用 try/finally**：`batch/backgrounds.py` 的 `run_batch(mode='full')` 中 patch 了 `scatter_samples` 和 `save_fig`。patch 恢复代码必须放在 `finally` 块中，否则异常导致恢复函数不执行，后续调用行为异常。模式如下：
+  ```python
+  _original = _style_mod.scatter_samples
+  _style_mod.scatter_samples = lambda *a, **kw: None
+  try:
+      # ... 主循环
+  finally:
+      _style_mod.scatter_samples = _original
+  ```
+
 ## 已知陷阱
 
 - **二元图多边形共享边错位——GCDkit 填充色掩盖的陷阱**：GCDkit 原版中每个分类区是独立填充色块，相邻多边形共享边即使顶点不一致（一边直线、另一边折线），填充色块也会遮盖底层线段不对外暴露。但在 IgneousWR 纯线框模式下，两条不同路径的线段同时可见，形成多余折角/线段交叉。**修复原则**：翻译任何 GCDkit 分类图时，`lines` 列表中的相邻多边形共享边必须走完全相同的顶点序列——如果一方经过中间顶点，另一方也必须经过同一顶点，不能一边直线一边折线。
@@ -157,7 +192,7 @@ scripts/
   - **正确的排查顺序**：发现坐标问题后，先到 GCDkit 安装目录下找对应 R 源码（如 `Diagrams/Classification/English/TASMiddlemostVolc.r`）确认 GCDkit 的原始定义，再下结论是否需要修复
 
 - **三元图多边形共享边对齐**：当两个相邻区域共享一段边界时，它们的闭合顶点序列必须在共享段严格匹配。例如 Meschede TEC-01 中 B 区原为 `l→n` 直线、C 区为 `l→m→n` 折线，两者不共边导致重叠/缝隙。修复后 B 区改为 `l→m→n`，与 C 区完全共享折线。规律：**相邻多边形哪条边共享，就在两个多边形的 keys 列表里插相同的中间顶点**，不可一边走直线一边走折线。
-- **TAS 火山岩图（CLS-01）坐标来源**：当前使用 pyrolite 派生坐标（Le Bas 体系），Rhyolite 区边界来自 Middlemost 1994 TASMiddlemostVolc（69,8→71.8,13.5→85.9,6.8→87.5,4.7→77.3,0），Trachyte 拆分为 T1(Q<20%) 和 T2(Q>20%) 两区。与 GCDkit TASMiddlemostVolc.r（Middlemost 1994 改编版）不完全一致，差异见 `references/tas-gcdkit-middlemost-comparison.md`
+- **TAS 火山岩图（CLS-01）坐标来源**：当前使用 pyrolite 派生坐标（Le Bas 体系），Rhyolite 区边界来自 Middlemost 1994 TASMiddlemostVolc（69,8→71.8,13.5→85.9,6.8→87.5,4.7→77.3,0），Trachyte 拆分为 T1(Q<20%) 和 T2(Q>20%) 两区。与 GCDkit TASMiddlemostVolc.r（Middlemost 1994 改编版）不完全一致。
 - **Frost ASI-ANK（CLS-31）没有对角线**：只有 h=1 + v=1 两条虚线。Shand A/CNK-A/NK 图（CLS-04，已于 2026-06-09 删除）才有 y=x 对角线。GCDkit `Frost.r` Plot 3 源码只有 `abline(h=1)` + `abline(v=1)`。如果被问到"Frost 图有没有斜线"，答案是没有
 - **R 源码的 `\n` 在 IgneousWR 中必须用真换行符**：R 字符串中的 `\n` 是真换行符（如 `"alkali\\nbasalt"`），翻译到 Python 时也必须用真 `\n`（`'Low-K\\nTholeiitic'`），不能用 `\\\\n`（双反斜杠-n 会显示为字面文本不换行）。CLS-29 Pearce1996 和 CLS-02 都曾因此导致多行标签被挤在一行。验证方法：`cat -A <file> | grep "Low-K"` 应显示 `Low-K\\nTholeiitic`（单反斜杠 n），而非 `Low-K\\\\nTholeiitic`（双反斜杠）。**patch 工具写入字符串时对 `\n` 的行为取决于调用方的上下文**——在 `patch` 参数的 Python 字符串中写 `'\\n'` 会被解释为字面 `\n`（正确），写 `'\\\\n'` 则写入 `\\n`（错误）
 - **三角图刻度标签风格**（2026-06-26 统一）：三元图刻度标签字号改为 `TICK_LENGTH+4`（≈9），与二元图 `style_ax(labelsize=9)` 一致。刻度标签字体使用 `times_prop`（Times New Roman）。顶点标签字号从 14 改为 12，与二元图 `xlabel_size=12` 统一。改动集中在 `ternary.py` 的 `draw_ternary_ticks()` 和 `label_ternary_vertices()`。
@@ -170,6 +205,9 @@ scripts/
 - **不遗留"已知但暂缓"项**：用户明确厌恶。如果用户说"全部解决"，需 grep 扫描所有相关位置逐一清理
 - **一次性写入大文件**：不要用多步 write_file/heredoc 追加 -- 用独立脚本一次完成
 - **K₂O-SiO₂ 标签布局需参考 GCDkit P&T 1976 风格**（2026-06-09 修正）：CLS-02 的 4 个区域标签**不应放在图中间居中对齐**（原写法的错误），而应将 Low-K/Medium-K/High-K 三个标签沿 **右边缘 x=80 右对齐**（`ha='right'`），Shoshonite 沿 **左边缘 x=44 左对齐**（`ha='left'`）。所有标签颜色统一 `#444444` 不分区着色。垂直位置取各区间在 x=80 处的 y 中点。该布局参考 GCDkit `PeceTaylor.r` `temp3` 块的 `adj=c(1,0.5)`（右侧）/ `adj=c(0,0.5)`（左侧）风格。**坐标计算方法**：`y = (边界线1在x=80的值 + 边界线2在x=80的值) / 2`
+- **开源前检查 pyproject.toml build-backend**：`setuptools.backends._legacy` 在 setuptools 81+ 中已不存在。如果开源前不修，`pip install -e .` 会直接失败。正确的值是 `"setuptools.build_meta"`。用 `python3 -c "import setuptools.build_meta"` 验证。
+- **开源前检查无用 import**：`_classification.py`、`_source.py`、`_tectonic.py` 三处都 `from scipy import stats` 但从未使用 `stats.`。scipy 从依赖中移除后这三行会导致 ImportError。开源审查时用 `grep -rn "stats\." scripts/igneous_wr/diagrams/` 确认是否真的被调用，没有则删除。
+- **refs.json 不可含 `#` 前缀键**：Python json.load 能解析 `#README` 这类注释键，但不是标准 JSON。其他语言（Rust serde_json、Go encoding/json）会直接报错。开源发布前必须删除所有以 `#` 开头的键。
 
 ## 相关技能
 
