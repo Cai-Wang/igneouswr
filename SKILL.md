@@ -46,8 +46,8 @@ result = plot_recommended(gd)
 
 | # | 文件名 | 图件 |
 |---|--------|------|
-| SRC-01 | SunMcDonough1989_REE.png | REE 球粒陨石标准化配分图（无引用注释） |
-| SRC-02 | SunMcDonough1989_Spider.png | 原始地幔标准化蛛网图（无引用注释） |
+| SRC-01 | SunMcDonough1989_REE.png | REE 球粒陨石标准化配分图（Sun & McDonough 1989） |
+| SRC-02 | SunMcDonough1989_Spider.png | 原始地幔标准化蛛网图（Sun & McDonough 1989） |
 | SRC-03 | Pearce2008_ThYb_NbYb.png | Pearce Th/Yb–Nb/Yb 源区判别 |
 
 ### 🧬 岩浆演化（1 张）
@@ -124,7 +124,7 @@ result = plot_recommended(gd)
 5. **清理无用 import** — 检查被删文件是否还 import 了不再需要的模块（如 `scipy.stats`）
 6. **更新 SKILL.md** — 同步图目录、总数、分组计数、校正状态计数、核心原则中引用的编号
 7. **运行批量生成验证** — `batch_backgrounds_main.py --mode full` 确保 19 图全部成功
-8. **删除相关引用文件**（如不再引用的 `references/shand-vs-frost-distinction.md`）
+8. **删除相关引用文件**（如不再引用的 `references/dev-notes/` 中的文件）
 
 已执行案例：EVO-01 (Harker) 于 2026-06-09 删除，注册表从 20→19 图。CLS-04 原为 Shand（已删除），编号已重新分配给 Peccerillo & Taylor 1976 K₂O-SiO₂。
 
@@ -152,7 +152,7 @@ scripts/
 ## 已知陷阱
 
 - **二元图多边形共享边错位——GCDkit 填充色掩盖的陷阱**：GCDkit 原版中每个分类区是独立填充色块，相邻多边形共享边即使顶点不一致（一边直线、另一边折线），填充色块也会遮盖底层线段不对外暴露。但在 IgneousWR 纯线框模式下，两条不同路径的线段同时可见，形成多余折角/线段交叉。**修复原则**：翻译任何 GCDkit 分类图时，`lines` 列表中的相邻多边形共享边必须走完全相同的顶点序列——如果一方经过中间顶点，另一方也必须经过同一顶点，不能一边直线一边折线。
-  - 典型案例：TAS CLS-01 S3 (Trachyandesite) 右边原本为直线 `(57.6,11.7)→(63.0,7.0)`，但相邻 Td/T 走折线 `(57.6,11.7)→(61.0,8.6)→(63.0,7.0)`，偏差 0.14 个单位。修复后将 S3 补为 5 边形包含 (61.0,8.6) 中间顶点。详见 `references/tas-s3-trachyandesite-edge-fix.md`
+  - 典型案例：TAS CLS-01 S3 (Trachyandesite) 右边原本为直线 `(57.6,11.7)→(63.0,7.0)`，但相邻 Td/T 走折线 `(57.6,11.7)→(61.0,8.6)→(63.0,7.0)`，偏差 0.14 个单位。修复后将 S3 补为 5 边形包含 (61.0,8.6) 中间顶点。详见 `references/dev-notes/archive/tas-s3-trachyandesite-edge-fix.md`
   - 排查方法：用 `set()` 求相邻两个多边形边集合的交集，确认共享边完全匹配
   - **正确的排查顺序**：发现坐标问题后，先到 GCDkit 安装目录下找对应 R 源码（如 `Diagrams/Classification/English/TASMiddlemostVolc.r`）确认 GCDkit 的原始定义，再下结论是否需要修复
 
