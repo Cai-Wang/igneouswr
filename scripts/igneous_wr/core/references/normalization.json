@@ -1,5 +1,5 @@
 {
-  "_docstring": " _normalize.py — 标准化参考值常量 + 标准化函数  包含所有 GCDkit 6.3.0 内置的标准化参考值： - reservoirs.data (主要来源，全元素版) - spider.data (补充来源，元素顺序不同)  选择指南：   - REE配分图: CHONDRITE_MS95 (默认) 或 CHONDRITE_NAKAMURA1974   - 蛛网图: PRIMITIVE_MANTLE_MS95 (默认) 或 PRIMITIVE_MANTLE_LONG_SM89   - MORB标准化: NMORB_SM89 / EMORB_SM89 / NMORB_IMMOBILE   - OIB: OIB_SM89   - 地壳: UCC_TM95 / MCC_RG2003 / LCC_TM95   - 沉积物: GLOSS_PLANK1998 / GLOSS_II_PLANK2014   - 地幔端元: DMM_SALTERS2004 / EM1 / EM2 / HIMU ",
+  "_docstring": " _normalize.py \u2014 \u6807\u51c6\u5316\u53c2\u8003\u503c\u5e38\u91cf + \u6807\u51c6\u5316\u51fd\u6570  \u5305\u542b\u6240\u6709 GCDkit 6.3.0 \u5185\u7f6e\u7684\u6807\u51c6\u5316\u53c2\u8003\u503c\uff1a - reservoirs.data (\u4e3b\u8981\u6765\u6e90\uff0c\u5168\u5143\u7d20\u7248) - spider.data (\u8865\u5145\u6765\u6e90\uff0c\u5143\u7d20\u987a\u5e8f\u4e0d\u540c)  \u9009\u62e9\u6307\u5357\uff1a   - REE\u914d\u5206\u56fe: CHONDRITE_MS95 (\u9ed8\u8ba4) \u6216 CHONDRITE_NAKAMURA1974   - \u86db\u7f51\u56fe: PRIMITIVE_MANTLE_MS95 (\u9ed8\u8ba4) \u6216 PRIMITIVE_MANTLE_LONG_SM89   - MORB\u6807\u51c6\u5316: NMORB_SM89 / EMORB_SM89 / NMORB_IMMOBILE   - OIB: OIB_SM89   - \u5730\u58f3: UCC_TM95 / MCC_RG2003 / LCC_TM95   - \u6c89\u79ef\u7269: GLOSS_PLANK1998 / GLOSS_II_PLANK2014   - \u5730\u5e54\u7aef\u5143: DMM_SALTERS2004 / EM1 / EM2 / HIMU ",
   "REE_CHONDRITE_MS_AND_SUN_1995": {
     "Ce": 0.613,
     "Dy": 0.246,
@@ -102,9 +102,8 @@
     "Gd": 0.544,
     "Ho": 0.149,
     "La": 0.648,
-    "Lu": 0.068,
+    "Lu": 0.0675,
     "Nd": 1.25,
-    "Pm": 1.0,
     "Pr": 0.254,
     "Sm": 0.406,
     "Tb": 0.099,
@@ -373,8 +372,7 @@
     "187Os/188Os": 0.152,
     "206Pb/204Pb": 17.5,
     "208Pb/204Pb": 38.1,
-    "87Sr/86Sr": 0.7055,
-    "EpsNd": -5.62
+    "87Sr/86Sr": 0.7055
   },
   "EM2_COMPONENT": {
     "143Nd/144Nd": 0.5126,
@@ -382,8 +380,7 @@
     "187Os/188Os": 0.136,
     "206Pb/204Pb": 19.2,
     "208Pb/204Pb": 39.3,
-    "87Sr/86Sr": 0.7075,
-    "EpsNd": 0.039
+    "87Sr/86Sr": 0.7075
   },
   "EMORB_SUN_AND_MS_1989": {
     "Ba": 57.0,
@@ -513,8 +510,7 @@
     "187Os/188Os": 0.15,
     "206Pb/204Pb": 21.7,
     "208Pb/204Pb": 40.7,
-    "87Sr/86Sr": 0.7028,
-    "EpsNd": 4.135
+    "87Sr/86Sr": 0.7028
   },
   "HSE_PRIMITIVE_MANTLE_CONCENTRATIONS_BECKER_ET_AL__2006": {
     "Ir": 0.0035,
@@ -902,7 +898,6 @@
     "La": 30.0,
     "Lu": 0.32,
     "Nd": 26.0,
-    "Pm": 1.0,
     "Pr": 7.1,
     "Sm": 4.5,
     "Tb": 0.64,
@@ -919,7 +914,6 @@
     "La": 0.2347,
     "Lu": 0.0243,
     "Nd": 0.4524,
-    "Pm": 1.0,
     "Pr": 0.0891,
     "Sm": 0.1471,
     "Tb": 0.0363,
@@ -936,7 +930,6 @@
     "La": 0.31,
     "Lu": 0.0322,
     "Nd": 0.6,
-    "Pm": 1.0,
     "Pr": 0.122,
     "Sm": 0.195,
     "Tb": 0.0474,
@@ -953,7 +946,6 @@
     "La": 0.33,
     "Lu": 0.034,
     "Nd": 0.63,
-    "Pm": 1.0,
     "Pr": 0.112,
     "Sm": 0.203,
     "Tb": 0.047,

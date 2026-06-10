@@ -12,6 +12,9 @@ _normalize.py — 标准化参考值常量 + 标准化函数
   - 地壳: UCC_TM95 / MCC_RG2003 / LCC_TM95
   - 沉积物: GLOSS_PLANK1998 / GLOSS_II_PLANK2014
   - 地幔端元: DMM_SALTERS2004 / EM1 / EM2 / HIMU
+  - 2025-06-10 fix: 删除5数据集中 Pm=1.0 伪值（REE_PM/UCC_TM95/Chondrites）
+  - 2025-06-10 fix: REE_PRIMITIVE_MANTLE Lu=0.068→0.0675
+  - 2025-06-10 fix: 删除EM1/EM2/HIMU自相矛盾的 EpsNd（与143Nd/144Nd偏差~1ε）
 """
 import json
 import os
