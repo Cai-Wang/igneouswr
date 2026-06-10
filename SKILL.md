@@ -121,7 +121,7 @@ result = plot_recommended(gd)
 4. **清理残留引用** — `grep -rn deleted_fn_name scripts/` 检查无遗漏
 5. **清理无用 import** — 检查被删文件是否还 import 了不再需要的模块（如 `scipy.stats`）
 6. **更新 SKILL.md** — 同步图目录、总数、分组计数、校正状态计数、核心原则中引用的编号
-7. **运行批量生成验证** — `batch_backgrounds_main.py --mode full` 确保 19 图全部成功
+7. **运行批量生成验证** — `python3 -c "from igneous_wr.batch.backgrounds import run_batch; run_batch()"` 确保 19 图全部成功
 8. **删除相关引用文件**（如不再引用的 `references/dev-notes/` 中的文件）
 
 已执行案例：EVO-01 (Harker) 于 2026-06-09 删除，注册表从 20→19 图。CLS-04 原为 Shand（已删除），编号已重新分配给 Peccerillo & Taylor 1976 K₂O-SiO₂。

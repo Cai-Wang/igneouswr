@@ -8,7 +8,6 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from scipy import stats
 import igneous_wr.report.style as _style
 from igneous_wr.core.chem import feot_calc
 from igneous_wr.core.ternary import ternary_to_xy, ternary_corners, draw_ternary_frame, draw_ternary_grid, draw_ternary_ticks, label_ternary_vertices
@@ -396,7 +395,12 @@ def plot_frost_fenr(gd, out_dir=None, save=True):
     所需元素: SiO2, MgO, FeO(T) 或 TFe2O3
     """
     missing = gd.check_elements('SiO2', 'MgO', strict=True)
-    if 'FeO' not in gd._elem_data and 'TFe2O3' not in gd._elem_data:
+    if missing:
+        return (None, None)
+    feo_missing = gd.check_elements('FeO')
+    tfe2_missing = gd.check_elements('TFe2O3')
+    if feo_missing and tfe2_missing:
+        print('[IgneousWR] ❌ 缺少 FeO 和 TFe2O3，无法计算 Fe#')
         return (None, None)
     sio2 = gd.get('SiO2')
     mgo = gd.get('MgO')

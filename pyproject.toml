@@ -1,6 +1,6 @@
 [build-system]
 requires = ["setuptools>=64"]
-build-backend = "setuptools.backends._legacy:_Backend"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "igneouswr"
@@ -26,7 +26,6 @@ classifiers = [
 dependencies = [
     "numpy>=1.24",
     "matplotlib>=3.7",
-    "scipy>=1.10",
     "openpyxl>=3.1",
 ]
 

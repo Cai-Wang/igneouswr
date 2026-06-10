@@ -59,7 +59,7 @@ class FakeGeochemData:
     def __init__(self, mode='minimal'):
         self.mode = mode
         self.labels = []
-        self.groups = None
+        self.groups = []
 
         if mode == 'full':
             N = 5
@@ -132,6 +132,9 @@ def run_batch(mode='full', out_dir=None):
     print("=" * 60)
 
     # ── full 模式：patch scatter_samples 为空操作 ──
+    _original_scatter = None
+    _original_save_fig = None
+    _patched_fn = None
     if mode == 'full':
         from igneous_wr.report import style as _style_mod
         _original_scatter = _style_mod.scatter_samples
@@ -151,32 +154,36 @@ def run_batch(mode='full', out_dir=None):
     success = []
     failed = []
 
-    for i, spec in enumerate(DIAGRAM_REGISTRY, 1):
-        _current_spec[0] = spec
-        fn = spec.fn
-        out_name = spec.filename
+    try:
 
-        try:
-            print(f"[{i:2d}/{len(DIAGRAM_REGISTRY)}] {out_name}", end='')
+        for i, spec in enumerate(DIAGRAM_REGISTRY, 1):
+            _current_spec[0] = spec
+            fn = spec.fn
+            out_name = spec.filename
 
-            gd = FakeGeochemData(mode=mode)
-            fig, ax = fn(gd, out_dir=out_dir, save=True)
+            try:
+                print(f"[{i:2d}/{len(DIAGRAM_REGISTRY)}] {out_name}", end='')
 
-            if fig is not None:
-                success.append(out_name)
-                print(f"  ✓")
-            else:
-                print(f"  ⚠ 函数返回 None")
+                gd = FakeGeochemData(mode=mode)
+                fig, ax = fn(gd, out_dir=out_dir, save=True)
+
+                if fig is not None:
+                    success.append(out_name)
+                    print(f"  ✓")
+                else:
+                    print(f"  ⚠ 函数返回 None")
+                    failed.append(out_name)
+
+            except Exception as e:
+                print(f"  ❌ {type(e).__name__}: {e}")
                 failed.append(out_name)
 
-        except Exception as e:
-            print(f"  ❌ {type(e).__name__}: {e}")
-            failed.append(out_name)
-
-    # ── 恢复 ──
-    if mode == 'full':
-        _style_mod.scatter_samples = _original_scatter
-    _style_mod_for_save.save_fig = _orig_save_fig
+    finally:
+        # 恢复 patch
+        if mode == 'full' and _original_scatter is not None:
+            _style_mod.scatter_samples = _original_scatter
+        if _orig_save_fig is not None:
+            _style_mod_for_save.save_fig = _orig_save_fig
 
     print("=" * 60)
     print(f"成功: {len(success)}, 失败: {len(failed)}")

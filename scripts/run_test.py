@@ -10,6 +10,8 @@ DATA = "/tmp/test_geochem_standard.xlsx"
 set_out_dir(OUT_DIR)
 gd = GeochemData(DATA)
 result = plot_recommended(gd)
-print(f"\n=== 完成: {len(result)} 张图 ===")
-for r in sorted(result):
-    print(f"  {r}")
+print(f"\n=== 完成: {len(result['success'])} 张图，跳过 {len(result['skipped'])} ===")
+for name, fname in result['success']:
+    print(f"  ✓ {name} → {fname}")
+for desc, reason in result['skipped']:
+    print(f"  ✗ {desc} ({reason})")

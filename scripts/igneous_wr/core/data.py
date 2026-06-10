@@ -436,9 +436,6 @@ class GeochemData:
         if elem_name == 'Ti' and 'TiO2' in self._elem_data:
             from igneous_wr.core.chem import tio2_to_ti_ppm
             return tio2_to_ti_ppm(self._elem_data['TiO2'])
-        # ── Pb 自动回退：蜘蛛网图需要 Pb ──
-        if elem_name == 'Pb' and 'Pb' in self._elem_data:
-            return self._elem_data['Pb']
         print(f"[IgneousWR] ⚠️ 元素 '{elem_name}' 未找到")
         return np.full(len(self.labels), np.nan)
 
