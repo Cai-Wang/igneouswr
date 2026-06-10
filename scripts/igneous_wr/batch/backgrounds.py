@@ -95,7 +95,7 @@ class FakeGeochemData:
         canon = self._elem_data.get(elem_name)
         if canon is not None:
             return canon
-        from igneous_wr_core import ELEM_ALIAS
+        from igneous_wr.io.excel import ELEM_ALIAS
         alias = ELEM_ALIAS.get(elem_name, None)
         if alias and alias in self._elem_data:
             return self._elem_data[alias]

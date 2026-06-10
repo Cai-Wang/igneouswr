@@ -9,7 +9,6 @@ igneous_wr_core.py — IgneousWR 绘图引擎门面（兼容入口）
 
 用户仍可 from igneous_wr_core import * 正常使用。
 """
-import os, numpy as np
 
 # ── re-export 子模块 ──────────────────────────────────────────
 from igneous_wr.core.chem import feot_calc

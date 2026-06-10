@@ -8,7 +8,6 @@ import igneous_wr.report.style as _style
 from igneous_wr.core.chem import feot_calc
 from igneous_wr.core.ternary import SQRT3_2, ternary_to_xy, ternary_corners, draw_ternary_frame, draw_ternary_grid, draw_ternary_ticks, label_ternary_vertices
 from igneous_wr.boundaries.core import load_boundary
-'\n_tectonic.py — 构造判别图：Meschede, Wood, Pearce-Cann, 四联, Shervais Ti-V\n'
 
 def plot_meschede(gd, out_dir=None, save=True):
     """

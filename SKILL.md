@@ -5,14 +5,13 @@ description: 岩浆岩全岩地球化学数据处理与图解绘制 — Igneous 
 
 # IgneousWR — Igneous Whole-Rock 绘图引擎
 
-自动化全岩地球化学数据处理与图解绘制。读取合并后的 Excel 数据，自动判断岩性，一站式完成 TAS、REE、蛛网图、Miyashiro 等 **19 种精选图件**（含分类/源区/演化/构造判别），并生成自包含 HTML 图集报告。
+全岩地球化学数据处理与图解绘制。读取合并的 Excel，自动判断岩性，完成 **19 种精选图件**并生成 HTML 图集报告。
 
 ## 快速开始
 
 ```bash
 cd scripts
 pip install -e .
-
 python3 -c "
 from igneous_wr_core import GeochemData, plot_recommended, set_out_dir
 set_out_dir('/tmp/runs/myproject')
@@ -21,195 +20,85 @@ result = plot_recommended(gd)
 "
 ```
 
-输出目录含 PNG 图和 `report_YYYYMMDD.html`。可用 `set_out_dir()` 自定义。
-
 ## 精选图目录（19 张）
 
-### 📋 分类 / 岩石系列（12 张）
+### 分类/岩石系列（12 张）
+- CLS-01 Middlemost 1994 TAS（火山岩）— verified
+- CLS-02 Middlemost 1985 K₂O-SiO₂ — verified
+- CLS-03 Irvine & Baragar 1971 AFM — verified
+- CLS-04 Peccerillo & Taylor 1976 K₂O-SiO₂ — needs_review
+- CLS-05 Winchester & Floyd 1977 Zr/TiO₂-Nb/Y — verified
+- CLS-06 Hastie 2007 Co-Th — verified
+- CLS-10 Mullen 1983 TiO₂-MnO-P₂O₅ — experimental
+- CLS-13 Middlemost 1994 TAS（深成岩）— verified
+- CLS-17 Frost 2001 Fe#-SiO₂ — verified
+- CLS-29 Pearce 1996 Zr/Ti-Nb/Y — verified
+- CLS-30 Frost 2001 MALI-SiO₂ — verified
+- CLS-31 Frost 2001 ASI-A/NK — verified
 
-| # | 文件名 | 图件 | 校正 |
-|---|--------|------|------|
-| CLS-01 | TAS_Middlemost1994_Volcanic.png | TAS 全碱-硅分类图（火山岩，Middlemost 1994）— 16 个多边形，源自 GCDkit TASMiddlemostVolc.r；Sodalitite 和 Silexite 为纯文本标签 | verified |
-| CLS-02 | Middlemost1985_K2O_SiO2.png | K₂O–SiO₂ 钾系列分类 (Middlemost 1985) — 标签参考 GCDkit Peccerillo & Taylor 1976 布局（右侧右对齐 + Shoshonite 左边缘左对齐） | verified |
-| CLS-03 | AFM_IB1971.png | AFM 钙碱性-拉斑判别 (Irvine & Baragar 1971) | verified |
-| CLS-04 | CLS-04_PeccerilloTaylor1976_K2O_SiO2.png | K₂O–SiO₂ 钾系列分类 (Peccerillo & Taylor 1976) — 多段折线边界，源自 GCDkit PeceTaylor.r | needs_review |
-| CLS-05 | Winchester_Floyd1977_NbY_ZrTiO2.png | Zr/TiO₂–Nb/Y 分类 (Winchester & Floyd 1977) | verified |
-| CLS-06 | Co_Th_Hastie2007.png | Co-Th 系列+岩性判别 (Hastie 2007) | verified |
-| CLS-10 | Mullen1983_TiO2_MnO_P2O5.png | Mullen TiO₂-MnO-P₂O₅ 基性岩三角图 | experimental |
-| CLS-13 | TAS_Middlemost1994_Plutonic.png | TAS 全碱-硅分类图（深成岩，Middlemost 1994，x轴 34–90） | verified |
-| CLS-17 | Frost2001_Fenum_SiO2.png | Frost Fe# vs SiO₂ 铁质-镁质分类 | verified |
-| CLS-29 | Pearce1996_NbY_ZrTi.png | Pearce Zr/Ti–Nb/Y 火山岩分类 | verified |
-| CLS-30 | Frost2001_MALI_SiO2.png | Frost MALI vs SiO₂ 碱-钙分类 | verified |
-| CLS-31 | Frost2001_ASI_ANK.png | Frost ASI vs A/NK 铝饱和分类 | verified |
+### 源区性质（3 张）
+- SRC-01 Sun & McDonough 1989 REE 配分图 — verified
+- SRC-02 Sun & McDonough 1989 蛛网图 — verified
+- SRC-03 Pearce 2008 Th/Yb-Nb/Yb — verified
 
-### 🔬 源区性质（3 张）
+### 岩浆演化（1 张）
+- EVO-02 Miyashiro 1974 FeOt/MgO-SiO₂ — verified
 
-| # | 文件名 | 图件 |
-|---|--------|------|
-| SRC-01 | SunMcDonough1989_REE.png | REE 球粒陨石标准化配分图（Sun & McDonough 1989） |
-| SRC-02 | SunMcDonough1989_Spider.png | 原始地幔标准化蛛网图（Sun & McDonough 1989） |
-| SRC-03 | Pearce2008_ThYb_NbYb.png | Pearce Th/Yb–Nb/Yb 源区判别 |
-
-### 🧬 岩浆演化（1 张）
-
-| # | 文件名 | 图件 |
-|---|--------|------|
-| EVO-02 | Miyashiro1974_FeOtMgO_SiO2.png | Miyashiro FeOt/MgO–SiO₂ |
-
-### 🌍 构造环境判别（3 张）
-
-| # | 文件名 | 图件 |
-|---|--------|------|
-| TEC-01 | Meschede1986_ternary.png | Meschede Nb–Zr–Y 构造判别（三元） |
-| TEC-02 | Wood1980_Hf3_Th_Ta.png | Wood Hf/3–Th–Ta 构造判别（三元） |
-| TEC-05 | Shervais1982_Ti_V.png | Shervais Ti-V 构造判别图 |
-
-## 校正状态
-
-| 状态 | 数量 | 含义 |
-|------|------|------|
-| verified | 15 | 已校正，底图/坐标经用户确认 |
-| experimental | 3 (CLS-10, TEC-01, TEC-02) | 框架完整但未逐点校正 |
-| needs_review | 1 (CLS-04) | 新增 P&T 1976 图，待用户验证 |
-
-## 参考文件
-
-## 核心原则
-
-- **线段风格统一标准**（2026-06-09 统一）：
-  - 主分界线（分类/判别/构造区边界）：实线 `color='#333333'`, **lw=1.5**
-  - 次分界线（子分区、辅助划分）：虚线 `color='#666666'`, **lw=1.2**
-  - TAS 类多边形（边数多需避免视觉杂乱）：实线 `color='#333333'`, **lw=0.8**
-  - 辅助参考线（y=1, ASI-ANK 十字等）：虚线 `color='#666666'`, **lw=0.8**
-  - 三元图场界线：实线 `color='#333333'`, **lw=1.5**（与二元图统一）
-  - Shervais 型射线：主判别线（Ti/V=50）实线 `color='#333333'`, lw=1.5；辅助线虚线 `color='#666666'`, lw=1.0
-  - 所有 `ax.plot()` 禁用 fmt 字符串颜色（如 `'k-'`）以消除 `color is redundantly defined` 警告，统一使用 `color=` 关键字
-- **标签风格统一标准**（2026-06-09 统一）：
-  - 所有标签统一使用 `#444444`（深灰，纯黑白风格），禁用彩色标签（Frost系列、Mullen、Co-Th、Miyashiro、Shervais 等例外均已统一）
-  - 二元图区域标签字号统一 **10**（Frost Fe#/MALI/ASI-ANK、K₂O-SiO₂组）
-  - TAS 多边形内标签字号 **8.5**（火山岩+深成岩）、纯文本说明字号 **8**
-  - 三元图区域标签字号统一 **11**（AFM, Mullen, Meschede, Wood）
-  - WF1977 标签字号统一 **9.5**（代码覆盖 JSON 内 fontsize 字段）
-  - Pearce1996 标签字号统一 **10**
-  - Shervais 区域标签 **10**、射线标签 **8**
-  - REE 配分图 x 轴标签字号 **8.5**、蛛网图 **7.5**（45°旋转）
-  - 标引注统一由 `save_fig()` 自动添加（读取 registry 中 `source_ref` 字段），禁用手写 `ax.text()` citation
-- **所有图表纯 matplotlib 实现**，无需 pyrolite
-- **AI 不做数值计算**（标准化、FeOt换算、坐标变换等全部固化在 Python 代码中）
-- **边界数据外置 JSON**（`igneous_wr/boundaries/`），修改坐标不翻函数文件
-- **每个修改后 `python3 quick_validate.py --quick`**：秒级回归
-- **二元图全部通过 `_style.style_ax()` 统一坐标轴风格**（刻度向内、Times New Roman 字体；默认无网格——`style_ax()` 不添加网格线）。所有二元图无一例外使用 `style_ax()`，禁止手写 `set_xlabel`/`set_ylabel`/`minorticks_on`/`grid`
-- **三角图外框线宽统一为 SPINE_WIDTH**：`draw_ternary_frame()` 线宽从 `SPINE_WIDTH * 3.0` 改为 `SPINE_WIDTH`（2026-06-09），三角图边框与二元图四边外框现在视觉一致
-- **三元图与二元图视觉完全统一**：边框线宽同 `SPINE_WIDTH`、无网格、刻度标签同号(`TICK_LENGTH+4`≈9)同字体(`times_prop`)同色(`#333333`)、顶点标签字号12对齐`xlabel_size=12`。所有差异参数集中在 `ternary.py` 的 `draw_ternary_frame/grid/ticks` 和 `label_ternary_vertices` 四个函数。修改三元图外观时必须检查二元图对应风格参数，保持同步。
-- **化学式下标统一用 LaTeX `$_n$` 语法**（如 `FeO$_t$`, `SiO$_2$`, `Na$_2$O`, `TiO$_2$`），禁止 Unicode 下标符号和纯文本（`FeOt`）。三元图顶点标签例外（用 Unicode 字符通过 `label_ternary_vertices` 传入）
-- **底图默认纯黑白线框风格**：除 SRC-03 Pearce2008 Th/Yb-Nb/Yb 外，所有图不渲染分区彩色填充（fill/fill_between/Polygon 色块）。分界线用 ax.plot 纯色描边，分区文字标注保留。SRC-03 是唯一例外，因其源区判别依赖色块视觉区分。如需为某张图添加色区填充，先向用户确认
-- **对数轴刻度标签必须用真数**：所有对数坐标轴的刻度标签必须显示实际数值（如 `0.01`, `0.1`, `1`, `10`），不可用科学计数法（如 `10⁻²`, `10⁻¹`, `10⁰`, `10¹`）。设置方式：显式 `ax.set_xticks([...])` + `ax.set_xticklabels(['0.01', '0.1', '1', '10'])`，不可依赖 matplotlib 默认格式。这条规则应用于所有带对数坐标的图（CLS-05, CLS-06, CLS-29, SRC-01, SRC-02, SRC-03）
+### 构造环境判别（3 张）
+- TEC-01 Meschede 1986 Nb-Zr-Y 三角图 — experimental
+- TEC-02 Wood 1980 Hf/3-Th-Ta 三角图 — experimental
+- TEC-05 Shervais 1982 Ti-V — verified
 
 ## 数据输入
 
-支持 3 种 Excel 布局自动检测（wide / standard / transposed）。推荐 wide 格式：Row1=元素名横铺（A1=Sample），Col A=样品名。自动跳过参考标准行（BCR/BHVO/AGV等）。
-
-常见问题：如果 len(gd.all_labels) < 预期样品数，检查 Excel 格式是否被误判为 transposed。可用 `print(gd._detected_mode)` 查看检测模式。
-
-## 删除图件流程
-
-当需要删除某张图（如用户认为太老不再需要）时：
-
-1. **删注册表条目** — 从 `registry.py` 的 `DIAGRAM_REGISTRY` 中移除对应 `DiagramSpec`
-2. **删 import** — 同步更新 `registry.py` 顶部的 import、`igneous_wr_core.py` 的 re-export import
-3. **删函数体** — 从 `_classification.py` / `_source.py` / `_evolution.py` / `_tectonic.py` 中删除对应 `def` 函数
-4. **清理残留引用** — `grep -rn deleted_fn_name scripts/` 检查无遗漏
-5. **清理无用 import** — 检查被删文件是否还 import 了不再需要的模块（如 `scipy.stats`）
-6. **更新 SKILL.md** — 同步图目录、总数、分组计数、校正状态计数、核心原则中引用的编号
-7. **运行批量生成验证** — `python3 -c "from igneous_wr.batch.backgrounds import run_batch; run_batch()"` 确保 19 图全部成功
-8. **删除相关引用文件**（如不再引用的 `references/dev-notes/` 中的文件）
-
-已执行案例：EVO-01 (Harker) 于 2026-06-09 删除，注册表从 20→19 图。CLS-04 原为 Shand（已删除），编号已重新分配给 Peccerillo & Taylor 1976 K₂O-SiO₂。
+3 种 Excel 布局自动检测（wide / standard / transposed）。推荐 wide 格式：Row1=元素名横铺，Col A=样品名。自动跳过标准物质行（BCR/BHVO等）。检测模式可用 `print(gd._detected_mode)` 查看。
 
 ## 目录结构
 
 ```
 scripts/
 ├── igneous_wr_core.py          # 门面 API
-├── igneous_wr/                 # 全部活跃代码
-│   ├── boundaries/             # 坐标边界数据 (JSON)
-│   │   ├── cls/                # 分类图边界 (7 JSON)
-│   │   ├── src/                # 源区边界 (1 JSON)
-│   │   ├── evo/                # 演化边界 (2 JSON)
-│   │   └── tec/                # 构造边界 (2 JSON)
+├── igneous_wr/
+│   ├── boundaries/             # 坐标边界 JSON
 │   ├── core/                   # 化学计算、标准化、三元变换、数据类
 │   ├── io/excel.py             # Excel 读取
 │   ├── diagrams/               # 绘图函数 + 注册表
 │   ├── report/style.py         # 样式系统
 │   └── batch/                  # 批量出图 + 推荐
+├── tests/                      # 单元测试
 ├── quick_validate.py           # 验证脚本
-├── generate_test_data.py       # 测试数据生成
-└── merge_excel.py              # 主量+微量 Excel 合并
+├── generate_test_data.py       # 数据生成
+└── merge_excel.py              # Excel 合并
 ```
 
-## 代码审查清单
+## 删除图件流程
 
-批改 IgneousWR 代码时（增删图件、重构后），按以下清单逐项检查：
+1. 删注册表条目（`registry.py` `DIAGRAM_REGISTRY`）
+2. 删 import（`registry.py` 顶部、`igneous_wr_core.py` re-export）
+3. 删函数体（`_classification.py` / `_source.py` / `_evolution.py` / `_tectonic.py`）
+4. 清理残留引用 + 无用 import
+5. 更新 SKILL.md 图目录和计数
+6. 运行 `python3 quick_validate.py --quick` 验证
 
-### 删除图件后补充检查
-已在"删除图件流程"中列出基础步骤。之外还要检查：
+## 参考文件
 
-- **无用 import** — `scipy` 的 `from scipy import stats` 是三个 diagrams 文件（`_classification.py`, `_tectonic.py`, `_source.py`）最常见的残留 import。删图后如果没新增 scipy 调用，直接删除这三处 import，然后从 `requirements.txt` 和 `pyproject.toml` 中移除 `scipy>=1.10`。
-- **死代码分支** — `data.py` 的 `get()` 方法中曾经有 `if elem_name == 'Pb' and 'Pb' in self._elem_data` 这种条件恒真的无用分支。检查函数返回值路径中有无自我冗余。
-- **私有属性访问** — 所有绘图函数必须通过 `gd.check_elements()` / `gd.get()` 访问数据，禁止直接读 `gd._elem_data`。用 `grep -rn 'gd\._elem_data' scripts/igneous_wr/diagrams/` 排查。
-- **FakeGeochemData 兼容性** — 新增或修改图后运行 `quick_validate.py`。如果 minimal mode 报 `'NoneType' object is not iterable`，则是 `FakeGeochemData.__init__` 中 `self.groups = None` 导致 —— REE/Spider 的 `get_group_colors(groups)` 需要 `groups` 是列表。改为 `self.groups = []`。
+- `references/code-review-checklist.md` — 审查清单
+- `references/known-pitfalls.md` — 已知陷阱与修复原则
+- `references/code-review-patches.md` — 审查问题修复模式
 
-### pyproject.toml 配置陷阱
+## 核心原则
 
-```python
-# ❌ 错误 — setuptools >= 75 已移除 setuptools.backends._legacy
-build-backend = "setuptools.backends._legacy:_Backend"
-
-# ✅ 正确
-build-backend = "setuptools.build_meta"
-```
-
-`setuptools.backends._legacy` 在 setuptools 75+ 已被删除，81+ 完全不存在。如果 `pip install -e .` 失败，检查 pyproject.toml 中的 build-backend。
-
-### 测试 / 验证脚本陷阱
-
-- **`plot_recommended()` 返回 dict 而非 list**：返回 `{'success': [(fn_name, fname), ...], 'skipped': [...]}`。不要用 `sorted(result)` 或 `len(result)` —— 前者只迭代 dict 的 key（输出 `['skipped', 'success']`），后者恒为 2。
-- **monkey-patch 必须用 try/finally**：`batch/backgrounds.py` 的 `run_batch(mode='full')` 中 patch 了 `scatter_samples` 和 `save_fig`。patch 恢复代码必须放在 `finally` 块中，否则异常导致恢复函数不执行，后续调用行为异常。模式如下：
-  ```python
-  _original = _style_mod.scatter_samples
-  _style_mod.scatter_samples = lambda *a, **kw: None
-  try:
-      # ... 主循环
-  finally:
-      _style_mod.scatter_samples = _original
-  ```
-
-## 已知陷阱
-
-- **二元图多边形共享边错位——GCDkit 填充色掩盖的陷阱**：GCDkit 原版中每个分类区是独立填充色块，相邻多边形共享边即使顶点不一致（一边直线、另一边折线），填充色块也会遮盖底层线段不对外暴露。但在 IgneousWR 纯线框模式下，两条不同路径的线段同时可见，形成多余折角/线段交叉。**修复原则**：翻译任何 GCDkit 分类图时，`lines` 列表中的相邻多边形共享边必须走完全相同的顶点序列——如果一方经过中间顶点，另一方也必须经过同一顶点，不能一边直线一边折线。
-  - 典型案例：TAS CLS-01 S3 (Trachyandesite) 右边原本为直线 `(57.6,11.7)→(63.0,7.0)`，但相邻 Td/T 走折线 `(57.6,11.7)→(61.0,8.6)→(63.0,7.0)`，偏差 0.14 个单位。修复后将 S3 补为 5 边形包含 (61.0,8.6) 中间顶点。详见 `references/dev-notes/archive/tas-s3-trachyandesite-edge-fix.md`
-  - 排查方法：用 `set()` 求相邻两个多边形边集合的交集，确认共享边完全匹配
-  - **正确的排查顺序**：发现坐标问题后，先到 GCDkit 安装目录下找对应 R 源码（如 `Diagrams/Classification/English/TASMiddlemostVolc.r`）确认 GCDkit 的原始定义，再下结论是否需要修复
-
-- **三元图多边形共享边对齐**：当两个相邻区域共享一段边界时，它们的闭合顶点序列必须在共享段严格匹配。例如 Meschede TEC-01 中 B 区原为 `l→n` 直线、C 区为 `l→m→n` 折线，两者不共边导致重叠/缝隙。修复后 B 区改为 `l→m→n`，与 C 区完全共享折线。规律：**相邻多边形哪条边共享，就在两个多边形的 keys 列表里插相同的中间顶点**，不可一边走直线一边走折线。
-- **TAS 火山岩图（CLS-01）坐标来源**：当前使用 pyrolite 派生坐标（Le Bas 体系），Rhyolite 区边界来自 Middlemost 1994 TASMiddlemostVolc（69,8→71.8,13.5→85.9,6.8→87.5,4.7→77.3,0），Trachyte 拆分为 T1(Q<20%) 和 T2(Q>20%) 两区。与 GCDkit TASMiddlemostVolc.r（Middlemost 1994 改编版）不完全一致。
-- **Frost ASI-ANK（CLS-31）没有对角线**：只有 h=1 + v=1 两条虚线。Shand A/CNK-A/NK 图（CLS-04，已于 2026-06-09 删除）才有 y=x 对角线。GCDkit `Frost.r` Plot 3 源码只有 `abline(h=1)` + `abline(v=1)`。如果被问到"Frost 图有没有斜线"，答案是没有
-- **R 源码的 `\n` 在 IgneousWR 中必须用真换行符**：R 字符串中的 `\n` 是真换行符（如 `"alkali\\nbasalt"`），翻译到 Python 时也必须用真 `\n`（`'Low-K\\nTholeiitic'`），不能用 `\\\\n`（双反斜杠-n 会显示为字面文本不换行）。CLS-29 Pearce1996 和 CLS-02 都曾因此导致多行标签被挤在一行。验证方法：`cat -A <file> | grep "Low-K"` 应显示 `Low-K\\nTholeiitic`（单反斜杠 n），而非 `Low-K\\\\nTholeiitic`（双反斜杠）。**patch 工具写入字符串时对 `\n` 的行为取决于调用方的上下文**——在 `patch` 参数的 Python 字符串中写 `'\\n'` 会被解释为字面 `\n`（正确），写 `'\\\\n'` 则写入 `\\n`（错误）
-- **三角图刻度标签风格**（2026-06-26 统一）：三元图刻度标签字号改为 `TICK_LENGTH+4`（≈9），与二元图 `style_ax(labelsize=9)` 一致。刻度标签字体使用 `times_prop`（Times New Roman）。顶点标签字号从 14 改为 12，与二元图 `xlabel_size=12` 统一。改动集中在 `ternary.py` 的 `draw_ternary_ticks()` 和 `label_ternary_vertices()`。
-- **三元图网格已禁用**（2026-06-09）：`draw_ternary_grid()` 函数体已清空。为与二元图一律无网格的风格统一，三元图不再绘制灰色虚线网格。
-- **三元图刻度颜色**（2026-06-09）：从 `#666666` 改为 `#000000`（纯黑），与二元图默认黑色刻度完全一致。
-- **三角图标签替换字母为地质含义**（2026-06-26）：TEC-01 Meschede 和 TEC-02 Wood 的 A/B/C/D/E 字母标签已替换为地质含义（WPA, N-MORB, CAB, IAT, P-MORB 等），删除下方小字子标签行。改动在 `_tectonic.py` 中两个绘图函数的分区标签渲染循环：`fd['sub']` → `fd['label']`。
-- **三角图顶点顺序**：`ternary_to_xy(top,left,right)` 与 `label_ternary_vertices(ax,top,left,right)` 参数顺序一致。改顶点时需同步更新 3 处：数据顺序、标签顺序、分界线坐标空间
-- **GCDkit R 坐标投影**：`list("lines", x=xx, y=yy)` 中的值已是三元投影后的 XY 坐标，直接 `ax.plot()` 无需 `ternary_to_xy` 转换
-- **TAS x 轴刻度**：matplotlib AutoLocator 默认从 30 开始标 → 强制 `ax.set_xticks(range(35, 95, 5))`
-- **不遗留"已知但暂缓"项**：用户明确厌恶。如果用户说"全部解决"，需 grep 扫描所有相关位置逐一清理
-- **一次性写入大文件**：不要用多步 write_file/heredoc 追加 -- 用独立脚本一次完成
-- **K₂O-SiO₂ 标签布局需参考 GCDkit P&T 1976 风格**（2026-06-09 修正）：CLS-02 的 4 个区域标签**不应放在图中间居中对齐**（原写法的错误），而应将 Low-K/Medium-K/High-K 三个标签沿 **右边缘 x=80 右对齐**（`ha='right'`），Shoshonite 沿 **左边缘 x=44 左对齐**（`ha='left'`）。所有标签颜色统一 `#444444` 不分区着色。垂直位置取各区间在 x=80 处的 y 中点。该布局参考 GCDkit `PeceTaylor.r` `temp3` 块的 `adj=c(1,0.5)`（右侧）/ `adj=c(0,0.5)`（左侧）风格。**坐标计算方法**：`y = (边界线1在x=80的值 + 边界线2在x=80的值) / 2`
-- **开源前检查 pyproject.toml build-backend**：`setuptools.backends._legacy` 在 setuptools 81+ 中已不存在。如果开源前不修，`pip install -e .` 会直接失败。正确的值是 `"setuptools.build_meta"`。用 `python3 -c "import setuptools.build_meta"` 验证。
-- **开源前检查无用 import**：`_classification.py`、`_source.py`、`_tectonic.py` 三处都 `from scipy import stats` 但从未使用 `stats.`。scipy 从依赖中移除后这三行会导致 ImportError。开源审查时用 `grep -rn "stats\." scripts/igneous_wr/diagrams/` 确认是否真的被调用，没有则删除。
-- **refs.json 不可含 `#` 前缀键**：Python json.load 能解析 `#README` 这类注释键，但不是标准 JSON。其他语言（Rust serde_json、Go encoding/json）会直接报错。开源发布前必须删除所有以 `#` 开头的键。
+- 线段风格：主分界线 `#333333` lw=1.5 实线，次分界线 `#666666` lw=1.2 虚线，TAS 多边形 lw=0.8，三元图场界线 lw=1.5
+- 标签风格：统一 `#444444`，二元图区域=10，TAS 多边形=8.5，三元图区域=11
+- 所有图表纯 matplotlib，无需 pyrolite。AI 不做数值计算（标准化、FeOt 换算等全在 Python 代码中）
+- 边界数据外置 JSON（`boundaries/`），修改坐标不翻函数
+- 每个修改后 `python3 quick_validate.py --quick` 回归验证
+- 修改核心逻辑（chem/data/normalize）后运行 `python3 -m pytest tests/ -v` 确保单元测试通过
+- 二元图全部通过 `style_ax()` 统一坐标轴（无网格、Times New Roman、刻度向内）
+- 化学式 LaTeX 下标 `$_n$`，禁止 Unicode 下标
+- 对数轴刻度用真数（0.01, 0.1, 1, 10…），禁用科学计数法
+- 除 SRC-03 外所有图纯黑白线框，不渲染彩色填充
 
 ## 相关技能
 
-- `gcdkit-translator` — GCDkit R 源码-> IgneousWR Python 翻译规范
-
+- `gcdkit-translator` — GCDkit R → Python 翻译规范

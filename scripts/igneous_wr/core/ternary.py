@@ -91,5 +91,5 @@ def label_ternary_vertices(ax, top_label, left_label, right_label,
             fontsize=fontsize, fontweight='bold', ha='right', va='top',
             fontproperties=_style.times_prop, **kw)
     ax.text(corners['right'][0]+0.035, corners['right'][1]-0.03, right_label,
-            fontsize=fontsize, fontweight='bold', ha='right', va='top',
+            fontsize=fontsize, fontweight='bold', ha='left', va='top',
             fontproperties=_style.times_prop, **kw)

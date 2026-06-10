@@ -49,12 +49,15 @@ TRACE_ORDER = [
 
 # ── 常用地球化学计算比值 ────────────────────────────
 
-# 球粒陨石标准化值（Sun & McDonough, 1989；与 _normalize.py 保持一致）
-CHONDRITE = {
-    'La': 0.237, 'Ce': 0.613, 'Pr': 0.0928, 'Nd': 0.457, 'Sm': 0.148,
-    'Eu': 0.0563, 'Gd': 0.199, 'Tb': 0.0361, 'Dy': 0.246, 'Ho': 0.0546,
-    'Er': 0.160, 'Tm': 0.0248, 'Yb': 0.161, 'Lu': 0.0247
-}
+# 优先从包中导入，否则回退到内联定义
+try:
+    from igneous_wr.core.normalize import CHONDRITE
+except ImportError:
+    CHONDRITE = {
+        'La': 0.237, 'Ce': 0.613, 'Pr': 0.0928, 'Nd': 0.457, 'Sm': 0.148,
+        'Eu': 0.0563, 'Gd': 0.199, 'Tb': 0.0361, 'Dy': 0.246, 'Ho': 0.0546,
+        'Er': 0.160, 'Tm': 0.0247, 'Yb': 0.161, 'Lu': 0.0247
+    }
 
 REE_ELEMENTS = ['La', 'Ce', 'Pr', 'Nd', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu']
 LREE_ELEMENTS = ['La', 'Ce', 'Pr', 'Nd', 'Sm', 'Eu']  # 轻稀土

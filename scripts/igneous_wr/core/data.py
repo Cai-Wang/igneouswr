@@ -11,6 +11,12 @@ from igneous_wr.io.excel import (
     DL_STRATEGY_HALF, DL_STRATEGY_ZERO, DL_STRATEGY_NAN,
 )
 
+# 自动排除的标准物质/参考样前缀
+_REFERENCE_PREFIXES = ('BCR', 'BHVO', 'AGV', 'GSP', 'G-2', 'JB-', 'JA-',
+                       'JG-', 'JP-', 'JR-', 'GSB', 'NIST', 'SRM', 'SY-',
+                       'MRG', 'PCC', 'DTS', 'W-2', 'DNC', 'BIR', 'UB-N',
+                       'ACE', 'SARM', 'IMA', 'SDC', 'DL-', 'GSR', 'GSS')
+
 
 class GeochemData:
     """
@@ -226,10 +232,7 @@ class GeochemData:
             if not label:
                 continue
             # 跳过标准样和 RE 参考位置的标记
-            if label.upper().startswith(('BCR', 'BHVO', 'AGV', 'GSP', 'G-2', 'JB-', 'JA-',
-                                          'JG-', 'JP-', 'JR-', 'GSB', 'NIST', 'SRM', 'SY-',
-                                          'MRG', 'PCC', 'DTS', 'W-2', 'DNC', 'BIR', 'UB-N',
-                                          'ACE', 'SARM', 'IMA', 'SDC', 'DL-', 'GSR', 'GSS')):
+            if label.upper().startswith(_REFERENCE_PREFIXES):
                 continue
             sample_names.append(label)
             for elem, col in elem_cols.items():
@@ -350,10 +353,7 @@ class GeochemData:
                                                'major elements (wt%)', 'trace elements (ppm)',
                                                'minor elements (ppm)'):
                 continue
-            if label.upper().startswith(('BCR', 'BHVO', 'AGV', 'GSP', 'G-2', 'JB-', 'JA-',
-                                          'JG-', 'JP-', 'JR-', 'GSB', 'NIST', 'SRM', 'SY-',
-                                          'MRG', 'PCC', 'DTS', 'W-2', 'DNC', 'BIR', 'UB-N',
-                                          'ACE', 'SARM', 'IMA', 'SDC', 'DL-', 'GSR', 'GSS')):
+            if label.upper().startswith(_REFERENCE_PREFIXES):
                 continue
             sample_labels.append(r)
 
@@ -366,10 +366,7 @@ class GeochemData:
                                                'major elements (wt%)', 'trace elements (ppm)',
                                                'minor elements (ppm)'):
                 continue
-            if label.upper().startswith(('BCR', 'BHVO', 'AGV', 'GSP', 'G-2', 'JB-', 'JA-',
-                                          'JG-', 'JP-', 'JR-', 'GSB', 'NIST', 'SRM', 'SY-',
-                                          'MRG', 'PCC', 'DTS', 'W-2', 'DNC', 'BIR', 'UB-N',
-                                          'ACE', 'SARM', 'IMA', 'SDC', 'DL-', 'GSR', 'GSS')):
+            if label.upper().startswith(_REFERENCE_PREFIXES):
                 continue
 
             self.all_labels.append(label)

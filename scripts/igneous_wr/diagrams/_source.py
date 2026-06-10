@@ -9,7 +9,6 @@ from igneous_wr.core.chem import feot_calc
 from igneous_wr.core.ternary import ternary_to_xy, ternary_corners, draw_ternary_frame, draw_ternary_grid, draw_ternary_ticks, label_ternary_vertices
 from igneous_wr.core.normalize import REE_ORDER, CHONDRITE, SPIDER_ORDER, PRIMITIVE_MANTLE, normalize
 from igneous_wr.boundaries.core import load_boundary
-'\n_source.py — 源区图：REE, Spider, Pearce 系列, U/Th, Th/Yb-Ta/Yb, (Sm/Yb)-(La/Sm), Sc-V, Ba/Th-La/Sm, Nb/La-Th/La, Zr/Y-Zr, Gd/Yb-Dy/Dy*, Dy/Yb-La/Yb\n'
 
 def plot_ree(gd, out_dir=None, save=True):
     """
