@@ -42,7 +42,7 @@ def draw_ternary_frame(ax, corners=None, corner_labels=None):
     for p1, p2 in [('top', 'left'), ('left', 'right'), ('right', 'top')]:
         ax.plot([corners[p1][0], corners[p2][0]],
                 [corners[p1][1], corners[p2][1]],
-                color='#333333', lw=lw_val, zorder=3)
+                color=_style.LINE_COLOR_MAIN, lw=lw_val, zorder=3)
 
     # 如果传入了 corner_labels，自动标注顶点
     if corner_labels is not None and len(corner_labels) == 3:

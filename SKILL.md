@@ -192,6 +192,17 @@ This is a **Hermes Agent skill**. It also works with any agent supporting the ag
 
 All 72 citations are stored in `scripts/igneous_wr/references/refs.json` and auto-rendered in the HTML report. Each diagram has a citation imprint in the bottom-right corner.
 
+## Git / Publishing Rules
+
+This repo is for **end users** (geologists), not an agent development notebook. The README and all committed docs must be user-facing — describe the tool, not the agent.
+
+- **Commit only** files that affect the tool's functionality: code, boundary JSONs, test scripts, README, AGENTS.md, pyproject.toml, .gitignore.
+- **Do NOT commit:** audit reports, review checklists, data audit docs, dev-notes, fix annotations in docstrings, or any reference that documents "how the agent works on this project".
+- Hermes skill `references/` and internal workflow documentation stay **local** in `~/.hermes/skills/data-science/IgneousWR/` — never push them to GitHub.
+- **Pitfall: `git add -A` picks up new files in the repo root.** If you created a new markdown file locally (audit report, workflow doc, etc.), `git add -A` stages it. Always `git status` before committing to catch unintended new files.
+- **Pitfall: every row in README diagram tables must have a non-empty reference citation.** The "引用" column is for user-facing author-year references (e.g. "Frost et al. (2001)"). Leaving it blank will be caught and corrected.
+- If unsure whether a new file belongs in the package or is internal agent guidance, **ask the user before committing**.
+
 Related skills (Hermes):
 - `gcdkit-translator` — GCDkit R → IgneousWR Python translation guide
 - `isoplotr` — U-Pb geochronology (separate package)

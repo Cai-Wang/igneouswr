@@ -33,26 +33,26 @@ def plot_co_th(gd, out_dir=None, save=True):
     ax.set_ylim(0.01, 100)
 
     # 系列分界线（坐标与 GCDkit 一致）
-    ax.plot([70, 0], [0.245, 1.35], color='#333333', lw=1.5, zorder=3)          # IAT / CA
-    ax.plot([70, 0], [2.2, 9], color='#333333', lw=1.2, linestyle='--', dashes=(6, 3), zorder=3)  # CA / HK-CA+SHO
+    ax.plot([70, 0], [0.245, 1.35], color=_style.LINE_COLOR_MAIN, lw=1.5, zorder=3)          # IAT / CA
+    ax.plot([70, 0], [2.2, 9], color=_style.LINE_COLOR_MAIN, lw=1.2, linestyle='--', dashes=(6, 3), zorder=3)  # CA / HK-CA+SHO
     # 岩性分界线
-    ax.plot([38.4, 24], [0.01, 100], color='#666666', lw=1.2, zorder=3)          # B / BA+A
-    ax.plot([23, 7], [0.01, 100], color='#666666', lw=1.2, zorder=3)             # BA+A / D+R*
+    ax.plot([38.4, 24], [0.01, 100], color=_style.LINE_COLOR_SECONDARY, lw=1.2, zorder=3)          # B / BA+A
+    ax.plot([23, 7], [0.01, 100], color=_style.LINE_COLOR_SECONDARY, lw=1.2, zorder=3)             # BA+A / D+R*
 
     # 系列标注
     ax.text(68, 0.1, 'Tholeiite\nSeries', fontsize=10, fontweight='bold',
-            color='#444444', ha='left', va='center')
+            color=_style.TEXT_COLOR_LABEL, ha='left', va='center')
     ax.text(68, 1.0, 'Calc-alkaline\nSeries', fontsize=10, fontweight='bold',
-            color='#444444', ha='left', va='center')
+            color=_style.TEXT_COLOR_LABEL, ha='left', va='center')
     ax.text(68, 60, 'High-K calc-alkaline\nand Shoshonite Series',
-            fontsize=10, fontweight='bold', color='#444444', ha='left', va='center')
+            fontsize=10, fontweight='bold', color=_style.TEXT_COLOR_LABEL, ha='left', va='center')
 
     # 岩性标注（vs GCDkit adj=0.5 → va='center'）
-    ax.text(50, 0.02, 'B', fontsize=10, fontweight='bold', color='#444444',
+    ax.text(50, 0.02, 'B', fontsize=10, fontweight='bold', color=_style.TEXT_COLOR_LABEL,
             ha='center', va='center')
-    ax.text(30, 0.02, 'BA/A', fontsize=10, fontweight='bold', color='#444444',
+    ax.text(30, 0.02, 'BA/A', fontsize=10, fontweight='bold', color=_style.TEXT_COLOR_LABEL,
             ha='center', va='center')
-    ax.text(10, 0.02, 'D/R*', fontsize=10, fontweight='bold', color='#444444',
+    ax.text(10, 0.02, 'D/R*', fontsize=10, fontweight='bold', color=_style.TEXT_COLOR_LABEL,
             ha='center', va='center')
 
     _style.scatter_samples(ax, co, th, labels, groups=gd.groups)
@@ -87,17 +87,17 @@ def plot_tas(gd, out_dir=None, save=True):
         n = len(poly)
         for i in range(n):
             seg = tuple(sorted([poly[i], poly[(i + 1) % n]]))
-            ax.plot([seg[0][0], seg[1][0]], [seg[0][1], seg[1][1]], color='#333333', lw=0.8, zorder=2)
+            ax.plot([seg[0][0], seg[1][0]], [seg[0][1], seg[1][1]], color=_style.LINE_COLOR_MAIN, lw=0.8, zorder=2)
     # 文本标签（纯分类区，无视觉边界）
     _text_only = _tas_data.get('text_only', {})
     for label, (tx, ty) in _text_only.items():
         ax.text(tx, ty, label, ha='center', va='center', fontsize=8, fontweight='normal',
-                color='#666666', style='italic', zorder=5)
+                color=_style.LINE_COLOR_SECONDARY, style='italic', zorder=5)
     for name, poly in _TAS_FIELDS.items():
         cx = sum((p[0] for p in poly)) / len(poly)
         cy = sum((p[1] for p in poly)) / len(poly)
         label = _TAS_LABELS.get(name, name)
-        ax.text(cx, cy, label, ha='center', va='center', fontsize=8.5, fontweight='bold', color='#444444', zorder=5)
+        ax.text(cx, cy, label, ha='center', va='center', fontsize=8.5, fontweight='bold', color=_style.TEXT_COLOR_LABEL, zorder=5)
     _style.scatter_samples(ax, sio2, alk, labels, groups=gd.groups)
     _style.add_legend(ax)
     ax.set_xlim(34, 90)
@@ -122,16 +122,16 @@ def plot_k2o_sio2(gd, out_dir=None, save=True):
     k2o = gd.get('K2O')
     labels = gd.labels
     fig, ax = plt.subplots(figsize=(8, 7))
-    ax.plot([45, 75], [0.5, 2.5], color='#333333', lw=1.5, zorder=3)
-    ax.plot([50, 75], [1.5, 4.0], color='#666666', lw=1.2, linestyle='--', zorder=3)
-    ax.plot([55, 75], [2.5, 6.0], color='#666666', lw=1.2, linestyle='-.', zorder=3)
+    ax.plot([45, 75], [0.5, 2.5], color=_style.LINE_COLOR_MAIN, lw=1.5, zorder=3)
+    ax.plot([50, 75], [1.5, 4.0], color=_style.LINE_COLOR_SECONDARY, lw=1.2, linestyle='--', zorder=3)
+    ax.plot([55, 75], [2.5, 6.0], color=_style.LINE_COLOR_SECONDARY, lw=1.2, linestyle='-.', zorder=3)
     # 标签位置参考 GCDkit Peccerillo & Taylor 1976 风格：
     # 前 3 个在右边缘右对齐 (adj=c(1,0.5))，Shoshonite 在左边缘左对齐 (adj=c(0,0.5))
     # 垂直位置 = 各区间在 x=80 处的 y 中点
-    ax.text(80, 1.4, 'Low-K\nTholeiitic', fontsize=10, ha='right', va='center', color='#444444', fontweight='bold', zorder=4)
-    ax.text(80, 3.7, 'Medium-K\nCalc-alkaline', fontsize=10, ha='right', va='center', color='#444444', fontweight='bold', zorder=4)
-    ax.text(80, 5.7, 'High-K\nCalc-alkaline', fontsize=10, ha='right', va='center', color='#444444', fontweight='bold', zorder=4)
-    ax.text(44, 7.4, 'Shoshonitic', fontsize=10, ha='left', va='center', color='#444444', fontweight='bold', zorder=4)
+    ax.text(80, 1.4, 'Low-K\nTholeiitic', fontsize=10, ha='right', va='center', color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=4)
+    ax.text(80, 3.7, 'Medium-K\nCalc-alkaline', fontsize=10, ha='right', va='center', color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=4)
+    ax.text(80, 5.7, 'High-K\nCalc-alkaline', fontsize=10, ha='right', va='center', color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=4)
+    ax.text(44, 7.4, 'Shoshonitic', fontsize=10, ha='left', va='center', color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=4)
     _style.scatter_samples(ax, sio2, k2o, labels, groups=gd.groups)
     _style.add_legend(ax)
     ax.set_xlim(42, 82)
@@ -157,22 +157,22 @@ def plot_k2o_sio2_peccerillo(gd, out_dir=None, save=True):
     fig, ax = plt.subplots(figsize=(8, 7))
     # Tholeiite / Calc-alkaline boundary
     ax.plot([48, 52, 56, 63, 70, 78], [0.3, 0.5, 0.7, 1, 1.3, 1.6],
-            color='#333333', lw=1.5, zorder=3)
+            color=_style.LINE_COLOR_MAIN, lw=1.5, zorder=3)
     # Calc-alkaline / High-K boundary
     ax.plot([48, 52, 56, 63, 70, 75], [1.2, 1.5, 1.8, 2.4, 3, 3.43],
-            color='#666666', lw=1.2, linestyle='--', zorder=3)
+            color=_style.LINE_COLOR_SECONDARY, lw=1.2, linestyle='--', zorder=3)
     # High-K / Shoshonite boundary
     ax.plot([48, 52, 56, 63, 70], [1.6, 2.4, 3.2, 4, 4.8],
-            color='#666666', lw=1.2, linestyle='-.', zorder=3)
+            color=_style.LINE_COLOR_SECONDARY, lw=1.2, linestyle='-.', zorder=3)
     # Labels (GCDkit PeceTaylor.r temp3 style)
     ax.text(77, 0.7, 'Tholeiite Series', fontsize=10, ha='right', va='center',
-            color='#444444', fontweight='bold', zorder=4)
+            color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=4)
     ax.text(77, 2.4, 'Calc-alkaline\nSeries', fontsize=10, ha='right', va='center',
-            color='#444444', fontweight='bold', zorder=4)
+            color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=4)
     ax.text(77, 4, 'High-K calc-alkaline\nSeries', fontsize=10, ha='right', va='center',
-            color='#444444', fontweight='bold', zorder=4)
+            color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=4)
     ax.text(47, 4.5, 'Shoshonite Series', fontsize=10, ha='left', va='center',
-            color='#444444', fontweight='bold', zorder=4)
+            color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=4)
     _style.scatter_samples(ax, sio2, k2o, labels, groups=gd.groups)
     _style.add_legend(ax)
     ax.set_xlim(45, 78)
@@ -216,9 +216,9 @@ def plot_afm(gd, out_dir=None, save=True):
     draw_ternary_ticks(ax)
     _xx = [0.231, 0.312, 0.436, 0.473, 0.513, 0.542, 0.5555, 0.617, 0.675]
     _yy = [0.3135012, 0.3671948, 0.4641896, 0.4728499, 0.4728499, 0.4572614, 0.442539, 0.375855, 0.3031089]
-    ax.plot(_xx, _yy, color='#333333', lw=1.5, zorder=5)
-    ax.text(0.5, 0.53, 'Tholeiite Series', fontsize=11, ha='center', va='center', color='#444444', fontweight='bold', zorder=6)
-    ax.text(0.5, 0.1, 'Calc-Alkaline Series', fontsize=11, ha='center', va='center', color='#444444', fontweight='bold', zorder=6)
+    ax.plot(_xx, _yy, color=_style.LINE_COLOR_MAIN, lw=1.5, zorder=5)
+    ax.text(0.5, 0.53, 'Tholeiite Series', fontsize=11, ha='center', va='center', color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=6)
+    ax.text(0.5, 0.1, 'Calc-Alkaline Series', fontsize=11, ha='center', va='center', color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=6)
     label_ternary_vertices(ax, 'FeO*', 'Na$_2$O+K$_2$O', 'MgO')
     _style.scatter_samples(ax, x_d, y_d, labels, groups=gd.groups)
     _style.add_legend(ax)
@@ -254,10 +254,10 @@ def plot_winchester_floyd(gd, out_dir=None, save=True):
     for edge in _WF_EDGES:
         xs = [_WF_NODES[n][0] for n in edge]
         ys = [_WF_NODES[n][1] for n in edge]
-        ax.plot(xs, ys, color='#333333', linewidth=1.5, linestyle='-', solid_capstyle='round', zorder=2)
+        ax.plot(xs, ys, color=_style.LINE_COLOR_MAIN, linewidth=1.5, linestyle='-', solid_capstyle='round', zorder=2)
     for label in _WF_LABELS:
         rx, ry, text = (label['x'], label['y'], label['text'])
-        ax.text(rx, ry, text, fontsize=9.5, color='#444444', ha='center', va='center', fontweight='normal', zorder=3)
+        ax.text(rx, ry, text, fontsize=9.5, color=_style.TEXT_COLOR_LABEL, ha='center', va='center', fontweight='normal', zorder=3)
     _style.scatter_samples(ax, nb_yi, zr_tio2, labels, groups=gd.groups)
     _style.add_legend(ax)
     ax.set_xscale('log')
@@ -317,22 +317,22 @@ def plot_mullen(gd, out_dir=None, save=True):
     m1_xy = ternary_to_xy(np.array(_mullen_curves['m1']['a']), np.array(_mullen_curves['m1']['b']), np.array(_mullen_curves['m1']['c']))
     m2_xy = ternary_to_xy(np.array(_mullen_curves['m2']['a']), np.array(_mullen_curves['m2']['b']), np.array(_mullen_curves['m2']['c']))
     m3_xy = ternary_to_xy(np.array(_mullen_curves['m3']['a']), np.array(_mullen_curves['m3']['b']), np.array(_mullen_curves['m3']['c']))
-    ax.plot(m0_xy[0], m0_xy[1], color='#333333', lw=1.5, zorder=4)
-    ax.plot(m1_xy[0], m1_xy[1], color='#333333', lw=1.5, zorder=4)
-    ax.plot(m2_xy[0], m2_xy[1], color='#666666', lw=1.2, linestyle='--', zorder=4)
-    ax.plot(m3_xy[0], m3_xy[1], color='#666666', lw=1.2, linestyle='--', zorder=4)
+    ax.plot(m0_xy[0], m0_xy[1], color=_style.LINE_COLOR_MAIN, lw=1.5, zorder=4)
+    ax.plot(m1_xy[0], m1_xy[1], color=_style.LINE_COLOR_MAIN, lw=1.5, zorder=4)
+    ax.plot(m2_xy[0], m2_xy[1], color=_style.LINE_COLOR_SECONDARY, lw=1.2, linestyle='--', zorder=4)
+    ax.plot(m3_xy[0], m3_xy[1], color=_style.LINE_COLOR_SECONDARY, lw=1.2, linestyle='--', zorder=4)
     lbl_oit = ternary_to_xy(np.array([57.7]), np.array([16.1]), np.array([26.1]))
-    ax.text(lbl_oit[0][0], lbl_oit[1][0], 'OIT', fontsize=11, ha='center', va='center', color='#444444', fontweight='bold', zorder=5)
+    ax.text(lbl_oit[0][0], lbl_oit[1][0], 'OIT', fontsize=11, ha='center', va='center', color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=5)
     lbl_iat = ternary_to_xy(np.array([34.6]), np.array([50.7]), np.array([14.7]))
-    ax.text(lbl_iat[0][0], lbl_iat[1][0], 'IAT', fontsize=11, ha='center', va='center', color='#444444', fontweight='bold', zorder=5)
+    ax.text(lbl_iat[0][0], lbl_iat[1][0], 'IAT', fontsize=11, ha='center', va='center', color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=5)
     lbl_morb = ternary_to_xy(np.array([46.2]), np.array([33.9]), np.array([19.9]))
-    ax.text(lbl_morb[0][0], lbl_morb[1][0], 'MORB', fontsize=11, ha='center', va='center', color='#444444', fontweight='bold', zorder=5)
+    ax.text(lbl_morb[0][0], lbl_morb[1][0], 'MORB', fontsize=11, ha='center', va='center', color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=5)
     lbl_cab = ternary_to_xy(np.array([11.5]), np.array([49.2]), np.array([39.2]))
-    ax.text(lbl_cab[0][0], lbl_cab[1][0], 'CAB', fontsize=11, ha='center', va='center', color='#444444', fontweight='bold', zorder=5)
+    ax.text(lbl_cab[0][0], lbl_cab[1][0], 'CAB', fontsize=11, ha='center', va='center', color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=5)
     lbl_oia = ternary_to_xy(np.array([25.4]), np.array([10.3]), np.array([64.3]))
-    ax.text(lbl_oia[0][0], lbl_oia[1][0], 'OIA', fontsize=11, ha='center', va='center', color='#444444', fontweight='bold', zorder=5)
+    ax.text(lbl_oia[0][0], lbl_oia[1][0], 'OIA', fontsize=11, ha='center', va='center', color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=5)
     lbl_bon = ternary_to_xy(np.array([17.3]), np.array([71.3]), np.array([11.3]))
-    ax.text(lbl_bon[0][0], lbl_bon[1][0], 'Bon', fontsize=11, ha='center', va='center', color='#444444', fontweight='bold', zorder=5)
+    ax.text(lbl_bon[0][0], lbl_bon[1][0], 'Bon', fontsize=11, ha='center', va='center', color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=5)
     label_ternary_vertices(ax, 'TiO$_2$', '10×MnO', '10×P$_2$O$_5$')
     _style.scatter_samples(ax, x_d, y_d, labels, groups=gd.groups)
     _style.add_legend(ax)
@@ -365,12 +365,12 @@ def plot_tasmiddlemostplut(gd, out_dir=None, save=True):
         n = len(poly)
         for i in range(n):
             seg = tuple(sorted([poly[i], poly[(i + 1) % n]]))
-            ax.plot([seg[0][0], seg[1][0]], [seg[0][1], seg[1][1]], color='#333333', lw=0.6, zorder=4)
+            ax.plot([seg[0][0], seg[1][0]], [seg[0][1], seg[1][1]], color=_style.LINE_COLOR_MAIN, lw=0.6, zorder=4)
     for name, poly in _MM_FIELDS.items():
         cx = sum((p[0] for p in poly)) / len(poly)
         cy = sum((p[1] for p in poly)) / len(poly)
         label = _MM_LABELS.get(name, name)
-        ax.text(cx, cy, label, ha='center', va='center', fontsize=8.5, fontweight='bold', color='#444444', zorder=6)
+        ax.text(cx, cy, label, ha='center', va='center', fontsize=8.5, fontweight='bold', color=_style.TEXT_COLOR_LABEL, zorder=6)
     _style.scatter_samples(ax, sio2, alk, labels, groups=gd.groups)
     _style.add_legend(ax)
     ax.set_xlim(34, 90)
@@ -410,11 +410,11 @@ def plot_frost_fenr(gd, out_dir=None, save=True):
     ax.set_ylim(0, 1)
     x_line = np.linspace(50, 77, 50)
     y_line = 0.486 + 0.0046 * x_line
-    ax.plot(x_line, y_line, color='#333333', lw=1.5, zorder=4)
+    ax.plot(x_line, y_line, color=_style.LINE_COLOR_MAIN, lw=1.5, zorder=4)
     ax.text(60, 0.9, 'ferroan', fontsize=10, ha='center', va='center',
-            color='#444444', fontweight='bold', zorder=5)
+            color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=5)
     ax.text(60, 0.6, 'magnesian', fontsize=10, ha='center', va='center',
-            color='#444444', fontweight='bold', zorder=5)
+            color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=5)
     _style.scatter_samples(ax, sio2, fe_num, labels, groups=gd.groups)
     _style.add_legend(ax)
     _style.style_ax(ax, 'SiO$_2$ (wt.%)', 'FeO$_t$/(FeO$_t$+MgO)')
@@ -451,17 +451,17 @@ def plot_frost_mali(gd, out_dir=None, save=True):
     y1 = -41.86 + 1.112 * x_line - 0.00572 * x_line**2  # alkalic / alkali-calcic
     y2 = -44.72 + 1.094 * x_line - 0.00527 * x_line**2  # alkali-calcic / calc-alkalic
     y3 = -45.36 + 1.0043 * x_line - 0.00427 * x_line**2  # calc-alkalic / calcic
-    ax.plot(x_line, y1, color='#333333', lw=1.5, zorder=4)
-    ax.plot(x_line, y2, color='#333333', lw=1.5, zorder=4)
-    ax.plot(x_line, y3, color='#333333', lw=1.5, zorder=4)
+    ax.plot(x_line, y1, color=_style.LINE_COLOR_MAIN, lw=1.5, zorder=4)
+    ax.plot(x_line, y2, color=_style.LINE_COLOR_MAIN, lw=1.5, zorder=4)
+    ax.plot(x_line, y3, color=_style.LINE_COLOR_MAIN, lw=1.5, zorder=4)
     ax.text(56, 7.7, 'alkalic', fontsize=10, ha='center', va='center',
-            color='#444444', fontweight='bold', zorder=5)
+            color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=5)
     ax.text(61, 3.0, 'alkali-calcic', fontsize=10, ha='center', va='center',
-            color='#444444', fontweight='bold', zorder=5, rotation=25)
+            color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=5, rotation=25)
     ax.text(61, 0.5, 'calc-alkalic', fontsize=10, ha='center', va='center',
-            color='#444444', fontweight='bold', zorder=5, rotation=25)
+            color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=5, rotation=25)
     ax.text(65, -2.5, 'calcic', fontsize=10, ha='center', va='center',
-            color='#444444', fontweight='bold', zorder=5)
+            color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=5)
     _style.scatter_samples(ax, sio2, mali, labels, groups=gd.groups)
     _style.add_legend(ax)
     _style.style_ax(ax, 'SiO$_2$ (wt.%)', 'MALI (Na$_2$O+K$_2$O-CaO)')
@@ -508,14 +508,14 @@ def plot_frost_asi_ank(gd, out_dir=None, save=True):
     fig, ax = plt.subplots(figsize=(9, 7))
     ax.set_xlim(0.5, 1.9)
     ax.set_ylim(0.6, 3.5)
-    ax.axhline(y=1.0, color='#666666', ls='--', lw=0.8, zorder=2)
-    ax.axvline(x=1.0, color='#666666', ls='--', lw=0.8, zorder=2)
+    ax.axhline(y=1.0, color=_style.LINE_COLOR_SECONDARY, ls='--', lw=0.8, zorder=2)
+    ax.axvline(x=1.0, color=_style.LINE_COLOR_SECONDARY, ls='--', lw=0.8, zorder=2)
     ax.text(0.55, 3.0, 'metaluminous', fontsize=10, ha='left', va='center',
-            color='#444444', fontweight='bold', zorder=3)
+            color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=3)
     ax.text(1.85, 3.0, 'peraluminous', fontsize=10, ha='right', va='center',
-            color='#444444', fontweight='bold', zorder=3)
+            color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=3)
     ax.text(0.55, 0.8, 'peralkaline', fontsize=10, ha='left', va='center',
-            color='#444444', fontweight='bold', zorder=3)
+            color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=3)
     _style.scatter_samples(ax, asi_val, a_nk, labels, groups=gd.groups)
     _style.add_legend(ax)
     _style.style_ax(ax, 'ASI', 'A/NK')
@@ -556,11 +556,11 @@ def plot_pearce1996(gd, out_dir=None, save=True):
     top_x = [0.065, 0.67, 5.52]
     top_y = [2, 0.2, 2]
 
-    ax.plot(bx1, by1, color='#333333', lw=1.5, zorder=4)
-    ax.plot(bx2, by2, color='#333333', lw=1.5, zorder=4)
-    ax.plot([0.67, 0.67], [0.001, 0.2], color='#333333', lw=1.5, zorder=4)
-    ax.plot([2.81, 2.81], [0.001, 0.957], color='#333333', lw=1.5, zorder=4)
-    ax.plot(top_x, top_y, color='#333333', lw=1.5, zorder=4)
+    ax.plot(bx1, by1, color=_style.LINE_COLOR_MAIN, lw=1.5, zorder=4)
+    ax.plot(bx2, by2, color=_style.LINE_COLOR_MAIN, lw=1.5, zorder=4)
+    ax.plot([0.67, 0.67], [0.001, 0.2], color=_style.LINE_COLOR_MAIN, lw=1.5, zorder=4)
+    ax.plot([2.81, 2.81], [0.001, 0.957], color=_style.LINE_COLOR_MAIN, lw=1.5, zorder=4)
+    ax.plot(top_x, top_y, color=_style.LINE_COLOR_MAIN, lw=1.5, zorder=4)
     text_cfgs = [('basalt', 0.08, 0.003, 0, 'center'),
                  ('alkali\nbasalt', 1.5, 0.01, 0, 'center'),
                  ('foidite', 8, 0.01, 0, 'left'),
@@ -572,7 +572,7 @@ def plot_pearce1996(gd, out_dir=None, save=True):
                  ('phonolite', 10, 0.4, 0, 'center'),
                  ('alkali\nrhyolite', 0.8, 0.6, 0, 'center')]
     for txt, x, y, rot, ha in text_cfgs:
-        ax.text(x, y, txt, fontsize=10, ha=ha, va='center', color='#444444', fontweight='bold', rotation=rot, zorder=5)
+        ax.text(x, y, txt, fontsize=10, ha=ha, va='center', color=_style.TEXT_COLOR_LABEL, fontweight='bold', rotation=rot, zorder=5)
     _style.scatter_samples(ax, nb_y, zr_ti, labels, groups=gd.groups)
     _style.add_legend(ax)
     _style.style_ax(ax, 'Nb/Y', 'Zr/Ti')

@@ -28,7 +28,7 @@ def plot_meschede(gd, out_dir=None, save=True):
     label_ternary_vertices(ax, '2Nb', 'Zr/4', 'Y', corners=corners)
     for fd in FIELDS_M.values():
         keys = fd['keys'] + [fd['keys'][0]]
-        ax.plot([cart_m[k][0] for k in keys], [cart_m[k][1] for k in keys], color='#333333', lw=1.5, zorder=1)
+        ax.plot([cart_m[k][0] for k in keys], [cart_m[k][1] for k in keys], color=_style.LINE_COLOR_MAIN, lw=1.5, zorder=1)
     # GCDkit 精确标签坐标(归一化三角图坐标系)
     MESCHEDE_LABELS = {
         'A1': (0.46, 0.543),      # text4 — WPA
@@ -40,7 +40,7 @@ def plot_meschede(gd, out_dir=None, save=True):
     for name, fd in FIELDS_M.items():
         lx, ly = MESCHEDE_LABELS.get(name, (0, 0))
         ax.text(lx, ly, fd['sub'], fontsize=11, fontweight='bold',
-                ha='center', va='center', color='#444444', zorder=5)
+                ha='center', va='center', color=_style.TEXT_COLOR_LABEL, zorder=5)
     _style.scatter_samples(ax, x_d, y_d, labels, groups=gd.groups)
     _style.add_legend(ax)
     ax.set_xlim(-0.08, 1.1)
@@ -77,7 +77,7 @@ def plot_wood(gd, out_dir=None, save=True):
     for name in ['C', 'A', 'B', 'D', 'E']:
         fd = FIELDS_W[name]
         keys = fd['keys'] + [fd['keys'][0]]
-        ax.plot([cart_w[k][0] for k in keys], [cart_w[k][1] for k in keys], color='#333333', lw=1.5, zorder=2)
+        ax.plot([cart_w[k][0] for k in keys], [cart_w[k][1] for k in keys], color=_style.LINE_COLOR_MAIN, lw=1.5, zorder=2)
     # GCDkit 精确标签坐标（归一化三角图坐标系）
     WOOD_LABELS = {
         'A': (0.525, 0.615),   # N-MORB  — text5
@@ -89,7 +89,7 @@ def plot_wood(gd, out_dir=None, save=True):
     for name, fd in FIELDS_W.items():
         lx, ly = WOOD_LABELS.get(name, (0, 0))
         ax.text(lx, ly, fd['sub'], fontsize=11, fontweight='bold',
-                ha='center', va='center', color='#444444', zorder=5)
+                ha='center', va='center', color=_style.TEXT_COLOR_LABEL, zorder=5)
     _style.scatter_samples(ax, x_d, y_d, labels, groups=gd.groups)
     _style.add_legend(ax)
     ax.set_xlim(-0.08, 1.1)

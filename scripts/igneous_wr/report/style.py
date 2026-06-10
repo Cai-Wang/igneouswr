@@ -179,6 +179,10 @@ except ImportError:
 
 
 # ── 风格常量 ───────────────────────────────────────────────
+# 图件分界线／标签颜色（各图件统一引用，避免硬编码）
+LINE_COLOR_MAIN = '#333333'       # 主分界线
+LINE_COLOR_SECONDARY = '#666666'  # 次级分界线
+TEXT_COLOR_LABEL = '#444444'      # 区域标签 / 注释文字
 MK_SIZE_SINGLE  = 60
 MK_SIZE_TERNARY = 15
 MK_MARKER       = 'o'
@@ -424,7 +428,7 @@ def scatter_samples(ax, x_arr, y_arr, labels, s=None, edgecolors=None, lw=None,
             if do_annotate:
                 ax.annotate(labels[i], (x_arr[i], y_arr[i]),
                             textcoords='offset points', xytext=ANNOTATE_OFFSET,
-                            fontsize=ANNOTATE_FONTSIZE, color='#333333')
+                            fontsize=ANNOTATE_FONTSIZE, color=TEXT_COLOR_LABEL)
     else:
         # 原始模式：每个样品单独颜色 + label
         n = len(labels)
@@ -438,7 +442,7 @@ def scatter_samples(ax, x_arr, y_arr, labels, s=None, edgecolors=None, lw=None,
             if do_annotate:
                 ax.annotate(labels[i], (x_arr[i], y_arr[i]),
                             textcoords='offset points', xytext=ANNOTATE_OFFSET,
-                            fontsize=ANNOTATE_FONTSIZE, color='#333333')
+                            fontsize=ANNOTATE_FONTSIZE, color=TEXT_COLOR_LABEL)
 
 
 def scatter_groups(ax, x_arr, y_arr, labels, groups, s=None, edgecolors=None, lw=None,
@@ -486,7 +490,7 @@ def plot_samples_ternary(ax, x_arr, y_arr, labels, ms=None,
             if do_annotate:
                 ax.annotate(labels[i], (x_arr[i], y_arr[i]),
                             textcoords='offset points', xytext=ANNOTATE_OFFSET,
-                            fontsize=ANNOTATE_FONTSIZE, color='#333333')
+                            fontsize=ANNOTATE_FONTSIZE, color=TEXT_COLOR_LABEL)
     else:
         # 原始模式
         n = len(labels)
@@ -500,7 +504,7 @@ def plot_samples_ternary(ax, x_arr, y_arr, labels, ms=None,
             if do_annotate:
                 ax.annotate(labels[i], (x_arr[i], y_arr[i]),
                             textcoords='offset points', xytext=ANNOTATE_OFFSET,
-                            fontsize=ANNOTATE_FONTSIZE, color='#333333')
+                            fontsize=ANNOTATE_FONTSIZE, color=TEXT_COLOR_LABEL)
 
 
 # ── 坐标轴风格 ─────────────────────────────────────────────
