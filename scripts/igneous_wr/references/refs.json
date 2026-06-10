@@ -1,5 +1,4 @@
 {
-  "#README": "IgneousWR 图件参考文献库。格式: key → {short, full, type, note}。short 显示在图上，full 用于报告参考文献列表。type: article/book/svg/other。你校图时往 full 字段填完整信息（作者, 年, 标题, 期刊/出版社）。",
   "lebas1992": {
     "short": "Le Bas et al. (1992)",
     "full": "Le Bas, M. J., Le Maitre, R. W., Streckeisen, A. & Zanettin, B. (1986). A chemical classification of volcanic rocks based on the total alkali–silica diagram. Journal of Petrology 27, 745–750.",
@@ -100,7 +99,6 @@
     "full": "Schandl, E. S. & Gorton, M. P. (2002). Application of high field strength elements to discriminate tectonic settings in VMS environments. Economic Geology 97, 629–642.",
     "type": "article"
   },
-  "#备注": "以下带有 note 字段的条目当前无完整文献信息，保留为占位，你校正图时逐步填入",
   "hastie2007": {
     "short": "Hastie et al. (2007)",
     "full": "Hastie, A. R., Kerr, A. C., Pearce, J. A. & Mitchell, S. F. (2007). Classification of altered volcanic island arc rocks using immobile trace elements: development of the Th Co discrimination diagram. Journal of Petrology 48, 2341–2357.",

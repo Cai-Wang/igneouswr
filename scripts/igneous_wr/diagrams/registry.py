@@ -108,11 +108,11 @@ DIAGRAM_REGISTRY = [
     # ── 🔬 源区性质 ──────────────────────────────────
     DiagramSpec(plot_ree,      "SRC-01_SunMcDonough1989_REE.png",   "REE 球粒陨石标准化配分图",
                 ('La','Ce','Pr','Nd','Sm','Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu'), None,    ("mafic", "felsic"),
-                review_status="verified", source_ref=""
+                review_status="verified", source_ref="sun_mcdonough1989"
                 ),
     DiagramSpec(plot_spider,   "SRC-02_SunMcDonough1989_Spider.png",       "原始地幔标准化蛛网图",
                 ('Rb','Ba','Th','U','Nb','Ta','La','Ce','Pb','Pr','Nd','Sr','Sm','Zr','Hf','Eu','Ti','Gd','Tb','Dy','Ho','Y','Er','Tm','Yb','Lu'), None, ("mafic", "felsic"),
-                review_status="verified", source_ref=""
+                review_status="verified", source_ref="sun_mcdonough1989"
                 ),
     DiagramSpec(plot_pearce_2008, "SRC-03_Pearce2008_ThYb_NbYb.png",
                 "Pearce Th/Yb-Nb/Yb 源区判别图",                  ('Th', 'Nb', 'Yb'),                None,  ("mafic",),
