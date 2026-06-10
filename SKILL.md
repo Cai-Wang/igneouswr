@@ -1,17 +1,34 @@
 ---
 name: IgneousWR
-description: 岩浆岩全岩地球化学数据处理与图解绘制 — Igneous Whole-Rock 绘图引擎，读取 Excel 数据 → 19种精选图件 + HTML报告
+description: >
+  Igneous Whole-Rock geochemical plotting engine. Reads Excel data →
+  19 publication-ready diagrams (TAS, REE, spider, tectonic discrimination, etc.)
+  + HTML report. Cross-agent compatible (Hermes, Claude Code, Codex, Cursor, Copilot).
+license: MIT
+compatibility: Requires Python 3.10+, matplotlib, numpy, openpyxl
+metadata:
+  version: "1.0.0"
+  author: Chen Yuyang
+  email: asukswpu@163.com
+  repository: https://github.com/Cai-Wang/igneouswr
+  hermes:
+    tags: [geochemistry, petrology, plotting, data-science, research]
+    related_skills: [gcdkit-translator, isoplotr]
 ---
 
 # IgneousWR — Igneous Whole-Rock 绘图引擎
 
-全岩地球化学数据处理与图解绘制。读取合并的 Excel，自动判断岩性，完成 **19 种精选图件**并生成 HTML 图集报告。
+全岩地球化学数据处理与图解绘制。读取 Excel 数据 → 19 张精选图件 + HTML 报告。
+An AI-agent-powered geochemical plotting engine: Excel in, publication-ready figures out.
 
-## 快速开始
+---
+
+## Quick Start / 快速开始
 
 ```bash
 cd scripts
 pip install -e .
+
 python3 -c "
 from igneous_wr_core import GeochemData, plot_recommended, set_out_dir
 set_out_dir('/tmp/runs/myproject')
@@ -20,85 +37,156 @@ result = plot_recommended(gd)
 "
 ```
 
-## 精选图目录（19 张）
+---
 
-### 分类/岩石系列（12 张）
-- CLS-01 Middlemost 1994 TAS（火山岩）— verified
-- CLS-02 Middlemost 1985 K₂O-SiO₂ — verified
-- CLS-03 Irvine & Baragar 1971 AFM — verified
-- CLS-04 Peccerillo & Taylor 1976 K₂O-SiO₂ — needs_review
-- CLS-05 Winchester & Floyd 1977 Zr/TiO₂-Nb/Y — verified
-- CLS-06 Hastie 2007 Co-Th — verified
-- CLS-10 Mullen 1983 TiO₂-MnO-P₂O₅ — experimental
-- CLS-13 Middlemost 1994 TAS（深成岩）— verified
-- CLS-17 Frost 2001 Fe#-SiO₂ — verified
-- CLS-29 Pearce 1996 Zr/Ti-Nb/Y — verified
-- CLS-30 Frost 2001 MALI-SiO₂ — verified
-- CLS-31 Frost 2001 ASI-A/NK — verified
+## Diagram Catalog / 精选图目录（19 张）
 
-### 源区性质（3 张）
-- SRC-01 Sun & McDonough 1989 REE 配分图 — verified
-- SRC-02 Sun & McDonough 1989 蛛网图 — verified
-- SRC-03 Pearce 2008 Th/Yb-Nb/Yb — verified
+### Classification / Rock Series / 分类 · 岩石系列（12）
 
-### 岩浆演化（1 张）
-- EVO-02 Miyashiro 1974 FeOt/MgO-SiO₂ — verified
+| ID | Diagram | Status |
+|----|---------|--------|
+| CLS-01 | TAS (volcanic, Middlemost 1994) — 16 polygons | verified |
+| CLS-02 | K₂O–SiO₂ (Middlemost 1985) | verified |
+| CLS-03 | AFM (Irvine & Baragar 1971) | verified |
+| CLS-04 | K₂O–SiO₂ (Peccerillo & Taylor 1976) | needs_review |
+| CLS-05 | Zr/TiO₂–Nb/Y (Winchester & Floyd 1977) | verified |
+| CLS-06 | Co–Th (Hastie 2007) | verified |
+| CLS-10 | TiO₂–MnO–P₂O₅ ternary (Mullen 1983) | experimental |
+| CLS-13 | TAS (plutonic, Middlemost 1994) | verified |
+| CLS-17 | Fe# vs SiO₂ (Frost 2001) | verified |
+| CLS-29 | Zr/Ti–Nb/Y (Pearce 1996) | verified |
+| CLS-30 | MALI vs SiO₂ (Frost 2001) | verified |
+| CLS-31 | ASI vs A/NK (Frost 2001) | verified |
 
-### 构造环境判别（3 张）
-- TEC-01 Meschede 1986 Nb-Zr-Y 三角图 — experimental
-- TEC-02 Wood 1980 Hf/3-Th-Ta 三角图 — experimental
-- TEC-05 Shervais 1982 Ti-V — verified
+### Source Characteristics / 源区性质（3）
 
-## 数据输入
+| ID | Diagram | Status |
+|----|---------|--------|
+| SRC-01 | REE chondrite-normalised (Sun & McDonough 1989) | verified |
+| SRC-02 | Primitive-mantle spider diagram (Sun & McDonough 1989) | verified |
+| SRC-03 | Th/Yb–Nb/Yb (Pearce 2008) | verified |
 
-3 种 Excel 布局自动检测（wide / standard / transposed）。推荐 wide 格式：Row1=元素名横铺，Col A=样品名。自动跳过标准物质行（BCR/BHVO等）。检测模式可用 `print(gd._detected_mode)` 查看。
+### Magmatic Evolution / 岩浆演化（1）
 
-## 目录结构
+| ID | Diagram | Status |
+|----|---------|--------|
+| EVO-02 | FeOt/MgO–SiO₂ (Miyashiro 1974) | verified |
+
+### Tectonic Discrimination / 构造环境判别（3）
+
+| ID | Diagram | Status |
+|----|---------|--------|
+| TEC-01 | Nb–Zr–Y ternary (Meschede 1986) | experimental |
+| TEC-02 | Hf/3–Th–Ta ternary (Wood 1980) | experimental |
+| TEC-05 | Ti–V (Shervais 1982) | verified |
+
+**Status legend:** verified = user-approved, experimental = framework complete but not point-corrected, needs_review = newly added, awaiting verification.
+
+---
+
+## Data Input / 数据输入
+
+Auto-detects 3 Excel layouts — **wide** (recommended), **standard**, and **transposed**:
+
+| Layout | Row 1 | Column A |
+|--------|-------|----------|
+| **Wide** (recommended) | Element names (e.g. SiO₂, TiO₂…) | Sample names |
+| **Standard** | Sample names | Element names |
+| **Transposed** | Same as wide, detected via heuristics | |
+
+Detection limits: parsed as half-value, zero, or NaN (configurable via `dl_strategy`).
+Reference material rows (BCR, BHVO, AGV…) are auto-skipped.
+View detected mode with `print(gd._detected_mode)`.
+
+---
+
+## Architecture / 目录结构
 
 ```
 scripts/
-├── igneous_wr_core.py          # 门面 API
+├── igneous_wr_core.py           # Public API — re-exports everything
 ├── igneous_wr/
-│   ├── boundaries/             # 坐标边界 JSON
-│   ├── core/                   # 化学计算、标准化、三元变换、数据类
-│   ├── io/excel.py             # Excel 读取
-│   ├── diagrams/               # 绘图函数 + 注册表
-│   ├── report/style.py         # 样式系统
-│   └── batch/                  # 批量出图 + 推荐
-├── tests/                      # 单元测试
-├── quick_validate.py           # 验证脚本
-├── generate_test_data.py       # 数据生成
-└── merge_excel.py              # Excel 合并
+│   ├── core/
+│   │   ├── data.py              # GeochemData container
+│   │   ├── chem.py              # FeOt calc, chemistry helpers
+│   │   ├── normalize.py         # Chondrite & PM normalisation
+│   │   └── ternary.py           # Ternary↔XY transform, frame, ticks
+│   ├── io/excel.py              # Excel import (3-layout auto-detect)
+│   ├── diagrams/
+│   │   ├── registry.py          # DiagramSpec, DIAGRAM_REGISTRY (19 entries)
+│   │   ├── _classification.py   # CLS-xx group
+│   │   ├── _source.py           # SRC-xx group
+│   │   ├── _evolution.py        # EVO-xx group
+│   │   └── _tectonic.py         # TEC-xx group
+│   ├── boundaries/              # Polygon coordinates (JSON, one file per diagram)
+│   ├── report/style.py          # Matplotlib style system, save_fig, scatter, HTML report
+│   ├── batch/                   # plot_recommended, recommended_diagrams, batch backgrounds
+│   └── references/              # Citation database (refs.json, 72 entries)
+├── quick_validate.py            # Sanity check — tests all 18 diagrams via FakeGeochemData
+├── generate_test_data.py        # Generate 10-sample × 41-element test Excel file
+├── run_test.py                  # End-to-end: generate → plot → check output
+└── merge_excel.py               # Merge major + trace element files
 ```
 
-## 删除图件流程
+---
 
-1. 删注册表条目（`registry.py` `DIAGRAM_REGISTRY`）
-2. 删 import（`registry.py` 顶部、`igneous_wr_core.py` re-export）
-3. 删函数体（`_classification.py` / `_source.py` / `_evolution.py` / `_tectonic.py`）
-4. 清理残留引用 + 无用 import
-5. 更新 SKILL.md 图目录和计数
-6. 运行 `python3 quick_validate.py --quick` 验证
+## Verification / 验证
 
-## 参考文件
+After any code change, run the quick sanity check:
 
-- `references/code-review-checklist.md` — 审查清单
-- `references/known-pitfalls.md` — 已知陷阱与修复原则
-- `references/code-review-patches.md` — 审查问题修复模式
+```bash
+python3 quick_validate.py
+```
 
-## 核心原则
+This tests all 19 diagrams against `FakeGeochemData` (import + instantiation smoke test).
 
-- 线段风格：主分界线 `#333333` lw=1.5 实线，次分界线 `#666666` lw=1.2 虚线，TAS 多边形 lw=0.8，三元图场界线 lw=1.5
-- 标签风格：统一 `#444444`，二元图区域=10，TAS 多边形=8.5，三元图区域=11
-- 所有图表纯 matplotlib，无需 pyrolite。AI 不做数值计算（标准化、FeOt 换算等全在 Python 代码中）
-- 边界数据外置 JSON（`boundaries/`），修改坐标不翻函数
-- 每个修改后 `python3 quick_validate.py --quick` 回归验证
-- 修改核心逻辑（chem/data/normalize）后运行 `python3 -m pytest tests/ -v` 确保单元测试通过
-- 二元图全部通过 `style_ax()` 统一坐标轴（无网格、Times New Roman、刻度向内）
-- 化学式 LaTeX 下标 `$_n$`，禁止 Unicode 下标
-- 对数轴刻度用真数（0.01, 0.1, 1, 10…），禁用科学计数法
-- 除 SRC-03 外所有图纯黑白线框，不渲染彩色填充
+For end-to-end testing with synthetic data:
 
-## 相关技能
+```bash
+python3 generate_test_data.py /tmp/test_geochem_standard.xlsx
+python3 run_test.py
+```
 
-- `gcdkit-translator` — GCDkit R → Python 翻译规范
+After adding or removing a diagram, update `registry.py` `DIAGRAM_REGISTRY`.
+
+---
+
+## Styling Conventions / 风格规范
+
+All diagrams follow these rules. AI agents modifying diagram code MUST adhere to them:
+
+- **Wireframe-only** — no coloured polygon fills (exception: SRC-03 Pearce 2008 uses fills for source field discrimination)
+- **Line weights:** Main boundaries `lw=1.5, color='#333333'`, secondary `lw=1.2, color='#666666'`, TAS polygons `lw=0.8`
+- **All binary plots** must use `style_ax()` for axes (Times New Roman, inward ticks, no grid)
+- **All ternary plots** must use shared helpers from `ternary.py` (`draw_ternary_frame`, `draw_ternary_ticks`, `label_ternary_vertices`)
+- **Log-scale axes** must use real-number tick labels (`0.01, 0.1, 1, 10` — never scientific notation)
+- **Chemical subscripts** use LaTeX: `FeO$_t$`, `SiO$_2$`, `Na$_2$O` (not Unicode, not plain text). Ternary vertex labels are the exception (Unicode is fine)
+- **No scipy dependency** — do not reintroduce `from scipy import stats`
+- **Boundary coordinates live in JSON files** (`boundaries/<category>/`), not in function code
+
+---
+
+## For AI Agents
+
+This is a **Hermes Agent skill**. It also works with any agent supporting the agentskills.io open standard (Claude Code, Codex CLI, Cursor, GitHub Copilot, etc.).
+
+**Before modifying diagram code, read `AGENTS.md`** at the repo root for project-specific workflow rules and file modification boundaries.
+
+**GCDkit R → Python translations:** When adding a diagram translated from GCDkit R source, load the `gcdkit-translator` skill for the complete translation guide, including ternary coordinate handling, log-axis preprocessing detection, and the shared-edge vertex alignment rule.
+
+**Known pitfalls** (to avoid repeating past fixes):
+1. Ternary boundary coordinates from GCDkit are **already projected** (x∈[0,1], y∈[0,0.866]) — do not pass through `ternary_to_xy()` again
+2. Adjacent polygons must share **identical vertex sequences** on shared edges (no one-side-straight, other-side-polyline)
+3. GCDkit's filled polygons can mask misaligned shared edges — wireframe mode exposes them
+4. Log-space lines sometimes need extrapolation beyond GCDkit's fill-trimmed coordinates
+5. R strings `"text\\nwith\\nnewlines"` use real `\n` — Python must use `'text\\nwith\\nnewlines'` (single backslash-n), not `'text\\\\nwith\\\\nnewlines'`
+
+---
+
+## References / 参考
+
+All 72 citations are stored in `scripts/igneous_wr/references/refs.json` and auto-rendered in the HTML report. Each diagram has a citation imprint in the bottom-right corner.
+
+Related skills (Hermes):
+- `gcdkit-translator` — GCDkit R → IgneousWR Python translation guide
+- `isoplotr` — U-Pb geochronology (separate package)
