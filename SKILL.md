@@ -174,11 +174,6 @@ This is a **Hermes Agent skill**. It also works with any agent supporting the ag
 
 **GCDkit R → Python translations:** When adding a diagram translated from GCDkit R source, load the `gcdkit-translator` skill for the complete translation guide, including ternary coordinate handling, log-axis preprocessing detection, and the shared-edge vertex alignment rule.
 
-**Hermes-internal development docs** (not universal): see `references/agent-internal-dev.md` for the full styling rulebook, delete-diagram workflow, data format traps, and pyproject.toml/build pitfalls.
-- `references/code-review-checklist.md` — review checklist for post-refactor code audits
-- `references/review-fix-workflow.md` — two-step JSON-externalisation pattern, P1→P2→N priority chain, and validation checklist (from 2026-06-10 audit)
-These are loaded on demand by Hermes when doing development work on the skill code.
-
 **Known pitfalls** (to avoid repeating past fixes):
 1. Ternary boundary coordinates from GCDkit are **already projected** (x∈[0,1], y∈[0,0.866]) — do not pass through `ternary_to_xy()` again
 2. Adjacent polygons must share **identical vertex sequences** on shared edges (no one-side-straight, other-side-polyline)
@@ -190,38 +185,6 @@ These are loaded on demand by Hermes when doing development work on the skill co
 8. **feot_calc NaN mixing** — when `FeO` is valid but `TFe2O3` is NaN, `feo + 0.8998 * NaN = NaN` silently drops valid data. The fixed logic at `chem.py:21` uses nested `np.where` to zero-out NaN before the multiply.
 9. **ΣREE partial-sum trap** — old code required ALL 14 REE present (`all_ok`) before summing, dropping valid data for samples missing a single trace REE. Fixed to sum whatever is available.
 10. **set_style_preset() globals() injection** — without a `valid_keys` whitelist, a corrupted `STYLE_PRESETS` dict can overwrite any module variable. Both `set_style()` and `set_style_preset()` now share a whitelist at `style.py:362`.
-
----
-
-## Making a Hermes Skill Cross-Agent Compatible
-
-This repository demonstrates the pattern for making a Hermes-only skill work with **any AI coding agent** (Codex CLI, Claude Code, Cursor, Copilot, Windsurf, Gemini — 20+ tools).
-
-### File Matrix
-
-| File | Format | Serves | Purpose |
-|------|--------|--------|---------|
-| `README.md` | Plain markdown | Human readers | Project intro, usage scenario, data format |
-| `AGENTS.md` | Plain markdown (no YAML) | Codex, Claude Code, Cursor, Copilot, Windsurf, Gemini | Install commands, architecture map, project-specific code style, workflow rules, protected files |
-| `SKILL.md` | YAML + markdown (agentskills.io) | Hermes, Claude Code, any SKILL.md-compatible agent | Full skill instructions: diagram catalog, styling conventions, data input, verification, known pitfalls |
-
-### Procedure (for other repos)
-
-1. **Add `AGENTS.md` at repo root** — plain markdown, 40–100 lines. Include: install/test commands, directory architecture, project-specific style rules, a "For AI Agents" section pointing to SKILL.md, and a protected files list. Do NOT use YAML frontmatter.
-
-2. **Convert `SKILL.md` frontmatter** — add `license`, `compatibility`, `metadata` (version, author, repository). Nest Hermes-only fields under `metadata.hermes`. The description should work as a bilingual or English-first discovery hook for the agentskills.io hub.
-
-3. **Extract internal docs** — move Hermes-internal development notes (delete workflows, detailed style rulebooks, review checklists, data format traps) out of the main SKILL.md into `references/<topic>.md`. These are loaded on demand by Hermes when doing development work on the skill code, but kept out of the universal skill body.
-
-4. **Wire bidirectional references** — AGENTS.md says "read SKILL.md for the authoritative reference". SKILL.md says "read AGENTS.md for project-specific workflow rules". AI agents follow these links automatically when loaded.
-
-### Publishing to Hermes Skills Hub
-
-Before `hermes skills publish <skill-dir>`, the security scanner checks ALL files including `.git/` hooks. Common blockers:
-- `runs/backgrounds/` or similar PNG directories — file size triggers MEDIUM-HIGH findings
-- `references/dev-notes/` with internal commands like `ssh-keyscan` — triggers HIGH exfiltration findings
-- `*.png` / `*.html` output files — treated as structural risk
-- A `DANGEROUS` verdict **cannot** be overridden with `--force` — the repo must actually be cleaned
 
 ---
 
