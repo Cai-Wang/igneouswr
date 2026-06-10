@@ -1,13 +1,19 @@
 {
   "_meta": {
-    "name": "Shervais (1982) Ti-V 构造判别图",
+    "name": "Shervais (1982) Ti-V \u6784\u9020\u5224\u522b\u56fe",
     "type": "XY_annotations",
     "unit": "Ti/1000 vs V (ppm)",
     "source": "Shervais (1982) Figure 2; Ti/V ratio rays from origin"
   },
   "axes": {
-    "xlim": [0, 25],
-    "ylim": [0, 600],
+    "xlim": [
+      0,
+      25
+    ],
+    "ylim": [
+      0,
+      600
+    ],
     "xlabel": "Ti/1000",
     "ylabel": "V (ppm)"
   },
@@ -15,30 +21,30 @@
     {
       "name": "Ti/V=10",
       "slope": 100.0,
-      "color": "k",
+      "color": "#666666",
       "ls": "--",
-      "lw": 0.8
+      "lw": 1.0
     },
     {
       "name": "Ti/V=20",
       "slope": 50.0,
-      "color": "k",
+      "color": "#666666",
       "ls": "--",
-      "lw": 0.8
+      "lw": 1.0
     },
     {
       "name": "Ti/V=50",
       "slope": 20.0,
-      "color": "k",
+      "color": "#333333",
       "ls": "-",
-      "lw": 1.0
+      "lw": 1.5
     },
     {
       "name": "Ti/V=100",
       "slope": 10.0,
-      "color": "k",
+      "color": "#666666",
       "ls": "--",
-      "lw": 0.8
+      "lw": 1.0
     }
   ],
   "ray_labels": [
@@ -46,8 +52,8 @@
       "text": "Ti/V=10",
       "x": 2.0,
       "y": 265,
-      "fontsize": 7.5,
-      "color": "#333",
+      "fontsize": 8,
+      "color": "#444444",
       "fontstyle": "italic",
       "ha": "center",
       "va": "center"
@@ -56,8 +62,8 @@
       "text": "Ti/V=20",
       "x": 4.5,
       "y": 270,
-      "fontsize": 7.5,
-      "color": "#333",
+      "fontsize": 8,
+      "color": "#444444",
       "fontstyle": "italic",
       "ha": "center",
       "va": "center"
@@ -66,8 +72,8 @@
       "text": "Ti/V=50",
       "x": 12.0,
       "y": 275,
-      "fontsize": 7.5,
-      "color": "#333",
+      "fontsize": 8,
+      "color": "#444444",
       "fontstyle": "italic",
       "ha": "center",
       "va": "center"
@@ -76,8 +82,8 @@
       "text": "Ti/V=100",
       "x": 21.0,
       "y": 285,
-      "fontsize": 7.5,
-      "color": "#333",
+      "fontsize": 8,
+      "color": "#444444",
       "fontstyle": "italic",
       "ha": "center",
       "va": "center"
@@ -88,31 +94,31 @@
       "text": "ARC",
       "x": 4.0,
       "y": 560,
-      "fontsize": 11,
+      "fontsize": 10,
       "ha": "center",
       "va": "center",
       "fontweight": "bold",
-      "color": "#2979FF"
+      "color": "#444444"
     },
     {
       "text": "OFB",
       "x": 15.0,
       "y": 560,
-      "fontsize": 11,
+      "fontsize": 10,
       "ha": "center",
       "va": "center",
       "fontweight": "bold",
-      "color": "#558B2F"
+      "color": "#444444"
     },
     {
       "text": "WPB",
       "x": 12.0,
       "y": 80,
-      "fontsize": 11,
+      "fontsize": 10,
       "ha": "center",
       "va": "center",
       "fontweight": "bold",
-      "color": "#E65100"
+      "color": "#444444"
     }
   ]
 }

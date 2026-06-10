@@ -46,10 +46,19 @@ def _get_long_name(short_name):
 
 # ── Times New Roman 字体查找 ───────────────────────────────
 def _find_times_font():
+    """Find Times New Roman font using matplotlib's font manager."""
+    # First try matplotlib's own font search (cross-platform)
+    try:
+        candidates = fm.findfont('Times New Roman', fallback_to_default=False)
+        if candidates and os.path.exists(candidates):
+            return candidates
+    except Exception:
+        pass
+    # Fallback: Linux standard paths only
     candidates = [
-        '/mnt/c/Windows/Fonts/times.ttf',
-        '/mnt/c/Windows/Fonts/TIMES.TTF',
         '/usr/share/fonts/truetype/msttcorefonts/Times_New_Roman.ttf',
+        '/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf',
+        '/usr/share/fonts/opentype/linuxlibertine/LinLibertine_R.otf',
         os.path.expanduser('~/.fonts/times.ttf'),
     ]
     for p in candidates:
@@ -486,9 +495,8 @@ def plot_samples_ternary(ax, x_arr, y_arr, labels, ms=None,
 
 # ── 坐标轴风格 ─────────────────────────────────────────────
 def style_ax(ax, xlabel='', ylabel='', xlabel_size=12, ylabel_size=12):
-    """统一坐标轴风格：刻度向内、边框、网格。"""
+    """统一坐标轴风格：刻度向内、边框。"""
     ax.tick_params(direction='in', length=TICK_LENGTH, width=TICK_WIDTH, top=True, right=True, labelsize=9)
-    ax.grid(color='#CCCCCC', linewidth=GRID_LW, alpha=GRID_ALPHA, linestyle=GRID_STYLE)
     ax.minorticks_on()
     ax.tick_params(direction='in', which='minor', length=TICK_LENGTH_M, width=TICK_WIDTH*0.6, top=True, right=True)
     for spine in ax.spines.values():

@@ -1,11 +1,11 @@
 """
 backgrounds.py — 批量生成所有图件的纯底图（无数据投点）
 
-功能：
-  - 遍历 DIAGRAM_REGISTRY 全部 70 张图，生成纯底图
+# 功能：
+  - 遍历 DIAGRAM_REGISTRY 全部 19 张图，生成纯底图
   - 两种模式：
     mode='minimal': 所有元素为 NaN，0 样品 — 适合验证大部分图
-    mode='full':    伪造 5 个样品的全元素数据 + patch scatter 为空 — 覆盖全部 70 张
+    mode='full':    伪造 5 个样品的全元素数据 + patch scatter 为空 — 覆盖全部 19 张
                     （含 REE/蛛网图、Ti 依赖图、参数需计算的图等）
   - 输出文件名自动为 registry 中定义的 spec.filename（CLS-01_xxx.png 格式）
   - 整合了旧 batch_backgrounds.py + batch_backgrounds_fix.py 的功能

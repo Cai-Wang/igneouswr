@@ -35,21 +35,14 @@ def ternary_corners():
 
 
 def draw_ternary_frame(ax, corners=None, corner_labels=None):
-    """绘制三元图边框。线宽从 _style.SPINE_WIDTH 取值（*3 以视觉接近旧 lw=2.5）。
-
-    Args:
-        ax: matplotlib Axes
-        corners: 可选，三元角点坐标 dict（来自 ternary_corners()）
-        corner_labels: 可选，三个顶点的标签列表 [top, left, right]
-            传入时自动调用 label_ternary_vertices 标注顶点
-    """
+    """绘制三元图边框。线宽从 _style.SPINE_WIDTH 取值。"""
     if corners is None:
         corners = ternary_corners()
-    lw_val = _style.SPINE_WIDTH * 3.0
+    lw_val = _style.SPINE_WIDTH
     for p1, p2 in [('top', 'left'), ('left', 'right'), ('right', 'top')]:
         ax.plot([corners[p1][0], corners[p2][0]],
                 [corners[p1][1], corners[p2][1]],
-                'k-', lw=lw_val, zorder=3)
+                color='#333333', lw=lw_val, zorder=3)
 
     # 如果传入了 corner_labels，自动标注顶点
     if corner_labels is not None and len(corner_labels) == 3:
@@ -58,39 +51,36 @@ def draw_ternary_frame(ax, corners=None, corner_labels=None):
 
 
 def draw_ternary_grid(ax, step=10):
-    """绘制三元图网格。线宽/风格从 _style 取值。"""
-    color = '#CCCCCC'
-    lw_val = max(_style.GRID_LW, 0.15)
-    for v in range(step, 100, step):
-        for line in [
-            (ternary_to_xy(v, 100-v, 0), ternary_to_xy(v, 0, 100-v)),
-            (ternary_to_xy(0, v, 100-v), ternary_to_xy(100-v, v, 0)),
-            (ternary_to_xy(100-v, 0, v), ternary_to_xy(0, 100-v, v)),
-        ]:
-            ax.plot([line[0][0], line[1][0]], [line[0][1], line[1][1]],
-                    color=color, lw=lw_val, zorder=0, linestyle=_style.GRID_STYLE)
+    """绘制三元图网格。（已禁用：为与二元图无网格风格统一，移除网格线）"""
+    pass
 
 
 def draw_ternary_ticks(ax, step=20, corners=None):
-    """绘制三元图刻度标签。字号从 _style 风格常量取值。"""
+    """绘制三元图刻度标签。字号/字体/颜色与二元图 style_ax 风格一致。"""
     if corners is None:
         corners = ternary_corners()
-    fs = _style.TICK_LENGTH + 3  # 刻度长度 + 3 ≈ 8（旧硬编码值），但响应风格变化
-    color = '#666666'
+    fs = _style.TICK_LENGTH + 4  # ≈9, 与二元图 labelsize=9 统一
+    color = '#000000'            # 纯黑，与二元图默认刻度颜色一致
     for v in range(step, 100, step):
-        p = ternary_to_xy(v, 100-v, 0)
-        ax.text(p[0]-0.018, p[1]+0.008, str(v), fontsize=fs,
-                ha='right', va='center', color=color)
-        p = ternary_to_xy(100-v, 0, v)
-        ax.text(p[0]+0.018, p[1]+0.008, str(v), fontsize=fs,
-                ha='left', va='center', color=color)
+        # 底边: ternary_to_xy(0, v, 100-v) → 右->左; 标签在下方
         p = ternary_to_xy(0, v, 100-v)
         ax.text(p[0], p[1]-0.028, str(v), fontsize=fs,
-                ha='center', va='top', color=color)
+                ha='center', va='top', color=color,
+                fontproperties=_style.times_prop)
+        # 左边: ternary_to_xy(v, 100-v, 0) → 下->上; 标签在左侧
+        p = ternary_to_xy(v, 100-v, 0)
+        ax.text(p[0]-0.018, p[1]+0.008, str(v), fontsize=fs,
+                ha='right', va='center', color=color,
+                fontproperties=_style.times_prop)
+        # 右边: ternary_to_xy(100-v, 0, v) → 下->上; 标签在右侧
+        p = ternary_to_xy(100-v, 0, v)
+        ax.text(p[0]+0.018, p[1]+0.008, str(v), fontsize=fs,
+                ha='left', va='center', color=color,
+                fontproperties=_style.times_prop)
 
 
 def label_ternary_vertices(ax, top_label, left_label, right_label,
-                           corners=None, fontsize=14, **kw):
+                           corners=None, fontsize=12, **kw):
     """标注三元图顶点名称。字号可覆盖。"""
     if corners is None:
         corners = ternary_corners()

@@ -15,7 +15,7 @@
 | `lithos` | Lithos 期刊风格 | colorbrewer | 55 | **无网格** | 右下角 |
 | `journal_chinese` | 中文地质期刊 | default | 70 | 灰虚线 0.3pt | 右上角 |
 | `high_contrast` | 黑白打印/演示 | high_contrast | 70 | 实线 0.5pt | 右上角 |
-| `science` | SciencePlots 科学期刊风格 | scienceplots (6 色) | 55 | 灰虚线 0.4pt | 右上角 |
+| `science` | SciencePlots 科学期��风格 | scienceplots (6 色) | 55 | 灰虚线 0.4pt | 右上角 |
 | `nature_journal` | Nature 官方模板风格 | nature (学术低饱和) | 55 | 灰点线 0.2pt | 左上角 |
 
 ```python
@@ -82,7 +82,7 @@ gc.set_palette('nature')         # 仅切换配色，不影响其他参数
 - `B12`（无连字符）→ 每个样品独自一组
 - `12-B`（连字符前是数字）→ 每个样品独自一组
 
-分组结果存在 `gd.groups` 属性，类型为 `list[str]`，长度与 `gd.labels` 相同。每个位置的值是该样品的组名。
+分组结果存在 `gd.groups` 属性，类型为 `list[str]`，长度与 `gd.labels` 相同。每个位置的值是该样品���组名。
 
 ```python
 import whole_rock_core as gc
@@ -164,7 +164,7 @@ _style.plot_samples_ternary(ax, x, y, labels, groups=groups)
 2. **Path 分析**：`ax.scatter()` 的 Path 对象应包含 CURVE4 曲线代码
 3. **像素分析**：`PIL.Image.open` 提取散点区域做连通域分析，圆形度 ≈ 1.0
 4. **后端测试**：强制 `matplotlib.use('Agg')` 生成对比
-5. **`color` 参数注意事项**：`scatter_samples` 使用 `color=get_color(i)` + `edgecolors='none'` + `linewidths=0`。`color` 同时影响 facecolors 和 edgecolors，但有 `edgecolors='none'` 覆盖
+5. **`color` 参数注意事���**：`scatter_samples` 使用 `color=get_color(i)` + `edgecolors='none'` + `linewidths=0`。`color` 同时影响 facecolors 和 edgecolors，但有 `edgecolors='none'` 覆盖
 6. **REE/蜘蛛图特殊**：`_source.py` 用直接 `ax.scatter()` 而非 `scatter_samples()`
 7. **三元图特殊**：`plot_samples_ternary` 用 `ax.plot('o', markersize=...)`，渲染机制不同
 
@@ -197,8 +197,20 @@ gc.set_style(TICK_LENGTH=6, SPINE_WIDTH=1.0, GRID_LW=0.3)
 所有二元图统一调用 `style_ax(ax, xlabel, ylabel)`，动态读取全局常量设置：
 - 刻度向内（top + right）
 - 主/副刻度长度、刻度线宽从全局常量读取
-- 网格线型/宽度/透明度从全局常量读取
+- **全部图默认无网格**（`style_ax()` 中 `ax.grid()` 已在 2026-06-09 移除）
+- 三角图网格（`draw_ternary_grid()`）已禁用（2026-06-09 统一风格：三元图不再绘制网格）
+
+> 注：`style_ax()` 与 `draw_ternary_grid()` 的网格是独立的。二元图无网格，三元图网格已移除（2026-06-09 统一风格）。
 
 ## 不受 style_ax 影响的图
 
 三元图（AFM、Meschede、Wood、Pearce-Cann）调用 `ax.axis('off')`。这些图通过 `draw_ternary_frame()` 和 `draw_ternary_ticks()` 单独控制外观。
+
+### 三元图与二元图风格统一（2026-06-26 + 2026-06-09）
+
+- **边框线宽**：`draw_ternary_frame()` 已使用 `SPINE_WIDTH`，与二元图 `style_ax()` 的 spine 一致
+- **刻度标签字号**：`draw_ternary_ticks()` 字号 = `TICK_LENGTH + 4`（≈9），对齐二元图 `labelsize=9`
+- **刻度标签颜色**：从 `#666666` 改为 `#000000`（纯黑），与二元图刻度颜色完全一致
+- **刻度标签字体**：加 `fontproperties=_style.times_prop`，与二元图一致使用 Times New Roman
+- **顶点标签字号**：`label_ternary_vertices()` 默认 fontsize 从 14→12，对齐二元图 `xlabel_size=12`
+- **网格线**：`draw_ternary_grid()` 已禁用，三元图不再绘制网格线，与二元图无网格风格统一

@@ -4,7 +4,7 @@ import sys
 sys.path.insert(0, ".")
 from igneous_wr_core import GeochemData, plot_recommended, set_out_dir
 
-OUT_DIR = "/mnt/c/Users/opcry/Desktop/igenous"
+OUT_DIR = "./runs/default"
 DATA = "/tmp/test_geochem_standard.xlsx"
 
 set_out_dir(OUT_DIR)

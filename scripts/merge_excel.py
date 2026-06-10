@@ -217,11 +217,12 @@ def compute_ratios(sample_count, data):
 # 需要排除的非样品行关键字
 EXCLUDE_ROWS = {'样品编号', '推荐值', '以下空白', 'GSR-', '标准物质', '单位：', '单位:',
                 'Sample', 'Report', 'Certified', 'Reference'}
-# 标准物质前缀
+# 标准物质前缀（开放科学：排除国际通用的岩石标准物质，用户可通过 --major-prefix 添加自己的样品前缀）
 EXCLUDE_PREFIXES = ('GSR-', 'GSD-', 'GSS-', 'BHVO', 'AGV', 'BCR', 'DNC', 'W-2', 'MRG')
 
-# 允许的样品编号前缀
-SAMPLE_PREFIXES = ('23', '24', '25', '26', 'KH', 'TJ', 'XGT', 'SMH', 'TEQ', 'FY')
+# 允许的样品编号前缀（默认宽松：排除标准物质后全部接受，可通过 --major-prefix CLI 参数收紧）
+# 若需仅接受特定前缀，用 `python merge_excel.py major.xlsx trace.xlsx --major-prefix 23,24,KH`
+SAMPLE_PREFIXES = ()
 # 也允许纯字母（如 KH031-01 形式）
 import re
 
@@ -240,13 +241,15 @@ def _is_valid_sample_id(sid):
     for pref in EXCLUDE_PREFIXES:
         if sid.startswith(pref):
             return False
-    # 接受常见样品编号模式
-    if any(sid.startswith(p) for p in SAMPLE_PREFIXES):
-        return True
-    # 也接受 KH031-01 这种纯实验室编号格式
-    if re.match(r'^[A-Z]{2,}\d', sid):
-        return True
-    return False
+    # 如果用户设定了 SAMPLE_PREFIXES，只接受这些前缀
+    if SAMPLE_PREFIXES:
+        if any(sid.startswith(p) for p in SAMPLE_PREFIXES):
+            return True
+        if re.match(r'^[A-Z]{2,}\d', sid):
+            return True
+        return False
+    # 默认宽松：排除标准物质后全部接受
+    return True
 
 
 # ── 工具函数 ────────────────────────────────────────

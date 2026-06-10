@@ -5,12 +5,12 @@ build-backend = "setuptools.backends._legacy:_Backend"
 [project]
 name = "igneouswr"
 version = "1.0.0"
-description = "Igneous Whole-Rock geochemical plotting engine — TAS, REE, spider diagrams, tectonic discrimination, and 68 publication-ready plots"
+description = "Igneous Whole-Rock geochemical plotting engine — TAS, REE, spider diagrams, tectonic discrimination, and 19 publication-ready plots"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.10"
 authors = [
-    {name = "IgneousWR Contributors"},
+    {name = "Chen Yuyang", email = "asukswpu@163.com"},
 ]
 keywords = ["geochemistry", "petrology", "igneous", "plotting", "TAS", "REE"]
 classifiers = [
@@ -31,8 +31,8 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://github.com/your-org/igneouswr"
-Documentation = "https://github.com/your-org/igneouswr#readme"
+Repository = "https://github.com/Cai-Wang/igneouswr"
+Documentation = "https://github.com/Cai-Wang/igneouswr#readme"
 
 [tool.setuptools.packages.find]
 where = ["scripts"]

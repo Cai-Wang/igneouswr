@@ -99,5 +99,5 @@
       "va": "bottom"
     }
   ],
-  "grid": false
+  "plot_style": "loglog"
 }

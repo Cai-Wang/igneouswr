@@ -1,31 +1,31 @@
-# wf1977_v3.py — Winchester & Floyd (1977) 72 点系统原始母版
+# wf1977_v3.py — Winchester & Floyd (1977) 72-Point System Master Source
 
-> **来源**：用户提供的独立脚本，位于 WorkBuddy 目录
-> `/mnt/c/Users/opcry/WorkBuddy/2026-05-25-08-24-41/wf1977_v3.py`
+> **Source**: Standalone script provided by the user.
 >
-> **更新日期**：2026-05-25
+> **Updated**: 2026-05-25
 
-## 与本 skill 的关系
+## Relationship to This Skill
 
-`wf1977_v3.py` 是 `_classification.py::plot_winchester_floyd()` 中底图数据的**原始母版**。
-代码中的 72 个 POINTS、12 条 LINES、6 个 JUNCTIONS 以及 ROCK_LABELS 全部来自此脚本。
+`wf1977_v3.py` is the **master source** for the base-map data in
+`_classification.py::plot_winchester_floyd()`. All 72 POINTS, 12 LINES,
+6 JUNCTIONS, and ROCK_LABELS in the code originate from this script.
 
-## 与 skill 中实现的差异
+## Differences from Skill Implementation
 
-`wf1977_v3.py` 是自包含的独立脚本，实现与原文献图版 1:1 对应的完整底图，包含：
-- 所有 72 个原始数据点（红色散点 + 编号标签）
-- Junction 交叉点蓝色圆圈高亮
-- 右上角线段速查框
-- 点级标签偏移量系统（防止标签重叠）
+`wf1977_v3.py` is a self-contained standalone script implementing a
+1:1 base map matching the original publication, including:
+- All 72 raw data points (red scatter + numbered labels)
+- Junction intersection points highlighted in blue circles
+- Top-right line-segment quick-reference box
+- Per-point label offset system (prevents label overlap)
 
-而 skill 中的 `plot_winchester_floyd()` 仅提取��：
-- POINTS 坐标、LINES 分段、JUNCTIONS 标注、ROCK_LABELS
-- 省略了红色数据点编号标签（这些是底图绘制辅助标记，不是图的一部分）
-- 省略了点级标签偏移（skill 中不标注点号）
-- 省略了右上角速查框
+The skill's `plot_winchester_floyd()` only extracts:
+- POINTS coordinates, LINES segments, JUNCTIONS annotations, ROCK_LABELS
+- Omits the red data-point number labels (these are base-map drafting guides, not part of the diagram)
+- Omits per-point label offsets (the skill does not annotate individual points)
+- Omits the top-right quick-reference box
 
-## 参考
+## References
 
-- 对应的分界线坐标详细文档：`references/winchester-floyd-boundary-data.md`
-- WF 公式说明：`references/winchester-floyd-formula.md`
-- 旧版 GeoPlotters 提取记录（已废弃）：`references/geo-plotters-xls-extraction.md`
+- Corresponding boundary coordinate documentation: `references/winchester-floyd-boundary-data.md`
+- WF formula notes: `references/winchester-floyd-formula.md`

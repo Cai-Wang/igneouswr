@@ -4,8 +4,8 @@
 
 | 工程 | 目录 | 数据来源 |
 |------|------|---------|
-| IgneousWR | `~/.hermes/skills/data-science/IgneousWR/` | 手动校准 + 文献坐标 |
-| igneouswr-gcd | `~/.hermes/skills/data-science/igneouswr-gcd/` | GCDkit 6.3.0 R 源码翻译 |
+| IgneousWR | `scripts/` | 手动校准 + 文献坐标 |
+| igneouswr-gcd | `scripts_gcd/` | GCDkit 6.3.0 R 源码翻译 |
 
 两者**架构相同**（data/chem/normalize/ternary/style/diagrams/registry → 纯 matplotlib），但图件数据**来源不同、不混用**。
 

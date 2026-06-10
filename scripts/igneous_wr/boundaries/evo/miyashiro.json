@@ -3,64 +3,64 @@
     "name": "Miyashiro (1974) FeOt/MgO vs SiO2 钙碱性-拉斑判别",
     "type": "XY_annotations",
     "unit": "SiO2 wt%, FeOt/MgO",
-    "source": "Miyashiro (1974) Fig. 1; line y=0.1578x-6.016"
+    "source": "Miyashiro (1974) Fig. 1; GCDkit binary (42.8,0)→(100.4,9)"
   },
   "axes": {
-    "xlim": [38, 80],
-    "ylim": [0, 10],
+    "xlim": [45, 78],
+    "ylim": [0, 6],
     "xlabel": "SiO$_2$ (wt.%)",
-    "ylabel": "FeOt/MgO"
+    "ylabel": "FeO$_t$/MgO"
   },
   "lines": [
     {
       "name": "TH/CA boundary",
       "style": "-",
-      "points": [[40, 0.296], [80, 6.608]],
-      "color": "k",
-      "linewidth": 1.0,
+      "points": [[42.8, 0], [100.4, 9]],
+      "color": "#333333",
+      "linewidth": 1.5,
       "zorder": 3,
-      "formula": "y=0.1578*x-6.016"
+      "formula": "y=0.15625*x-6.6875"
     }
   ],
   "fill_regions": [
     {
       "name": "Calc-alkaline",
-      "x": [40, 80],
+      "x": [45, 78],
       "y_bottom": 0,
-      "line_slope": 0.1578,
-      "line_intercept": -6.016,
+      "line_slope": 0.15625,
+      "line_intercept": -6.6875,
       "color": "#1565C0",
       "alpha": 0.06
     },
     {
       "name": "Tholeiitic",
-      "x": [40, 80],
-      "y_top": 20,
-      "line_slope": 0.1578,
-      "line_intercept": -6.016,
+      "x": [45, 78],
+      "y_top": 6,
+      "line_slope": 0.15625,
+      "line_intercept": -6.6875,
       "color": "#D62728",
       "alpha": 0.06
     }
   ],
   "annotations": [
     {
-      "text": "Calc-alkaline",
-      "x": 50,
-      "y": 0.8,
+      "text": "Calc-alkaline Series",
+      "x": 75,
+      "y": 0.7,
       "fontsize": 10,
       "fontstyle": "italic",
-      "color": "#1565C0",
-      "ha": "center",
+      "color": "#444444",
+      "ha": "right",
       "va": "center"
     },
     {
-      "text": "Tholeiitic",
-      "x": 65,
-      "y": 6.0,
+      "text": "Tholeiite Series",
+      "x": 50,
+      "y": 4,
       "fontsize": 10,
       "fontstyle": "italic",
-      "color": "#D62728",
-      "ha": "center",
+      "color": "#444444",
+      "ha": "left",
       "va": "center"
     }
   ]

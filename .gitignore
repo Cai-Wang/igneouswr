@@ -24,5 +24,9 @@ geochem_output/
 # Dev notes (internal development records, not for open-source)
 references/dev-notes/
 
+# Internal reference files with personal paths (not for open-source)
+references/pearce1996-label-audit.md
+references/tas-s3-trachyandesite-edge-fix.md
+
 # Temp
 /tmp/

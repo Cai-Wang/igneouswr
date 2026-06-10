@@ -24,8 +24,10 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-# Add IgneousWR to path
-WR_PATH = os.path.expanduser("~/.hermes/skills/data-science/IgneousWR/scripts")
+# Add IgneousWR to path (assumes running from project root or scripts/)
+WR_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'scripts')
+if not os.path.isdir(WR_PATH):
+    WR_PATH = '.'
 sys.path.insert(0, WR_PATH)
 os.chdir(WR_PATH)
 
@@ -46,7 +48,7 @@ fig, ax = plt.subplots(figsize=(10, 7))
 for edge in edges:
     xs_line = [nodes[n][1] * FACTOR for n in edge]  # Zr/TiO₂ → X
     ys_line = [nodes[n][0] for n in edge]             # Nb/Y → Y
-    ax.plot(xs_line, ys_line, 'k-', linewidth=1.5,
+    ax.plot(xs_line, ys_line, color='#333333', linewidth=1.5,
             solid_capstyle='round', zorder=2)
 
 # ── Lithology labels (gray, transposed) ────────────────────
@@ -82,7 +84,7 @@ ax.grid(True, which='minor', alpha=0.15, linestyle=':', color='#cccccc')
 plt.tight_layout(pad=0.3)
 
 # ── Save ────────────────────────────────────────────────────
-output_dir = '/mnt/c/Users/opcry/Desktop/Hermes output'
+output_dir = './runs'
 os.makedirs(output_dir, exist_ok=True)
 output_path = os.path.join(output_dir, 'WF1977_ZrTiO2_NbY_pure.png')
 fig.savefig(output_path, dpi=200, bbox_inches='tight')
