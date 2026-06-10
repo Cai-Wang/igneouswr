@@ -1,33 +1,12 @@
 # IgneousWR
 
-Igneous Whole-Rock geochemical plotting engine — reads Excel data and produces
-publication-ready diagrams for igneous petrology. 19 diagrams covering
-classification, source, evolution, and tectonic discrimination.
+**Igneous Whole-Rock geochemical plotting — an AI Agent skill for igneous petrology.**
 
-## Quick start
+This is a **skill for AI agents** (Hermes Agent, Claude Code, Codex CLI, or any LLM agent with tool-use capability). When loaded, the agent can read Excel geochemical data, automatically generate 19 publication-ready diagrams (classification, source, evolution, tectonic discrimination), and produce a self-contained HTML report.
 
-```bash
-pip install numpy matplotlib scipy openpyxl
-pip install -e .
+No manual clicking, no GUI — the agent handles everything from data loading to final figure output.
 
-cd scripts
-python3 -c "
-from igneous_wr_core import GeochemData, plot_recommended, set_out_dir
-
-set_out_dir('./my_runs')
-gd = GeochemData('./my_data.xlsx')
-result = plot_recommended(gd)
-print(f'{len(result)} diagrams generated')
-"
-```
-
-Your Excel file should have elements as rows and samples as columns (standard format),
-or samples as rows and elements as columns (transposed format) — auto-detected.
-
-## Output
-
-An HTML report (`report_YYYYMMDD.html`) is generated alongside PNG files.
-All diagrams are named with a prefix and number for easy reference:
+## Diagrams (19 total)
 
 | Prefix | Category | Count |
 |--------|----------|-------|
@@ -36,56 +15,59 @@ All diagrams are named with a prefix and number for easy reference:
 | EVO | Magmatic evolution | 1 |
 | TEC | Tectonic discrimination | 3 |
 
-## Diagram examples
+**Classification:** TAS (volcanic & plutonic), K₂O–SiO₂ (Middlemost 1985 & Peccerillo-Taylor 1976), AFM, Winchester & Floyd 1977, Co-Th (Hastie 2007), Mullen ternary, Pearce 1996 Zr/Ti–Nb/Y, Frost Fe#/MALI/ASI-ANK
 
-- **TAS** — Total Alkali-Silica (Middlemost 1994)
-- **K₂O–SiO₂** — Potassium classification (Middlemost 1985)
-- **AFM** — Alkali-FeO-MgO (Irvine & Baragar 1971)
-- **Winchester & Floyd** — Zr/TiO₂ vs Nb/Y classification
-- **Pearce 1996** — Zr/Ti vs Nb/Y volcanic rock classification
-- **REE** — Chondrite-normalised REE patterns
-- **Spider** — Primitive-mantle normalised multi-element diagrams
-- **Pearce 2008** — Th/Yb vs Nb/Yb source discrimination
-- **Frost series** — Fe#, MALI, ASI-ANK classification
-- **Miyashiro** — FeOt/MgO vs SiO₂ discrimination
-- **Shervais** — Ti-V tectonic discrimination
-- **Mullen / Meschede / Wood** — Ternary discriminant diagrams
+**Source:** REE chondrite-normalised, Primitive-mantle spider diagram, Pearce 2008 Th/Yb–Nb/Yb
 
-See the full registry in `scripts/igneous_wr/diagrams/registry.py`.
+**Evolution:** Miyashiro 1974 FeOt/MgO–SiO₂
+
+**Tectonic:** Meschede Nb–Zr–Y ternary, Wood Hf/3–Th–Ta ternary, Shervais Ti–V
+
+Each diagram is verified against GCDkit or original literature references, with accurate polygon boundaries and consistent styling.
+
+## How AI agents use it
+
+```bash
+# Load the skill, then in your agent prompt:
+cd scripts
+from igneous_wr_core import GeochemData, plot_recommended, set_out_dir
+
+set_out_dir('./my_runs')
+gd = GeochemData('./my_data.xlsx')
+result = plot_recommended(gd)
+```
+
+The agent handles data format detection (wide / standard / transposed), normalisation to chondrite/primitive-mantle, and layout/annotation — all automated.
 
 ## Data format
 
-`GeochemData` reads Excel files with auto-detection of three layouts:
+`GeochemData` auto-detects three Excel layouts:
 
+- **Wide**: Row 1 = element names, Column A = sample names
 - **Standard**: Row 1 = sample names, Column A = element names
-- **Wide**: Row 1 = element names, Column A = sample names (A1 = "Sample" or empty)
-- **Transposed**: Row 1 = element names, Column A = sample names from a readable row
+- **Transposed**: Same as wide but detected via heuristics
 
-Detection is based on counting known element names across Row 1 vs Column A.
-Detection limits can be parsed as half-value, zero, or NaN.
+Detection limits: parsed as half-value, zero, or NaN.
 
 ## Architecture
 
 ```
 scripts/
-  igneous_wr_core.py      # Public API (re-export)
+  igneous_wr_core.py      # Public API
   igneous_wr/
-    core/                  # GeochemData, chem, normalize, ternary
+    core/                  # GeochemData, chemistry, normalisation, ternary transforms
     io/                    # Excel reading
-    diagrams/              # 19 diagram functions
-      registry.py          # DiagramSpec + DIAGRAM_REGISTRY
-    report/                # Style, HTML report generation
-    batch/                 # plot_recommended, batch backgrounds
-    boundaries/            # Boundary data (JSON)
-    references/            # Reference database (refs.json)
+    diagrams/              # 19 diagram functions + registry
+    report/                # Matplotlib style, HTML report generation
+    batch/                 # plot_recommended, batch background generation
+    boundaries/            # Polygon boundary data (JSON)
+    references/            # Reference database (refs.json, 72 entries)
 ```
 
 ## References
 
-All diagrams include a citation imprint in the bottom-right corner.
-The full reference list appears at the end of the HTML report.
-The reference database (`refs.json`) contains 72 reference entries (72 unique publications).
+All diagrams include a citation imprint in the bottom-right corner. Full reference list appears in the HTML report.
 
 ## License
 
-MIT
+MIT — Copyright (c) 2026 Chen Yuyang

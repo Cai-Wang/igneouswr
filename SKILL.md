@@ -175,6 +175,36 @@ scripts/
 
 - `gcdkit-translator` — GCDkit R 源码-> IgneousWR Python 翻译规范
 
+## 开源维护（commit → push 流程）
+
+当需要将 IgneousWR 的修改推送到 GitHub 时：
+
+### 日常修改后提交（常见场景）
+
+```bash
+cd ~/.hermes/skills/data-science/IgneousWR
+git add -A
+git commit -m "fix: 修改了XX内容"
+git push
+```
+
+告诉用户"已推上去了"即可。用户不需要了解具体命令。
+
+### 当 GitHub 需要首次设置时
+
+用户是第一次接触 Git/GitHub，必须：
+- **用浏览器操作说明**，不说终端命令。说"打开这个网页 → 点这个按钮 → 粘这段内容"
+- 生成 SSH key 后，让用户去 `github.com/settings/keys` → New SSH key → 粘贴公钥
+- 然后改为 SSH remote 地址再 push
+- 每一步完成后给用户一句确认"粘好了告诉我，我继续"
+- 参考 `references/first-time-github-publishing.md`
+
+### README 注意事项
+
+- GitHub 仓库的 About 字段应填写简短中文描述（如"岩浆岩全岩地球化学图解绘制工具"）
+- README 开头应注明该项目同时也是 Hermes Agent skill（`~/.hermes/skills/data-science/IgneousWR/`）
+- 当前 README 为英文即可，暂不需要中文版本
+
 ## 相关参考文件
 
 - `references/pearce1996-label-audit.md` — CLS-29 全部标签文本、坐标、旋转角度、对齐方式的 GCDkit PNG 审计表
