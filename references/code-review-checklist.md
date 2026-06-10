@@ -13,6 +13,7 @@
 - **三元图标签对齐检查** — `label_ternary_vertices()` 中检查左右顶点的 `ha` 参数：左顶点应为 `ha='right'`（文字向左伸出三角），右顶点应为 `ha='left'`（文字向右伸出三角）。两者必须对称且文字向外延伸。
 - **模块级常量去重** — 检查 `data.py` 的 `_load_wide` 和 `_load_transposed` 中是否有重复的数据前缀元组（如参考标准排除列表），提取为模块级 `_REFERENCE_PREFIXES` 常量。
 - **跨包 import 路径** — 检查是否通过顶层门面（`igneous_wr_core`）import 子模块内容。应改为直接走包内路径（`igneous_wr.io.excel`），避免循环依赖风险。
+- **AGENTS.md 同步** — 如果新增/删除图件或改变验证方式，确保根目录 `AGENTS.md` 中的架构树、命令、计数同步更新。
 
 ## pyproject.toml 配置陷阱
 

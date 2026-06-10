@@ -171,3 +171,35 @@ def test_norm_dict_ree_oneil_oneill_consistent():
 def test_norm_dict_chondrite_ms95():
     """默认 CHONDRITE 应是 MS95"""
     assert CHONDRITE['Tm'] == 0.0247
+
+
+def test_cl_chondrite_full_short():
+    """CL Chondrite FULL(76) 应为 SHORT(30) 的超集"""
+    from igneous_wr.core.normalize import (
+        CL_CHONDRITE_PALME_AND_ONEILL_2014_FULL as cl_full,
+        CL_CHONDRITE_PALME_AND_ONEILL_2014_SHORT as cl_short,
+    )
+    assert len(cl_full) == 76
+    assert len(cl_short) == 30
+    for k, v in cl_short.items():
+        assert cl_full[k] == v, f"CL_SHORT[{k}]={v} != CL_FULL[{k}]={cl_full[k]}"
+    # SHORT is a perfect subset of FULL
+    assert 'Ag' in cl_full and 'Ag' not in cl_short
+
+
+def test_long_aliases():
+    """NMORB_LONG 和 PRIMITIVE_MANTLE_LONG 是别名"""
+    from igneous_wr.core.normalize import (
+        NMORB_LONG_SUN_AND_MS_1989, NMORB_SUN_AND_MS_1989,
+        PRIMITIVE_MANTLE_LONG_SUN_AND_MS_1989, PRIMITIVE_MANTLE_SUN_AND_MS_1989,
+    )
+    assert NMORB_LONG_SUN_AND_MS_1989 is NMORB_SUN_AND_MS_1989
+    assert PRIMITIVE_MANTLE_LONG_SUN_AND_MS_1989 is PRIMITIVE_MANTLE_SUN_AND_MS_1989
+
+
+def test_norm_dict_cl_full_short():
+    """NORM_DICT 中使用 FULL/SHORT 标签"""
+    full = [k for k in NORM_DICT if 'FULL' in k]
+    short = [k for k in NORM_DICT if 'SHORT' in k]
+    assert len(full) == 1
+    assert len(short) == 1

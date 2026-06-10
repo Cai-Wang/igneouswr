@@ -1,4 +1,4 @@
-# igneous-geochemistry — 全岩地球化学数据绘图引擎
+# igneouswr — 全岩地球化学数据绘图引擎
 # Python >= 3.10
 numpy>=1.24
 matplotlib>=3.7

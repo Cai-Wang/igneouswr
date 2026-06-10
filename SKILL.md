@@ -174,12 +174,41 @@ This is a **Hermes Agent skill**. It also works with any agent supporting the ag
 
 **GCDkit R → Python translations:** When adding a diagram translated from GCDkit R source, load the `gcdkit-translator` skill for the complete translation guide, including ternary coordinate handling, log-axis preprocessing detection, and the shared-edge vertex alignment rule.
 
+**Hermes-internal development docs** (not universal): see `references/agent-internal-dev.md` for the full styling rulebook, delete-diagram workflow, code review checklist, data format traps, and pyproject.toml/build pitfalls. These are loaded on demand by Hermes when doing development work on the skill code.
+
 **Known pitfalls** (to avoid repeating past fixes):
 1. Ternary boundary coordinates from GCDkit are **already projected** (x∈[0,1], y∈[0,0.866]) — do not pass through `ternary_to_xy()` again
 2. Adjacent polygons must share **identical vertex sequences** on shared edges (no one-side-straight, other-side-polyline)
 3. GCDkit's filled polygons can mask misaligned shared edges — wireframe mode exposes them
 4. Log-space lines sometimes need extrapolation beyond GCDkit's fill-trimmed coordinates
 5. R strings `"text\\nwith\\nnewlines"` use real `\n` — Python must use `'text\\nwith\\nnewlines'` (single backslash-n), not `'text\\\\nwith\\\\nnewlines'`
+
+---
+
+## Cross-Agent Documentation Matrix
+
+This repository maintains **3 instruction files** serving different agent audiences:
+
+| File | Format | Serves | Purpose |
+|------|--------|--------|---------|
+| `README.md` | Plain markdown | Human readers | Project intro, usage scenario, data format |
+| `AGENTS.md` | Plain markdown (no YAML) | Codex CLI, Claude Code, Cursor, Copilot, Windsurf, Gemini | Install commands, architecture map, project-specific code style, workflow rules, protected files |
+| `SKILL.md` | YAML + markdown (agentskills.io) | Hermes, Claude Code skills, any SKILL.md-compatible agent | Full skill instructions: diagram catalog, styling conventions, data input, verification, known pitfalls |
+
+**Principles for maintaining `AGENTS.md`:**
+- Plain markdown only — no YAML frontmatter (unlike SKILL.md)
+- 40–100 lines — concise, not a README clone
+- Must cover: install/test commands, directory architecture, project-specific code rules the agent is likely to get wrong, validation commands
+- Must include a "For AI Agents" section pointing non-Hermes agents to also read SKILL.md
+- List protected files the agent should not touch without explicit instruction
+
+**Publishing to Hermes Skills Hub:**
+Before running `hermes skills publish ~/.hermes/skills/data-science/IgneousWR`, clean the following from git tracking:
+- `runs/backgrounds/` — old batch-generated PNG files (38MB, triggers MEDIUM structural findings)
+- `references/dev-notes/archive/` — internal dev notes may contain commands (`ssh-keyscan`) that trigger HIGH exfiltration findings
+- All `*.png` files in repository — the scanner treats large images as risk
+
+The Skills Hub security scanner checks ALL files in the skill directory (including `.git/` hooks). If the scan verdict is `DANGEROUS`, `--force` does NOT override it — the skill must actually be cleaned first.
 
 ---
 
