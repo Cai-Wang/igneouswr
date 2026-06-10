@@ -26,6 +26,7 @@ merge_excel.py — 合并主量/微量元素 Excel 报告
 
 import os
 import sys
+import math
 import argparse
 
 import openpyxl
@@ -56,7 +57,7 @@ except ImportError:
     CHONDRITE = {
         'La': 0.237, 'Ce': 0.613, 'Pr': 0.0928, 'Nd': 0.457, 'Sm': 0.148,
         'Eu': 0.0563, 'Gd': 0.199, 'Tb': 0.0361, 'Dy': 0.246, 'Ho': 0.0546,
-        'Er': 0.160, 'Tm': 0.0247, 'Yb': 0.161, 'Lu': 0.0247
+        'Er': 0.160, 'Tm': 0.0247, 'Yb': 0.161, 'Lu': 0.0246
     }
 
 REE_ELEMENTS = ['La', 'Ce', 'Pr', 'Nd', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu']
@@ -101,8 +102,8 @@ def compute_ratios(sample_count, data):
             if v is None:
                 all_ok = False
         
-        # ΣREE
-        if all_ok and any(v is not None for v in ree_vals.values()):
+        # ΣREE — 只要有任意 REE 有效就部分求和
+        if any(v is not None for v in ree_vals.values()):
             sree = sum(v for v in ree_vals.values() if v is not None)
         else:
             sree = None
@@ -121,20 +122,20 @@ def compute_ratios(sample_count, data):
         # Eu/Eu* = EuN / sqrt(SmN * GdN)
         eu_star = None
         if all_ok:
-            eu_n = ree_vals['Eu'] / CHONDRITE['Eu'] if ree_vals['Eu'] else None
-            sm_n = ree_vals['Sm'] / CHONDRITE['Sm'] if ree_vals['Sm'] else None
-            gd_n = ree_vals['Gd'] / CHONDRITE['Gd'] if ree_vals['Gd'] else None
-            if eu_n and sm_n and gd_n and sm_n > 0 and gd_n > 0:
-                eu_star = round(eu_n / ((sm_n + gd_n) / 2), 3)
+            eu_n = ree_vals['Eu'] / CHONDRITE['Eu'] if ree_vals['Eu'] is not None else None
+            sm_n = ree_vals['Sm'] / CHONDRITE['Sm'] if ree_vals['Sm'] is not None else None
+            gd_n = ree_vals['Gd'] / CHONDRITE['Gd'] if ree_vals['Gd'] is not None else None
+            if eu_n is not None and sm_n is not None and gd_n is not None and sm_n > 0 and gd_n > 0:
+                eu_star = round(eu_n / math.sqrt(sm_n * gd_n), 3)
         
         # Ce/Ce* = CeN / sqrt(LaN * PrN)
         ce_star = None
         if all_ok:
-            ce_n = ree_vals['Ce'] / CHONDRITE['Ce'] if ree_vals['Ce'] else None
-            la_n = ree_vals['La'] / CHONDRITE['La'] if ree_vals['La'] else None
-            pr_n = ree_vals['Pr'] / CHONDRITE['Pr'] if ree_vals['Pr'] else None
-            if ce_n and la_n and pr_n and la_n > 0 and pr_n > 0:
-                ce_star = round(ce_n / ((la_n + pr_n) / 2), 3)
+            ce_n = ree_vals['Ce'] / CHONDRITE['Ce'] if ree_vals['Ce'] is not None else None
+            la_n = ree_vals['La'] / CHONDRITE['La'] if ree_vals['La'] is not None else None
+            pr_n = ree_vals['Pr'] / CHONDRITE['Pr'] if ree_vals['Pr'] is not None else None
+            if ce_n is not None and la_n is not None and pr_n is not None and la_n > 0 and pr_n > 0:
+                ce_star = round(ce_n / math.sqrt(la_n * pr_n), 3)
         
         # 标准化比值
         def normalized_ratio(num_elem, denom_elem):

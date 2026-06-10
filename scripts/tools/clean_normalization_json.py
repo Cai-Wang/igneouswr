@@ -1,10 +1,12 @@
 """清理 normalization.json 中的数据问题"""
 import json
-import copy
+import os
 
-JSON_PATH = '/home/twoper/.hermes/skills/data-science/IgneousWR/scripts/igneous_wr/core/references/normalization.json'
+# 用 __file__ 推导路径，避免硬编码
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+JSON_PATH = os.path.join(SCRIPT_DIR, '..', '..', 'igneous_wr', 'core', 'references', 'normalization.json')
 
-with open(JSON_PATH) as f:
+with open(JSON_PATH, encoding='utf-8') as f:
     data = json.load(f)
 
 changes = []

@@ -13,9 +13,17 @@ def load_boundary(category: str, name: str) -> dict:
         name: 文件名（不含.json），如 'afm', 'mullen'
 
     Returns:
-        解析后的 dict（包含 arrays、points、lines 等���段）
+        解析后的 dict（包含 arrays、points、lines 等字段）
     """
+    VALID_CATEGORIES = {'cls', 'src', 'evo', 'tec'}
+    if category not in VALID_CATEGORIES:
+        raise ValueError(f"Invalid boundary category: {category!r}")
+    if '/' in name or '\\' in name or '..' in name:
+        raise ValueError(f"Invalid boundary name: {name!r}")
     path = os.path.join(_BOUNDARIES_DIR, category, f"{name}.json")
+    real = os.path.realpath(path)
+    if not real.startswith(os.path.realpath(_BOUNDARIES_DIR)):
+        raise ValueError(f"Path traversal detected: {name!r}")
     if not os.path.exists(path):
         raise FileNotFoundError(f"Boundary file not found: {path}")
     with open(path, 'r', encoding='utf-8') as f:

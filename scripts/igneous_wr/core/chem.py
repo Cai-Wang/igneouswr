@@ -18,7 +18,8 @@ def feot_calc(feo, tfe2):
         return 0.8998 * tfe2
     if np.all(np.isnan(tfe2)):
         return feo
-    return np.where(np.isnan(feo), 0.8998 * tfe2, feo + 0.8998 * tfe2)
+    return np.where(np.isnan(feo), 0.8998 * tfe2,
+                    feo + np.where(np.isnan(tfe2), 0, 0.8998 * tfe2))
 
 
 # ── Ti 换算 ────────────────────────────────────────────────

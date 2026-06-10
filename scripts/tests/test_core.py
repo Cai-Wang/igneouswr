@@ -108,8 +108,8 @@ def test_feot_mixed():
     feo = np.array([3.0, np.nan, 5.0])
     tfe = np.array([np.nan, 10.0, 2.0])
     result = feot_calc(feo, tfe)
-    # Index 0: feo=3, tfe=NaN → 3 + 0.8998*NaN = NaN
-    assert np.isnan(result[0])
+    # Index 0: feo=3, tfe=NaN → feo回退 = 3.0
+    assert result[0] == 3.0
     # Index 1: feo=NaN → 0.8998*10 = 8.998
     np.testing.assert_almost_equal(result[1], 8.998)
     # Index 2: feo=5, tfe=2 → 5 + 0.8998*2 = 6.7996

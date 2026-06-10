@@ -15,10 +15,11 @@ _normalize.py — 标准化参考值常量 + 标准化函数
 """
 import json
 import os
+import re
 
 _JSON_PATH = os.path.join(os.path.dirname(__file__), 'references', 'normalization.json')
 
-with open(_JSON_PATH) as _f:
+with open(_JSON_PATH, encoding='utf-8') as _f:
     _DATA = json.load(_f)
 
 # ── 公开 API 列表（IDE 类型提示友好）─────────────────────
@@ -76,6 +77,16 @@ for _name, _value in _DATA.items():
     if _name.startswith('_'):
         continue
     globals()[_name] = _value
+
+# ── 键名校验 ──────────────────────────────────────────
+
+# 验证 JSON 加载的常量名格式
+_ALLOWED_NAME = re.compile(r'^[A-Z][A-Z0-9_]*$')
+for _name, _value in _DATA.items():
+    if _name.startswith('_'):
+        continue
+    if not _ALLOWED_NAME.match(_name):
+        raise RuntimeError(f"Invalid constant name in normalization.json: {_name!r}")
 
 # ── 元素顺序 ───────────────────────────────────────────
 

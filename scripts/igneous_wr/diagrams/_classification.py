@@ -5,8 +5,6 @@ _classification.py — 岩石系列 / 分类图（10 个绘图函数）
 """
 import os
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import igneous_wr.report.style as _style
 from igneous_wr.core.chem import feot_calc

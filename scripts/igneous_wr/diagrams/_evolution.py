@@ -1,11 +1,8 @@
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import igneous_wr.report.style as _style
 from igneous_wr.core.chem import feot_calc
 from igneous_wr.boundaries.core import load_boundary
-'\n_evolution.py — 演化图：Harker, Miyashiro, Mg#, Zr协变\n'
 
 def plot_miyashiro(gd, out_dir=None, save=True):
     """Miyashiro (1974) FeOt/MgO vs SiO₂ 🔥火山岩

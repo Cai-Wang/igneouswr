@@ -13,6 +13,7 @@ _style.py — 样式、字体、配色、投点辅助、坐标轴风格、保存
 """
 
 import os
+import html
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
@@ -358,8 +359,17 @@ def set_style_preset(name):
     set_palette(preset.pop('palette'))
 
     # 再应用所有风格常量（通过 globals() 直接修改模块变量）
+    valid_keys = {
+        'MK_SIZE_SINGLE', 'MK_SIZE_TERNARY',
+        'MK_MARKER',
+        'MK_EDGE_COLOR', 'MK_EDGE_WIDTH', 'MK_EDGE_WIDTH_T',
+        'ANNOTATE_OFFSET', 'ANNOTATE_FONTSIZE', 'LEGEND_LOC',
+        'TICK_LENGTH', 'TICK_LENGTH_M', 'TICK_WIDTH', 'SPINE_WIDTH', 'GRID_LW',
+        'GRID_STYLE', 'GRID_ALPHA',
+    }
     for key, val in preset.items():
-        globals()[key] = val
+        if key in valid_keys:
+            globals()[key] = val
 
     print(f"[_style] 风格预设 → {name} ({len(STYLE_PRESETS[name])} 项)")
 
@@ -669,10 +679,10 @@ def generate_report_html(success, skipped, gd=None, out_dir=None, rock_type=None
     w(f'<h2>{datetime.now():%Y-%m-%d}</h2>')
 
     w('<div class=\"meta\">')
-    w(f'<strong>数据源</strong> {data_src}<br>')
-    w(f'<strong>样品数</strong> {n_samples}<br>')
-    w(f'<strong>岩性</strong> {rock_label}<br>')
-    w(f'<strong>输出目录</strong> {out}')
+    w(f'<strong>数据源</strong> {html.escape(str(data_src))}<br>')
+    w(f'<strong>样品数</strong> {html.escape(str(n_samples))}<br>')
+    w(f'<strong>岩性</strong> {html.escape(str(rock_label))}<br>')
+    w(f'<strong>输出目录</strong> {html.escape(str(out))}')
     w('</div>')
 
     w('<div class=\"summary\">')
@@ -697,11 +707,13 @@ def generate_report_html(success, skipped, gd=None, out_dir=None, rock_type=None
             w(f'<h3 style=\"margin-top:22px; margin-bottom:8px; font-size:16px; color:#333;\">{section_emojis.get(sec, sec)}</h3>')
             w('<div class=\"grid\">')
             for fn_name, fname in items:
-                w('<div class=\"grid-item\">')
-                w(f'<a href=\"#lightbox-{fn_name}\"><img src=\"{fname}\" alt=\"{fn_name}\"></a>')
-                w(f'<div class=\"caption\">{fn_name} <code>{fname}</code></div>')
+                safe_fn = html.escape(str(fn_name))
+                safe_fname = html.escape(str(fname))
+                w('<div class=\\\"grid-item\\\">')
+                w(f'<a href=\\\"#lightbox-{safe_fn}\\\"><img src=\\\"{safe_fname}\\\" alt=\\\"{safe_fn}\\\"></a>')
+                w(f'<div class=\\\"caption\\\">{safe_fn} <code>{safe_fname}</code></div>')
                 w('</div>')
-                w(f'<div id=\"lightbox-{fn_name}\" class=\"lightbox\"><img src=\"{fname}\" alt=\"{fn_name}\"></div>')
+                w(f'<div id=\\\"lightbox-{safe_fn}\\\" class=\\\"lightbox\\\"><img src=\\\"{safe_fname}\\\" alt=\\\"{safe_fn}\\\"></div>')
             w('</div>')
 
         # 任何不属于 4 个方向的图
@@ -710,11 +722,13 @@ def generate_report_html(success, skipped, gd=None, out_dir=None, rock_type=None
             w('<h3 style=\"margin-top:22px; margin-bottom:8px; font-size:16px; color:#888;\">其他</h3>')
             w('<div class=\"grid\">')
             for fn_name, fname in other:
-                w('<div class=\"grid-item\">')
-                w(f'<a href=\"#lightbox-{fn_name}\"><img src=\"{fname}\" alt=\"{fn_name}\"></a>')
-                w(f'<div class=\"caption\">{fn_name} <code>{fname}</code></div>')
+                safe_fn = html.escape(str(fn_name))
+                safe_fname = html.escape(str(fname))
+                w('<div class=\\\"grid-item\\\">')
+                w(f'<a href=\\\"#lightbox-{safe_fn}\\\"><img src=\\\"{safe_fname}\\\" alt=\\\"{safe_fn}\\\"></a>')
+                w(f'<div class=\\\"caption\\\">{safe_fn} <code>{safe_fname}</code></div>')
                 w('</div>')
-                w(f'<div id=\"lightbox-{fn_name}\" class=\"lightbox\"><img src=\"{fname}\" alt=\"{fn_name}\"></div>')
+                w(f'<div id=\\\"lightbox-{safe_fn}\\\" class=\\\"lightbox\\\"><img src=\\\"{safe_fname}\\\" alt=\\\"{safe_fn}\\\"></div>')
             w('</div>')
 
     if skipped:

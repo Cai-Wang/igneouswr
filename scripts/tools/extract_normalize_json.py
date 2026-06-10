@@ -8,7 +8,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NORMALIZE_PATH = os.path.join(SCRIPT_DIR, '..', 'igneous_wr', 'core', 'normalize.py')
 JSON_PATH = os.path.join(SCRIPT_DIR, 'references', 'normalization.json')
 
-with open(NORMALIZE_PATH) as f:
+with open(NORMALIZE_PATH, encoding='utf-8') as f:
     source = f.read()
 
 tree = ast.parse(source)
