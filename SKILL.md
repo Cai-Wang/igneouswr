@@ -152,21 +152,6 @@ Step 4: Report: generated count, skipped count + reasons, HTML report path
 
 ---
 
-## Known Pitfalls (read before modifying code)
-
-1. **Ternary GCDkit coordinates are already projected** (x∈[0,1], y∈[0,0.866]) — don't pass through `ternary_to_xy()` again
-2. **Adjacent polygons: share identical vertex sequences** on shared edges
-3. GCDkit filled polygons mask misaligned shared edges — wireframe exposes them
-4. Log-space lines need extrapolation beyond GCDkit's fill-trimmed coordinates
-5. R strings use real `\n` — Python must use single backslash-n
-6. **Eu/Eu\* and Ce/Ce\* use geometric mean** `√(SmN × GdN)`, not arithmetic mean
-7. **Truthiness on float** — `if ree_vals['Eu']` skips Eu=0.0. Use `is not None`
-8. **feot_calc NaN mixing** — FeO + 0.8998 × NaN = NaN. Uses nested `np.where` to zero-out NaN
-9. **ΣREE partial-sum** ��� sum whatever is available, don't require all 14
-10. **set_style_preset() whitelist** — prevents corrupted STYLE_PRESETS from overwriting module vars
-
----
-
 ## Styling Conventions
 
 - **Wireframe-only** (exception: SRC-03 Pearce 2008)
