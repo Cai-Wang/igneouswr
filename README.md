@@ -1,21 +1,8 @@
-# IgneousWR
+# IgneousWR — Igneous Whole-Rock Geochemical Plotting Engine
 
-**Igneous Whole-Rock Geochemical Plotting Engine** · 全岩地球化学批量成图工具
+**全岩地球化学批量成图工具** · 一份 Excel 数据 → 19 张期刊投稿级图件 + HTML 报告
 
-输入 Excel 全岩地球化学数据，一键输出 19 张期刊投稿级图件（PNG）+ 自包含 HTML 报告。纯 Python，无需 R 环境，无需 GUI。
-
----
-
-## 快速开始
-
-```bash
-pip install igneouswr   # 安装
-igneouswr run data.xlsx # 出图
-```
-
-输出：`./runs/` 目录下 19 张 PNG + HTML 报告，每张图右下角印有引用来源。
-
----
+IgneousWR 是一个专为 **AI 智能体（coding agent）** 设计的地球化学批量成图 skill。输入 Excel 全岩数据文件，你的 AI agent 会自动完成从数据加载到出图的全流程，无需手动操作、无需 R 环境、无需 GUI。
 
 ## 已实现 19 张图解
 
@@ -58,7 +45,33 @@ igneouswr run data.xlsx # 出图
 | Hf/3–Th–Ta 三元构造判别 | Wood (1980) |
 | Ti–V 构造判别图 | Shervais (1982) |
 
----
+## 如何使用
+
+本仓库是一个 **AI agent skill**，你需要在支持 skill/instruction 加载的 AI coding agent 中使用它。
+
+### 方式一：在 Hermes Agent 中使用
+
+```bash
+hermes skill install Cai-Wang/igneouswr
+```
+
+然后告诉你的 agent：
+> 加载 IgneousWR skill，处理我的数据。
+
+### 方式二：在 Claude Code / Codex CLI / Cursor / Copilot 中使用
+
+将仓库根目录下的 `SKILL.md` 文件内容提供给 agent，或者通过 CLI 加载：
+```
+claude --skill path/to/igneouswr/SKILL.md
+```
+
+agent 会自动：
+1. 安装 Python 依赖（matplotlib、numpy、openpyxl）
+2. 读取你的 Excel 数据文件
+3. 自动识别三种 Excel 表格布局
+4. 生成全套 19 张图件 + HTML 报告
+
+> 你不需要手动运行任何命令。告诉你的 agent「用 IgneousWR 处理这份 Excel 数据」即可。
 
 ## 数据格式
 
@@ -66,13 +79,11 @@ igneouswr run data.xlsx # 出图
 
 | 布局 | 第 1 行 | 第 A 列 |
 |------|---------|---------|
-| 宽格式（推荐） | 元素名（SiO₂, TiO₂…） | 样品名 |
+| 宽格式（推荐） | 元素名（SiO₂、TiO₂…） | 样品名 |
 | 标准格式 | 样品名 | 元素名 |
 | 转置格式 | 同宽格式，自动检测 | |
 
 标准物质行（BCR、BHVO、AGV 等）自动跳过。检测下限可配置为半值、零或 NaN。
-
----
 
 ## 数据质量
 
@@ -81,8 +92,6 @@ igneouswr run data.xlsx # 出图
 - Eu/Eu\* 和 Ce/Ce\* 使用**几何平均**公式（非算术平均）
 - 引文库 72 篇，每张图右下角印有引用来源，报告末尾有完整文献列表
 - Pm 已从 REE 标准化数据集中移除（无稳定同位素）
-
----
 
 ## 项目结构
 
@@ -97,9 +106,10 @@ scripts/
 │   ├── report/                  # Matplotlib 样式 + HTML 报告
 │   ├── batch/                   # 批量出图
 │   └── references/              # 引文库（72 篇）
+├── quick_validate.py            # 快速验证
+├── generate_test_data.py        # 生成测试数据
+└── run_test.py                  # 端到端测试
 ```
-
----
 
 ## License
 
