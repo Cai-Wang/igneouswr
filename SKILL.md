@@ -13,7 +13,7 @@ metadata:
   repository: https://github.com/Cai-Wang/igneouswr
   hermes:
     tags: [geochemistry, petrology, plotting, data-science, research]
-    related_skills: [gcdkit-translator, isoplotr]
+    related_skills: [isoplotr]
 ---
 
 # IgneousWR — Agent Usage Manual
@@ -194,5 +194,4 @@ After adding/removing a diagram, update `DIAGRAM_REGISTRY` in `registry.py`.
 
 ## Related Skills
 
-- `gcdkit-translator` — GCDkit R → IgneousWR translation guide
 - `isoplotr` — U-Pb geochronology
