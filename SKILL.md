@@ -38,7 +38,7 @@ metadata:
 | 谁 | 管什么 | 禁止做什么 |
 |----|--------|----------|
 | **IgneousWR** | 轴标签文本/元素名、边界线/多边形、标准化数据、轴范围/尺度、参考线(y=1虚线)、数据分组逻辑、刻度位置/值、**图型特有的刻度格式**（如蛛网图 X 轴刻度交替内外+标签偏移）、画线时设 `label=` 供 figkit 创建图例 | 禁止设 `fontsize=`；禁止调 `tick_params`（方向/大小）；禁止画图例（`add_legend()` 已全部移除）；禁止设轴框线粗 |
-| **figkit apply_format** | 字体族、字号（轴标签/刻度/底图文本/图例统一）、刻度方向/大小、轴框线粗、图例边框、Y轴刻标竖排、X轴多标签自动缩小 | — |
+| **figkit apply_format** | 字体族、字号（轴标签/刻度/底图文本/图例统一）、轴框线粗、图例边框 | — |
 | **figkit apply_style** | 读取 IgneousWR 画线时设的 `label=` 创建**共享图例**（仅色点不显示线，放第一个子图）；覆盖数据线粗/点大小/颜色（全局默认值，各图相同） | 不能给不同子图不同风格；不能动刻度或标签排列 |
 
 **图例移交说明（2026-06-21）：** IgneousWR 中 15 处 `_style.add_legend(ax)` 已全部移除。IgneousWR 只画线设 `label=` 分组名，图例创建和样式由 figkit `apply_style()` 统一处理。独立模式（`plot_*(gd)` 不接 figkit）时图例不再自动生成——需手动调用 `ax.legend()`。
@@ -46,14 +46,7 @@ metadata:
 **`style_ax()` 变更（2026-06-21）：** `top=True, right=True` → `top=False, right=False`。所有二元图的刻度仅出现在左/下两边，上/右保留框线但无刻度。标准科学出版格式。
 
 **Spider X 轴刻度交替内外（2026-06-21 修复）：**
-**Spider X 轴刻度交替内外（2026-06-21 修复，第三次才正确）：**  
-**适用模式：** 独立出图（`_standalone`）— IgneousWR `plot_spider()` 内部处理。figkit 拼版模式 — figkit `apply_style()` 通过 `n_labels > 8` 启发式触发同样的交替逻辑。两种模式下实现方式相同：
-
-- `ax.xaxis.set_minor_locator(ticker.NullLocator())` — 关闭 X 副刻度
-- `t.tick1line.set_marker(3 if i % 2 else 2)` — 刻度标记内外交替。marker=2=向上(向内)、marker=3=向下(向外)
-- `lbl.set_y(-0.025)` for odd (向外标签) / `lbl.set_y(0.04)` for even (向内标签) — 标签跟刻度走
-- `ax.tick_params(axis='y', rotation=90)` + `set_verticalalignment('center')` — Y 轴竖排
-- `ax.axhline(y=tv, ...)` 遍历 `ticks[1:-1]` 跳过 y=1 — Y 虚线网格（除 y=1 和上下边缘外）
+**Spider X 轴刻度交替内外（2026-06-21 修复，第三次才正确）：**  \n**设置位置：** `plot_spider()` 函数体主路径（不在 `_standalone` 块内），两种模式（独立出图和 figkit 拼版）都执行。  \n**实现方式：**\n\n- `ax.xaxis.set_minor_locator(ticker.NullLocator())` — 关闭 X 副刻度\n- `fig.canvas.draw()` — 必须先渲染，tick 对象才存在\n- `t.tick1line.set_marker(3 if i % 2 else 2)` — 刻度标记内外交替。marker=2=向上(向内)、marker=3=向下(向外)\n- `lbl.set_y(-0.025)` for odd (向外标签) / `lbl.set_y(0.04)` for even (向内标签) — 标签跟刻度走\n- `ax.tick_params(axis='y', rotation=90)` + `set_verticalalignment('center')` — Y 轴竖排\n- `ax.axhline(y=tv, ...)` 遍历 `ticks[1:-1]` 跳过 y=1 — Y 虚线网格（除 y=1 和上下边缘外）
 
 > **matplotlib ≥3.8 踩坑（三次才修对，详见 references/matplotlib-tick-workarounds.md）：**
 > 1. `Tick._direction` — 存值但不渲染 ❌
@@ -238,15 +231,7 @@ if _standalone:                # ← 用这个判断
     plt.tight_layout()
 ```
 
-新增图函数时必须：  
-1. ✅ 支持 `ax` 参数（拼版模式）  
-2. ✅ 用 `_standalone` 控制 `tight_layout`（仅独立模式执行）和 `save_fig`  
-3. ✅ 不设 `fontsize=`  
-4. ✅ 不调 `tick_params(direction=...)`  
-5. ✅ 不画图例（`add_legend` 已全部移除）  
-6. ✅ 图型特有的刻度/标签放函数内（figkit 不管）  
-7. ✅ 用 `_style.style_ax()` 统一轴风格（`top=False, right=False`）  
-8. ✅ **Y 轴改进等通用设置放在函数体主路径（不在 `_standalone` 内）**——这样独立出图和 figkit 拼版模式都生效。只有真正的 standalone-only 操作（`tight_layout`, `fig.canvas.draw()`, 需要 draw 后的 tick 操作）才放 `_standalone` 块。
+新增图函数时必须：  \n1. ✅ 支持 `ax` 参数（拼版模式）  \n2. ✅ 用 `_standalone` 控制 `tight_layout`（仅独立模式执行）和 `save_fig`  \n3. ✅ 不设 `fontsize=`  \n4. ✅ 不调 `tick_params(direction=...)`  \n5. ✅ 不画图例（`add_legend` 已全部移除）  \n6. ✅ 图型特有的刻度/标签放函数体主路径（figkit 不管，且独立/拼版两种模式共用）  \n7. ✅ 用 `_style.style_ax()` 统一轴风格（`top=False, right=False`）  \n8. ✅ `fig.canvas.draw()` 放在函数体主路径（不是 `_standalone` 块内）——tick 对象、yticklabels 等需要 draw 初始化。只有 `tight_layout` 放 `_standalone` 块。  \n9. ✅ 刻度交替（`set_marker(2/3)`）、标签偏移（`set_y()`）、Y网格（`axhline`）等都放主路径——这些在独立和拼版模式下效果应一致。
 
 ---
 

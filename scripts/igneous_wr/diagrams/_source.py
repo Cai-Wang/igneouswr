@@ -19,7 +19,6 @@ def plot_ree(gd, out_dir=None, save=True, ax=None):
     labels = gd.labels
     groups = gd.groups
     group_colors = _style.get_group_colors(groups)
-    _standalone = ax is None
     if ax is None:
         fig, ax = plt.subplots(figsize=(8, 5))
     else:
@@ -69,11 +68,7 @@ def plot_ree(gd, out_dir=None, save=True, ax=None):
             ax.axhline(y=tv, color='gray', ls=(0, (4, 2)), lw=0.5, alpha=0.5)
     fmt_ticks = [f'{v:g}' if v == int(v) else f'{v}' for v in ticks]
     ax.set_yticklabels(fmt_ticks)
-    if _standalone:
-        plt.tight_layout(pad=0.3)
     fig.canvas.draw()
-    if _standalone and save:
-        _style.save_fig(fig, 'SRC-01_SunMcDonough1989_REE.png', out_dir)
     return (fig, ax)
 
 
@@ -89,7 +84,6 @@ def plot_spider(gd, out_dir=None, save=True, ax=None):
     labels = gd.labels
     groups = gd.groups
     group_colors = _style.get_group_colors(groups)
-    _standalone = ax is None
     if ax is None:
         fig, ax = plt.subplots(figsize=(8, 5))
     else:
@@ -150,10 +144,6 @@ def plot_spider(gd, out_dir=None, save=True, ax=None):
         else:
             lbl.set_y(0.04)
             lbl.set_verticalalignment('bottom')
-    if _standalone:
-        plt.tight_layout(pad=0.3)
-    if _standalone and save:
-        _style.save_fig(fig, 'SRC-02_SunMcDonough1989_Spider.png', out_dir)
     return (fig, ax)
 
 def plot_pearce_2008(gd, out_dir=None, save=True):
