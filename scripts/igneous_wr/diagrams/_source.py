@@ -26,11 +26,15 @@ def plot_ree(gd, ax=None, *, linewidth=1.2, markersize=8,
     fig = ax.figure
     x_pos = np.arange(len(REE_ORDER))
     seen_groups = set()
+
+    # 收集所有 Y 值用于自动范围计算
+    all_y = []
     for i in range(len(labels)):
         raw = {e: gd.get(e)[i] for e in REE_ORDER}
         normed = normalize(raw, CHONDRITE)
         y_vals = np.array([normed[e] if not np.isnan(normed[e]) else np.nan for e in REE_ORDER])
         valid = np.isfinite(y_vals) & (y_vals > 0)
+        all_y.extend(y_vals[valid].tolist())
         g = groups[i] if i < len(groups) else labels[i]
         c = group_colors.get(g, plt.cm.tab10(i))
         label_g = g if g not in seen_groups else None
@@ -38,15 +42,35 @@ def plot_ree(gd, ax=None, *, linewidth=1.2, markersize=8,
         ax.plot(x_pos[valid], y_vals[valid], color=c, lw=linewidth, zorder=2, label=label_g)
         ax.scatter(x_pos[valid], y_vals[valid], color=c, marker='o', s=markersize,
                    edgecolors=marker_edge_color, linewidths=marker_edge_width, zorder=3)
+
+    # Y 轴自适应范围（内容级）
+    if all_y:
+        ymin = 10 ** np.floor(np.log10(min(all_y) * 0.8))
+        ymax = 10 ** np.ceil(np.log10(max(all_y) * 1.2))
+    else:
+        ymin, ymax = 0.001, 1000
+    ax.set_ylim(ymin, ymax)
+
+    # 统一轴风格（内容级）
+    _style.style_ax(ax)
+
     ax.set_xticks(x_pos)
     ax.set_xticklabels(REE_ORDER)
     ax.set_xlim(x_pos[0] - 0.3, x_pos[-1] + 0.3)
     ax.set_yscale('log')
     ax.set_yticks([0.001, 0.01, 0.1, 1, 10, 100, 1000])
     ax.set_yticklabels(['0.001', '0.01', '0.1', '1', '10', '100', '1000'])
+
+    # Y 参考线 + 网格（内容级）
+    ax.axhline(y=1, color='black', linewidth=0.6, zorder=1)
+    yticks = ax.get_yticks()
+    for tv in yticks[1:-1]:
+        if not np.isclose(tv, 1.0):
+            ax.axhline(y=tv, color='gray', linewidth=0.4,
+                       linestyle=(0, (4, 2)), zorder=0.5)
+
     ax.set_xlabel('Rare Earth Elements')
     ax.set_ylabel('Chondrite-normalized')
-    ax.axhline(y=1)
     return (fig, ax)
 
 
@@ -68,11 +92,15 @@ def plot_spider(gd, ax=None, *, linewidth=1.2, markersize=8,
     fig = ax.figure
     x_pos = np.arange(len(SPIDER_ORDER))
     seen_groups = set()
+
+    # 收集所有 Y 值用于自动范围计算
+    all_y = []
     for i in range(len(labels)):
         raw = {e: gd.get(e)[i] for e in SPIDER_ORDER}
         normed = normalize(raw, PRIMITIVE_MANTLE)
         y_vals = np.array([normed[e] if not np.isnan(normed[e]) else np.nan for e in SPIDER_ORDER])
         valid = np.isfinite(y_vals) & (y_vals > 0)
+        all_y.extend(y_vals[valid].tolist())
         g = groups[i] if i < len(groups) else labels[i]
         c = group_colors.get(g, plt.cm.tab10(i))
         label_g = g if g not in seen_groups else None
@@ -80,19 +108,40 @@ def plot_spider(gd, ax=None, *, linewidth=1.2, markersize=8,
         ax.plot(x_pos[valid], y_vals[valid], color=c, lw=linewidth, zorder=2, label=label_g)
         ax.scatter(x_pos[valid], y_vals[valid], color=c, marker='o', s=markersize,
                    edgecolors=marker_edge_color, linewidths=marker_edge_width, zorder=3)
+
+    # Y 轴自适应范围（内容级）
+    if all_y:
+        ymin = 10 ** np.floor(np.log10(min(all_y) * 0.8))
+        ymax = 10 ** np.ceil(np.log10(max(all_y) * 1.2))
+    else:
+        ymin, ymax = 0.001, 1000
+    ax.set_ylim(ymin, ymax)
+
+    # 统一轴风格（内容级）
+    _style.style_ax(ax)
+
     ax.set_xticks(x_pos)
     ax.set_xticklabels(SPIDER_ORDER)
     ax.set_xlim(x_pos[0] - 0.3, x_pos[-1] + 0.3)
     ax.set_yscale('log')
     ax.set_yticks([0.001, 0.01, 0.1, 1, 10, 100, 1000])
     ax.set_yticklabels(['0.001', '0.01', '0.1', '1', '10', '100', '1000'])
+
+    # Y 参考线 + 网格（内容级）
+    ax.axhline(y=1, color='black', linewidth=0.6, zorder=1)
+    yticks = ax.get_yticks()
+    for tv in yticks[1:-1]:
+        if not np.isclose(tv, 1.0):
+            ax.axhline(y=tv, color='gray', linewidth=0.4,
+                       linestyle=(0, (4, 2)), zorder=0.5)
+
     ax.set_xlabel('Trace Elements')
     ax.set_ylabel('Primitive-mantle normalized')
-    ax.axhline(y=1)
     return (fig, ax)
 
 
-def plot_pearce_2008(gd, out_dir=None, save=True, ax=None):
+def plot_pearce_2008(gd, ax=None, *, linewidth=1.2, markersize=8,
+                     marker_edge_color=None, marker_edge_width=0, **kwargs):
     """Th/Yb vs Nb/Yb 源区判别图（Pearce, 2008）🔥基性岩
     底图数据来自 boundaries/src/pearce_2008.json
     所需元素: Th, Nb, Yb
@@ -110,9 +159,8 @@ def plot_pearce_2008(gd, out_dir=None, save=True, ax=None):
     th_yb[mask] = th[mask] / yb[mask]
     nb_yb[mask] = nb[mask] / yb[mask]
     if ax is None:
-        fig, ax = plt.subplots()
-    else:
-        fig = ax.figure
+        raise ValueError("plot_pearce_2008 需要 ax 参数。请调用方先建好画布。")
+    fig = ax.figure
     bd = load_boundary('src', 'pearce_2008')
     ax.set_xlim(bd['axes']['xlim'])
     ax.set_ylim(bd['axes']['ylim'])
@@ -136,17 +184,14 @@ def plot_pearce_2008(gd, out_dir=None, save=True, ax=None):
         ox = rp.get('offset_x', 1.2)
         oy = rp.get('offset_y', 1.2)
         ax.text(rp['x'] * ox, rp['y'] * oy, rp['name'], fontweight='bold', color=rp['color'], va='bottom', ha='left', zorder=11)
-    _style.scatter_samples(ax, nb_yb, th_yb, labels, groups=gd.groups)
-    _style.add_legend(ax)
+    _style.scatter_samples(ax, nb_yb, th_yb, labels, groups=gd.groups, s=markersize, edgecolors=marker_edge_color, linewidths=marker_edge_width)
     ax.set_xlabel(bd['axes']['xlabel'])
     ax.set_ylabel(bd['axes']['ylabel'])
-    if save:
-        _style.save_fig(fig, 'Pearce2008_ThYb_NbYb.png', out_dir)
     return (fig, ax)
 
 
 def apply_spider_axis_style(ax):
-    """蛛网图 X 轴刻度交替内外 + 标签偏移 + Y 竖排 + Y 网格。
+    """蛛网图 X 轴刻度交替内外 + 标签偏移 + Y 竖排。
 
     位置敏感：必须在 finalize() 和 apply_format() **之后**调用。
     finalize 内部的 fig.canvas.draw() 会重建 Tick 对象，set_marker 会丢失。
@@ -167,13 +212,6 @@ def apply_spider_axis_style(ax):
     ax.tick_params(axis='y', rotation=90)
     for lbl in ax.get_yticklabels():
         lbl.set_verticalalignment('center')
-
-    # Y 虚线网格（除 y=1 和上下边缘）
-    yticks = ax.get_yticks()
-    for tv in yticks[1:-1]:
-        if not np.isclose(tv, 1.0):
-            ax.axhline(y=tv, color='gray', linewidth=0.4,
-                       linestyle=(0, (4, 2)), zorder=0.5)
 
     # X 轴副刻度关闭
     ax.xaxis.set_minor_locator(NullLocator())
@@ -197,9 +235,10 @@ def apply_spider_axis_style(ax):
 
 
 def apply_ree_axis_style(ax):
-    """REE 图 Y 竖排 + Y 网格。
+    """REE 图 Y 竖排。
 
-    用法同 apply_spider_axis_style，调用顺序一致。
+    Y 网格已放在 plot_ree 主路径（内容级）。
+    此处只处理 Tick 对象级：Y 竖排。
     """
     fig = ax.figure
     fig.canvas.draw()
@@ -208,10 +247,3 @@ def apply_ree_axis_style(ax):
     ax.tick_params(axis='y', rotation=90)
     for lbl in ax.get_yticklabels():
         lbl.set_verticalalignment('center')
-
-    # Y 虚线网格（除 y=1 和上下边缘）
-    yticks = ax.get_yticks()
-    for tv in yticks[1:-1]:
-        if not np.isclose(tv, 1.0):
-            ax.axhline(y=tv, color='gray', linewidth=0.4,
-                       linestyle=(0, (4, 2)), zorder=0.5)
