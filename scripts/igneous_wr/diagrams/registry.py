@@ -26,6 +26,7 @@ from igneous_wr.diagrams._classification import (
 )
 from igneous_wr.diagrams._source import (
     plot_ree, plot_spider, plot_pearce_2008,
+    apply_spider_axis_style, apply_ree_axis_style,
 )
 from igneous_wr.diagrams._evolution import (
     plot_miyashiro,

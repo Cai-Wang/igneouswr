@@ -2,7 +2,7 @@
 name: IgneousWR
 description: >
   Igneous Whole-Rock geochemical plotting engine. Reads Excel data →
-  19 publication-ready diagrams (TAS, REE, spider, tectonic discrimination, etc.)
+  19 geochemical diagrams (content only, styling downstream)
   + HTML report. Cross-agent compatible.
 license: MIT
 compatibility: Requires Python 3.10+, matplotlib, numpy, openpyxl
@@ -21,72 +21,23 @@ metadata:
 ## 设计哲学（v2.0）
 
 **IgneousWR 是地化内容引擎，不是设计工具。** 它保证：
-- **底图信息正确**（边界线、多边形判别区、轴标签/范围、标准化参考线）——这些是 IgneousWR 该管的
-- **数据标准化正确**（Sun & McDonough 1989 CI Chondrite / Primitive Mantle）
-- **边界线与参考文献一致**（TAS 源自 GCDkit，Pearce 2008 经用户校准）
-- **引用和来源自动标注**
+- 数据标准化正确（Sun & McDonough 1989 CI Chondrite / Primitive Mantle）
+- 边界线和多边形与参考文献一致（TAS 源自 GCDkit，Pearce 2008 经用户校准）
+- 轴标签和范围符合各图型惯例
+- 引用和来源自动标注
 
-**IgneousWR 不负责（这些是 LLM 的工作）：**
-- **数据点样式**（散点颜色、大小、边缘、线型、标记符号）
-- 字体选择、排版布局、A4 拼版
+**IgneousWR 不负责：**
+- 字体、颜色、线粗（这些是 LLM 的工作）
+- 排版布局、A4 拼版（由下游处理）
 - 风格预设、SciencePlots 集成（v2.0 已全部移除）
 
-### 关键架构决策（2026-06-21）
+**统一模式（v2.1）：调用方建画布传 ax，IgneousWR 只画内容。** 不再有独立/拼版之分。
 
-**IgneousWR 不再分模式（`_standalone` 已移除）。** 此前 `plot_spider()` 和 `plot_ree()` 用 `if _standalone:` 区分独立出图和 figkit 拼版两种模式——这导致 figkit 拼版时部分内容（刻度交替、Y网格、Y竖排）不执行。现已统一：所有内容设置都在函数体主路径，不分模式。
+| 用法 | 适用场景 |
+|------|---------|
+| `ax = layout.add_subplot(...) 或 plt.subplots(); plot_ree(gd, ax=ax)` | A4 拼版 / 裸图预览——调用方建好 ax 传进来 |
 
-**`save` 参数已废弃，`tight_layout` 由调用方负责。** IgneousWR 图函数只画内容、返回 `(fig, ax)`。独立出图时调用方需手动补：
-
-```python
-fig, ax = plot_spider(gd)
-plt.tight_layout(pad=0.3)       # 调用方调布局
-fig.savefig("output.png")       # 调用方存
-```
-
-figkit 拼版时由 A4Grid + finalize + save 处理布局和保存，IgneousWR 的角色完全相同（都是 `plot_spider(gd, ax=ax)`）。
-
-### 与 figkit 的分工合约（2026-06-21 确立）
-
-**核心原则：图型特有的视觉 → IgneousWR，全局统一的格式 → figkit。**
-
-| 谁 | 管什么 | 禁止做什么 |
-|----|--------|----------|
-| **IgneousWR** | 轴标签文本/元素名、边界线/多边形、标准化数据、轴范围/尺度、参考线(y=1虚线)、数据分组逻辑、刻度位置/值、**图型特有的刻度格式**（如蛛网图 X 轴刻度交替内外+标签偏移）、画线时设 `label=` 供 figkit 创建图例 | 禁止设 `fontsize=`；禁止调 `tick_params`（方向/大小）；禁止画图例（`add_legend()` 已全部移除）；禁止设轴框线粗 |
-| **figkit apply_format** | 字体族、字号（轴标签/刻度/底图文本/图例统一）、轴框线粗、图例边框 | — |
-| **figkit apply_style** | 读取 IgneousWR 画线时设的 `label=` 创建**共享图例**（仅色点不显示线，放第一个子图）；覆盖数据线粗/点大小/颜色（全局默认值，各图相同） | 不能给不同子图不同风格；不能动刻度或标签排列 |
-
-**图例移交说明（2026-06-21）：** IgneousWR 中 15 处 `_style.add_legend(ax)` 已全部移除。IgneousWR 只画线设 `label=` 分组名，图例创建和样式由 figkit `apply_style()` 统一处理。独立模式（`plot_*(gd)` 不接 figkit）时图例不再自动生成——需手动调用 `ax.legend()`。
-
-**`style_ax()` 变更（2026-06-21）：** `top=True, right=True` → `top=False, right=False`。所有二元图的刻度仅出现在左/下两边，上/右保留框线但无刻度。标准科学出版格式。
-
-**Spider X 轴刻度交替内外（2026-06-21 修复）：**
-**Spider X 轴刻度交替内外（2026-06-21 修复，第三次才正确）：**  \n**设置位置：** `plot_spider()` 函数体主路径（不在 `_standalone` 块内），两种模式（独立出图和 figkit 拼版）都执行。  \n**实现方式：**\n\n- `ax.xaxis.set_minor_locator(ticker.NullLocator())` — 关闭 X 副刻度\n- `fig.canvas.draw()` — 必须先渲染，tick 对象才存在\n- `t.tick1line.set_marker(3 if i % 2 else 2)` — 刻度标记内外交替。marker=2=向上(向内)、marker=3=向下(向外)\n- `lbl.set_y(-0.025)` for odd (向外标签) / `lbl.set_y(0.04)` for even (向内标签) — 标签跟刻度走\n- `ax.tick_params(axis='y', rotation=90)` + `set_verticalalignment('center')` — Y 轴竖排\n- `ax.axhline(y=tv, ...)` 遍历 `ticks[1:-1]` 跳过 y=1 — Y 虚线网格（除 y=1 和上下边缘外）
-
-> **matplotlib ≥3.8 踩坑（三次才修对，详见 references/matplotlib-tick-workarounds.md）：**
-> 1. `Tick._direction` — 存值但不渲染 ❌
-> 2. `tick1line.set_ydata([0, ±length])` — 改了坐标但渲染器不认（用 marker 渲染） ❌
-> 3. `tick1line.set_marker(2/3)` — ✅ 唯一有效方式，但必须 `fig.canvas.draw()` 之后设置
-
-**REE/Spider 轴标签（2026-06-21 改动两次）：** 最初改为 `style_ax(ax, '', '')`（无图名），后用户要求恢复 Y 轴标签：REE 用 `'Sample/Chondrite'`（球粒陨石标准化），蛛网用 `'Sample/Primitive Mantle'`（原始地幔标准化）。X 轴标签（`'Rare Earth Elements'` / `'Trace Elements'`）保持空白。
-
-**Spider 附加刻度和标签调整（2026-06-21）：** 独立模式（`if ax is None:` 块，`tight_layout` + `draw` 之后）额外执行：
-- `ax.xaxis.set_minor_locator(ticker.NullLocator())` — 关闭 X 轴副刻度（29 个元素名不需要）
-- `ax.tick_params(axis='y', rotation=90)` + `set_verticalalignment('center')` — Y 轴刻度标签竖排
-
-**Spider X 轴标签不再强制 45° 旋转（2026-06-21）：** `rotation=45, ha='right'` 已移除，改为水平排列。
-
-**Spider/REE Y 轴增强（2026-06-21）：** 从硬编码 `yticks=[0.001,0.01,...,1000]` 改为根据数据自动算 decade 范围：`ymin = 10^floor(log10(min*0.8))`, `ymax = 10^ceil(log10(max*1.2))`。Y 标签用 `f'{v:g}'` 整数格式（1 10 100 而不是 1.0 10.0 100.0）。Y 轴黑色虚线网格遍历 `ticks[1:-1]` 跳过 y=1 和边缘，linestyle `(0, (4, 2))`（4pt画2pt空）。y=1 参考线改为实线。这些设置在独立出图和 figkit 拼版模式下都生效（不在 `_standalone` 块内，在函数体主路径）。
-
-IgneousWR 各图函数的 `fontsize=` 硬编码已清理（`_source.py` 的 `plot_ree`/`plot_spider` 数据文本）。`_classification.py` 中的 basemap 分区名 fontsize 保留——这些属于底图内容文本，不是 figkit 该管的。
-
-**两种使用模式：**
-
-| 模式 | 用法 | 适用场景 |
-|------|------|---------|
-| 独立模式 | `plot_tas(gd)` → 自动建画布，出图 | 快速预览单张图 |
-| 拼版模式 | `plot_tas(gd, ax=existing_ax)` → 画到指定子图 | A4 拼版，多图组合 |
-
-拼版模式下，IgneousWR 只提供内容，所有样式决策由 LLM 完成。
+IgneousWR 只提供内容，所有视觉参数（线粗、点大小、边缘）通过参数传入，字号/字体通过 plt.rcParams 设。
 
 ---
 
@@ -103,13 +54,22 @@ from igneous_wr_core import (
     recommended_diagrams, # returns list of diagram IDs for a GeochemData
 )
 
-# 单图函数（全部可选 ax 参数）
+# 单图函数（全部需要 ax 参数——v2.1 不再自动建画布）
 from igneous_wr_core import (
     plot_tas, plot_ree, plot_spider, plot_k2o_sio2,
     plot_afm, plot_winchester_floyd, plot_co_th,
     plot_pearce_2008, plot_miyashiro, plot_shervais,
     # ... 全部 19 个图函数
 )
+
+# 后置轴样式函数（时序敏感：finalize + apply_format 之后调用）
+from igneous_wr_core import (
+    apply_spider_axis_style,   # Spider X 轴刻度交替 + 标签偏移 + Y 竖排 + Y 网格
+    apply_ree_axis_style,      # REE Y 竖排 + Y 网格
+)
+
+# 拼版模式需要 figkit
+from figkit.layout import A4Grid
 ```
 
 ### 数据加载 — `GeochemData(path, **kwargs)`
@@ -130,30 +90,25 @@ Auto-detects 3 layouts: wide (Row 1 = element names, Col A = sample names), stan
 
 Reference material rows (BCR, BHVO, AGV) are auto-skipped.
 
-### 单图模式 — `plot_*(gd, save=True, out_dir=None, ax=None)`
+### 单图模式 — `plot_*(gd, ax=None, *, linewidth=1.2, markersize=8, marker_edge_color=None, marker_edge_width=0)`
 
-**不传 ax（默认）：** 自动建光板画布，保存到文件，返回 `(fig, ax)`。
-
-```python
-fig, ax = plot_tas(gd)                # 独立出图，无任何样式
-```
-
-**传 ax：** 画到指定子图位置（拼版模式），不创建画布。
+**必须传 ax。** v2.1 不再自动建画布。调用方负责建好 ax 传入。
 
 ```python
-# 拼版模式示例：ax 来自下游排版系统
-fig, ax_right = plt.subplots()      # 下游创建的画布
-fig, ax_left = plt.subplots()
-plot_tas(gd, ax=ax_left)            # 画到左下
-plot_ree(gd, ax=ax_right)           # 画到右下
+# 裸图预览：调用方建画布
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots(figsize=(77.5/25.4, 257/25.4))
+plot_ree(gd, ax=ax, linewidth=1.0, markersize=8)
+fig.savefig('ree_bare.png')
 ```
 
-所有 19 个图函数签名一致：
+**视觉参数：** 线粗 `linewidth`（默认 1.2）、点大小 `markersize`（默认 8）、点边缘色 `marker_edge_color`、边缘宽 `marker_edge_width`。不传则用默认值。
+
+所有 19 个图函数从此统一：
 ```python
-def plot_*(gd, out_dir=None, save=True, ax=None):
+def plot_*(gd, ax=None, *, **visual_kwargs):
+    # ax 为必填——不传则出错
 ```
-
-> **⚠ ax 参数验证（2026-06-21 修复）：** `_source.py` 中的 `plot_ree()` 和 `plot_spider()` 在本次会话前 **不支持 ax 参数**（签名只有 `(gd, out_dir=None, save=True)`），已补上。出图前务必确认目标函数签名，不要相信 SKILL.md 声称的"所有函数都支持 ax"——逐一验证。
 
 ### 批量出图 — `plot_recommended(gd, out_dir=None, rock_type='auto')`
 
@@ -172,70 +127,69 @@ Returns:
 
 The HTML report is also auto-generated as a side effect when `generate_report_html` is available.
 
-### 分组规则 — `infer_groups()`
-
-`GeochemData` 自动从样品名推断分组。三种模式按序匹配：
-
-| 模式 | 正则 | 示例 | 分组结果 |
-|------|------|------|---------|
-| 1. 连字符前缀 | `^([A-Za-z0-9]+)-` | `MT-01-A1` → 前缀 `MT` | 组 `MT` |
-| 2. 字母+数字+字母核心，去末尾数字 | `^([A-Za-z]+[0-9]+[A-Za-z]+)\d*$` | `MT01A1` → 核心 `MT01A` | 组 `MT01A` |
-| 3. 回退 | 都不匹配 | 整个样品名当组 | 每样品独立一组 |
-
-**常见匹配失败：** 纯数字前缀（`1A`, `2B`）三组都不匹配，每样品独立。这时可手动覆盖：`gd.groups = ['GroupA', 'GroupA', ...]`。
-
-> **2026-06-21 fix:** 原 SKILL.md 描述的模式2 `^([A-Za-z]+[0-9]+)` 会误将 `MT01A` 和 `MT01B` 合并为组 `MT01`，且实际代码中根本没有此模式。已修正为模式2 `^([A-Za-z]+[0-9]+[A-Za-z]+)\d*$`（提取字母+数字+字母核心，去掉末尾点号数字），并补上代码实现。
-
-### 拼版模式注意事项
-
-所有 19 个图函数签名一致支持 `ax` 参数用于拼版模式。**验证状态（2026-06-21）：**
-- `plot_ree` / `plot_spider` — 已确认支持 `ax` ✓（此前代码缺失，已补上）
-- 其余 17 个图函数 — 已在 registry 中正确传递 `ax` ✓
-
 ### 推荐列表 — `recommended_diagrams(gd)` → list of diagram IDs
 
-### A4 拼版示例
+### A4 拼版示例（新流程 v2.1）
 
-**v2.0 拼版工作流（下游排版系统接管布局和样式）：**
+**正确的调用顺序（时序敏感）：**
 
 ```python
-from igneous_wr_core import GeochemData, plot_tas, plot_ree
+from igneous_wr_core import GeochemData, plot_ree, plot_spider, apply_spider_axis_style, apply_ree_axis_style
+from figkit.layout import A4Grid
 
 gd = GeochemData("data.xlsx")
 
-# 以下由下游排版系统创建画布和子图
-# 示例：2×2 网格
-fig = plt.figure(figsize=(8.27, 11.69))
-ax_a = fig.add_axes([0.1, 0.55, 0.35, 0.35])
-ax_b = fig.add_axes([0.55, 0.55, 0.35, 0.35])
-ax_c = fig.add_axes([0.1, 0.1, 0.35, 0.35])
-ax_d = fig.add_axes([0.55, 0.1, 0.35, 0.35])
+# ── 步骤1：定风格 ──
+style = {
+    'linewidth': 1.0,
+    'markersize': 8,
+}
+plt.rcParams.update({
+    'font.size': 9,
+    'font.family': 'serif',
+    'axes.linewidth': 0.6,
+})
 
-# IgneousWR 只提供内容
-plot_tas(gd, ax=ax_a)
-plot_ree(gd, ax=ax_b)
-plot_k2o_sio2(gd, ax=ax_c)
-plot_winchester_floyd(gd, ax=ax_d)
+# ── 步骤2：建画布 + cell ──
+layout = A4Grid(1, 2, paper='A4',
+                left=25, right=25, top=25, bottom=25,
+                hspace=0, wspace=12)
+ax_ree = layout.add_subplot(0, 0, label='ree')
+ax_sp  = layout.add_subplot(0, 1, label='sp')
 
-# 样式和排版由 LLM 在外部完成
-# （字体、tick、边框、间距等不在 IgneousWR 范围内）
-fig.savefig('4panel.png')
+# ── 步骤3：绘图（一次画到位） ──
+plot_ree(gd, ax=ax_ree, **style)
+plot_spider(gd, ax=ax_sp, **style)
+
+# ── 步骤4：排版 + 后置轴样式 ──
+layout.finalize(pairs=('ree', 'sp'))
+apply_ree_axis_style(ax_ree)       # 必须在 finalize 之后
+apply_spider_axis_style(ax_sp)     # 必须在 finalize 之后
+
+# ── 步骤5：保存 ──
+layout.save('ree_spider.png')
 ```
 
-## 开发须知
+**3×2 多对版：**
 
-### 新增图函数时的检查清单
+```python
+layout = A4Grid(3, 2, paper='A4',
+                left=25, right=25, top=25, bottom=25,
+                hspace=12, wspace=12)
+pairs = []
+for r in range(3):
+    ax_ree = layout.add_subplot(r, 0, label=f'ree{r}')
+    ax_sp  = layout.add_subplot(r, 1, label=f'sp{r}')
+    plot_ree(gd_list[r], ax=ax_ree, **style)
+    plot_spider(gd_list[r], ax=ax_sp, **style)
+    pairs.append((f'ree{r}', f'sp{r}'))
 
-1. ✅ 支持 `ax` 参数（拼版模式）
-2. ✅ 不设 `fontsize=`
-3. ✅ 不调 `tick_params(direction=...)`
-4. ✅ 不画图例（`add_legend` 已全部移除）
-5. ✅ 图型特有的刻度/标签放函数体主路径（不要放在 `if ax is None:` 条件里——该条件只在 `fig, ax = plt.subplots()` 前有效，之后 `ax` 不再是 None）
-6. ✅ 用 `_style.style_ax()` 统一轴风格（`top=False, right=False`）
-7. ✅ `fig.canvas.draw()` 放函数体主路径——tick 对象、yticklabels 等需要 draw 初始化
-8. ✅ 刻度交替（`set_marker(2/3)`）、标签偏移（`set_y()`）、Y网格（`axhline`）等都放主路径
-
----
+layout.finalize(pairs=pairs)
+for r in range(3):
+    apply_ree_axis_style(layout.get_ax(f'ree{r}'))
+    apply_spider_axis_style(layout.get_ax(f'sp{r}'))
+layout.save('ree_spider_3pairs.png')
+```
 
 ## 图件内容说明（IgneousWR 负责的部分）
 
@@ -243,10 +197,10 @@ fig.savefig('4panel.png')
 
 IgneousWR 负责：
 - 边界多边形绘制（TAS 16 区、AFM Irvine-Baragar 线、Winchester-Floyd 分区……）
-- 数据散点按分组着色（`_style.get_group_colors(groups)` 用 `plt.cm.tab10`，LLM 可传自定义 `group_colors` dict 覆盖）
+- 数据散点按分组着色（颜色从 `_style` 取，可被 LLM 覆盖）
 - 轴标签（化学式：`SiO$_2$`、`Na$_2$O`）
 - 轴范围（各图型有固定的 xlim/ylim）
-- ~~图例~~（图例已移交给 figkit apply_style，2026-06-21）
+- 图例
 
 ### 源区图（SRC-xx）
 
@@ -270,13 +224,13 @@ v2.0 移除了所有"越界做设计"的功能：
 |--------|------|------|
 | `set_style_preset()` | 风格预设不属于内容引擎 | LLM 直接配置 matplotlib rcParams |
 | SciencePlots 集成 | 样式选择是 LLM 的工作 | LLM 自行选择是否安装 SciencePlots |
-| `style_ax()` 的 tick/spine 设置 | tick 方向、边框属于排版 | 下游 `finalize()` 或 tick_params |
-| `plt.tight_layout()` | 排版是下游的责任 | A4Grid 的 `finalize()` |
-| `figsize` 硬编码 | 尺寸应随排版确定 | 不设 figsize，由画布决定 |
+| `style_ax()` 的 tick/spine 设置 | tick 方向、边框属于排版 | 下游 LLM 用 rcParams 或 tick_params 设置 |
+| `plt.tight_layout()` | 排版是下游的责任 | 下游 LLM 用 `plt.tight_layout()` 或手动布局 |
+| `figsize=(8,5)` 硬编码（plot_ree/plot_spider） | 尺寸应随排版确定 | 调用方建画布，IgneousWR 不设 figsize |
+| `lw=1.2` / `s=None` 硬编码 | 视觉参数应可覆盖 | 改为 `linewidth=` / `markersize=` 参数，默认值保留 |
+| `out_dir` / `save` 参数 | 保存是下游的职责 | 调用方建画布后自行 `fig.savefig()` |
+| `add_legend()` 自动调用 | 图例创建已移交给 figkit | figkit `apply_style()` 统一创建，裸图需手动 `ax.legend()` |
 | `fontproperties=times_prop` | 字体选择是设计决策 | LLM 通过 rcParams 设置 |
-| `MK_SIZE_SINGLE` 等数据点样式常量 | 数据点样式是 LLM 的职责 | scatter_samples 用 matplotlib 默认值，LLM 传参覆盖 |
-| 模块级 `matplotlib.use('Agg')` | import 无副作用 | 已移除（fig.savefig 无需切换后端） |
-| 图函数内硬编码 `fontsize=` | 字号是 LLM/figkit 的职责 | 45 处 fontsize= 全部删除，用 matplotlib 默认值替代 |
 
 ## GeochemData 属性参考
 
@@ -358,45 +312,23 @@ See the skill `zircon-trace-element` for detailed workflow.
 
 ---
 
-## Styling Conventions (for LLM agents)
+## Styling Conventions (v2.1)
 
-Since v2.0, IgneousWR does NOT enforce any visual style. The following are **descriptions of what IgneousWR draws** — LLMs override all of these:
+**IgneousWR 不再有任何视觉默认值。** 所有视觉参数通过函数参数和 plt.rcParams 传入：
 
-- **Boundary lines**: IgneousWR draws with `_style.LINE_COLOR_MAIN='#333333'` (main) and `_style.LINE_COLOR_SECONDARY='#666666'` (secondary). These are basemap info (IgneousWR's job).
-- **Sample points**: `_style.scatter_samples()` uses `plt.cm.tab10` for group colors. **All data point styling** (marker, size, edge color, linewidth) uses **matplotlib defaults** — LLM must specify these explicitly. See design rule below.
-- **No figure size**: IgneousWR creates a plain figure (no figsize) when in standalone mode.
-- **No grid**: IgneousWR does not enable grid.
-- **No global side effects**: importing IgneousWR does NOT change `matplotlib.use()`, `rcParams`, or font settings.
-- **References**: `save_fig()` auto-appends a citation imprint in bottom-right corner.
+- **边界线**：IgneousWR 用 `_style.LINE_COLOR_MAIN='#333333'` 和 `_style.LINE_COLOR_SECONDARY='#666666'`
+- **数据点**：`plot_ree(gd, ax=ax, linewidth=1.0, markersize=8, marker_edge_color=None, marker_edge_width=0)`
+- **字号/字体**：调用方通过 `plt.rcParams` 设置（`font.size`, `font.family`, `axes.linewidth`）
+- **图例**：IgneousWR 不画图例，只设 `label=`。figkit `apply_style()` 或手动 `ax.legend()`
+- **后置轴样式**：`apply_spider_axis_style(ax)` 和 `apply_ree_axis_style(ax)` 在 `finalize()` 之后调用
 
-### 底图 vs 数据点设计规则
-
-```
-IgneousWR 该管（底图信息）：
-  ✓ 边界线/多边形（位置、线粗范围固定）
-  ✓ 判别区标注文字和位置
-  ✓ 轴标签、轴范围、刻度位置、刻度值
-  ✓ 标准化参考线（y=1 虚线）
-  ✓ 画数据线时设 label= 分组名（供 figkit 创建图例）
-  （图例创建已移交给 figkit apply_style，2026-06-21）
-
-LLM 该管（数据点样式）：
-  ✓ 散点颜色、大小、边缘
-  ✓ 线型、线粗、标记符号
-  ✓ 所有传递给 scatter_samples() 的视觉参数
-```
-
-The `scatter_samples()` function signature:
+**不再使用 `_style` 模块常量：**
 ```python
-def scatter_samples(ax, x_arr, y_arr, labels, s=None, edgecolors=None, lw=None,
-                    groups=None, group_colors=None, marker='o', **kw):
-```
+# ❌ v2.0 旧用法
+_style.MK_SIZE_SINGLE = 40
 
-LLM can pass kwargs to control appearance:
-```python
-# LLM controls ALL data point styling
-_style.scatter_samples(ax, x, y, labels, groups=gd.groups,
-                       s=40, edgecolors='black', lw=0.5)
+# ✅ v2.1 新用法
+plot_ree(gd, ax=ax, markersize=8)
 ```
 
 ---
