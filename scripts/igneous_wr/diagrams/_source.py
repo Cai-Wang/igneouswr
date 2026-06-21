@@ -71,7 +71,7 @@ def plot_ree(gd, out_dir=None, save=True, ax=None):
     ax.set_yticklabels(fmt_ticks)
     if _standalone:
         plt.tight_layout(pad=0.3)
-        fig.canvas.draw()
+    fig.canvas.draw()
     if _standalone and save:
         _style.save_fig(fig, 'SRC-01_SunMcDonough1989_REE.png', out_dir)
     return (fig, ax)
