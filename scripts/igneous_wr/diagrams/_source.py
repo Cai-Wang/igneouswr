@@ -7,7 +7,7 @@ from igneous_wr.core.ternary import ternary_to_xy, ternary_corners, draw_ternary
 from igneous_wr.core.normalize import REE_ORDER, CHONDRITE, SPIDER_ORDER, PRIMITIVE_MANTLE, normalize
 from igneous_wr.boundaries.core import load_boundary
 
-def plot_ree(gd, out_dir=None, save=True, ax=None):
+def plot_ree(gd, ax=None, **kwargs):
     """
     REE 球粒陨石标准化配分模式图 📊通用
     所需元素: La,Ce,Pr,Nd,Sm,Eu,Gd,Tb,Dy,Ho,Er,Tm,Yb,Lu
@@ -72,7 +72,7 @@ def plot_ree(gd, out_dir=None, save=True, ax=None):
     return (fig, ax)
 
 
-def plot_spider(gd, out_dir=None, save=True, ax=None):
+def plot_spider(gd, ax=None, **kwargs):
     """
     原始地幔标准化蛛网图 📊通用
     所需元素: Rb,Ba,Th,U,Nb,Ta,La,Ce,Pb,Pr,Nd,Sr,Sm,Zr,Hf,Eu,Ti,Gd,Tb,Dy,Ho,Y,Er,Tm,Yb,Lu

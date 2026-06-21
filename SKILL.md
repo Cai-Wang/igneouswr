@@ -31,6 +31,20 @@ metadata:
 - 字体选择、排版布局、A4 拼版
 - 风格预设、SciencePlots 集成（v2.0 已全部移除）
 
+### 关键架构决策（2026-06-21）
+
+**IgneousWR 不再分模式（`_standalone` 已移除）。** 此前 `plot_spider()` 和 `plot_ree()` 用 `if _standalone:` 区分独立出图和 figkit 拼版两种模式——这导致 figkit 拼版时部分内容（刻度交替、Y网格、Y竖排）不执行。现已统一：所有内容设置都在函数体主路径，不分模式。
+
+**`save` 参数已废弃，`tight_layout` 由调用方负责。** IgneousWR 图函数只画内容、返回 `(fig, ax)`。独立出图时调用方需手动补：
+
+```python
+fig, ax = plot_spider(gd)
+plt.tight_layout(pad=0.3)       # 调用方调布局
+fig.savefig("output.png")       # 调用方存
+```
+
+figkit 拼版时由 A4Grid + finalize + save 处理布局和保存，IgneousWR 的角色完全相同（都是 `plot_spider(gd, ax=ax)`）。
+
 ### 与 figkit 的分工合约（2026-06-21 确立）
 
 **核心原则：图型特有的视觉 → IgneousWR，全局统一的格式 → figkit。**
@@ -210,28 +224,16 @@ fig.savefig('4panel.png')
 
 ## 开发须知
 
-### `_standalone` 模式（2026-06-21 踩坑教训）
+### 新增图函数时的检查清单
 
-IgneousWR 图函数同时支持独立出图和 figkit 拼版两种模式。判断通过 `ax` 参数：`ax=None` 为独立模式。
-
-**⚠ 不要重复用 `if ax is None:` 判断：**
-
-```python
-# ❌ 错误：第二次检查永远为 False
-if ax is None:
-    fig, ax = plt.subplots()   # ax 被从 None 改成了 Axes 对象
-if ax is None:                 # ← 永远 False！不会执行
-    plt.tight_layout()
-
-# ✅ 正确：用预存变量
-_standalone = ax is None       # 在 ax 被赋值前记住
-if ax is None:
-    fig, ax = plt.subplots()
-if _standalone:                # ← 用这个判断
-    plt.tight_layout()
-```
-
-新增图函数时必须：  \n1. ✅ 支持 `ax` 参数（拼版模式）  \n2. ✅ 用 `_standalone` 控制 `tight_layout`（仅独立模式执行）和 `save_fig`  \n3. ✅ 不设 `fontsize=`  \n4. ✅ 不调 `tick_params(direction=...)`  \n5. ✅ 不画图例（`add_legend` 已全部移除）  \n6. ✅ 图型特有的刻度/标签放函数体主路径（figkit 不管，且独立/拼版两种模式共用）  \n7. ✅ 用 `_style.style_ax()` 统一轴风格（`top=False, right=False`）  \n8. ✅ `fig.canvas.draw()` 放在函数体主路径（不是 `_standalone` 块内）——tick 对象、yticklabels 等需要 draw 初始化。只有 `tight_layout` 放 `_standalone` 块。  \n9. ✅ 刻度交替（`set_marker(2/3)`）、标签偏移（`set_y()`）、Y网格（`axhline`）等都放主路径——这些在独立和拼版模式下效果应一致。
+1. ✅ 支持 `ax` 参数（拼版模式）
+2. ✅ 不设 `fontsize=`
+3. ✅ 不调 `tick_params(direction=...)`
+4. ✅ 不画图例（`add_legend` 已全部移除）
+5. ✅ 图型特有的刻度/标签放函数体主路径（不要放在 `if ax is None:` 条件里——该条件只在 `fig, ax = plt.subplots()` 前有效，之后 `ax` 不再是 None）
+6. ✅ 用 `_style.style_ax()` 统一轴风格（`top=False, right=False`）
+7. ✅ `fig.canvas.draw()` 放函数体主路径——tick 对象、yticklabels 等需要 draw 初始化
+8. ✅ 刻度交替（`set_marker(2/3)`）、标签偏移（`set_y()`）、Y网格（`axhline`）等都放主路径
 
 ---
 
