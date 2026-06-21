@@ -59,18 +59,19 @@ def plot_ree(gd, out_dir=None, save=True, ax=None):
     _style.style_ax(ax, '', 'Sample/Chondrite')
     ax.axhline(y=1, color='gray', ls='-', lw=0.8, alpha=0.7)
     ax.yaxis.set_minor_locator(ticker.LogLocator(subs=np.arange(2, 10) * 0.1))
+    # 以下设置独立出图和 figkit 拼版共用
+    ax.xaxis.set_minor_locator(ticker.NullLocator())
+    ax.tick_params(axis='y', rotation=90)
+    for lbl in ax.get_yticklabels():
+        lbl.set_verticalalignment('center')
+    for tv in ticks[1:-1]:
+        if abs(tv - 1.0) > 1e-10:
+            ax.axhline(y=tv, color='gray', ls=(0, (4, 2)), lw=0.5, alpha=0.5)
+    fmt_ticks = [f'{v:g}' if v == int(v) else f'{v}' for v in ticks]
+    ax.set_yticklabels(fmt_ticks)
     if _standalone:
         plt.tight_layout(pad=0.3)
         fig.canvas.draw()
-        ax.xaxis.set_minor_locator(ticker.NullLocator())
-        ax.tick_params(axis='y', rotation=90)
-        for lbl in ax.get_yticklabels():
-            lbl.set_verticalalignment('center')
-        for tv in ticks[1:-1]:
-            if abs(tv - 1.0) > 1e-10:
-                ax.axhline(y=tv, color='gray', ls=(0, (4, 2)), lw=0.5, alpha=0.5)
-        fmt_ticks = [f'{v:g}' if v == int(v) else f'{v}' for v in ticks]
-        ax.set_yticklabels(fmt_ticks)
     if _standalone and save:
         _style.save_fig(fig, 'SRC-01_SunMcDonough1989_REE.png', out_dir)
     return (fig, ax)
@@ -128,31 +129,29 @@ def plot_spider(gd, out_dir=None, save=True, ax=None):
     _style.style_ax(ax, '', 'Sample/Primitive Mantle')
     ax.axhline(y=1, color='gray', ls='-', lw=0.8, alpha=0.7)
     ax.yaxis.set_minor_locator(ticker.LogLocator(subs=np.arange(2, 10) * 0.1))
+    # 以下设置部分独立出图和 figkit 拼版共用
+    ax.xaxis.set_minor_locator(ticker.NullLocator())
+    ax.tick_params(axis='y', rotation=90)
+    for lbl in ax.get_yticklabels():
+        lbl.set_verticalalignment('center')
+    for tv in ticks[1:-1]:
+        if abs(tv - 1.0) > 1e-10:
+            ax.axhline(y=tv, color='gray', ls=(0, (4, 2)), lw=0.5, alpha=0.5)
+    fmt_ticks = [f'{v:g}' if v == int(v) else f'{v}' for v in ticks]
+    ax.set_yticklabels(fmt_ticks)
     if _standalone:
         plt.tight_layout(pad=0.3)
         fig.canvas.draw()
-        # 蛛网图特有（放 tight_layout + draw 之后）：
-        ax.xaxis.set_minor_locator(ticker.NullLocator())
+        # 独立出图专用：X轴刻度交替内外 + 标签偏移
         for i, t in enumerate(ax.xaxis.get_major_ticks()):
             t.tick1line.set_marker(3 if i % 2 else 2)
         for i, lbl in enumerate(ax.get_xticklabels()):
             if i % 2:
-                # 向外：标签在轴线下方（默认，间距补足向内时的文字高度）
                 lbl.set_y(-0.025)
                 lbl.set_verticalalignment('top')
             else:
-                # 向内：标签在轴线上方（因文字高度占空间，y 值更大才视觉等距）
                 lbl.set_y(0.04)
                 lbl.set_verticalalignment('bottom')
-        ax.tick_params(axis='y', rotation=90)
-        for lbl in ax.get_yticklabels():
-            lbl.set_verticalalignment('center')
-        # Y轴虚线网格：所有主刻度位置，跳过 y=1 和最上最下
-        for tv in ticks[1:-1]:
-            if abs(tv - 1.0) > 1e-10:
-                ax.axhline(y=tv, color='gray', ls=(0, (4, 2)), lw=0.5, alpha=0.5)
-        fmt_ticks = [f'{v:g}' if v == int(v) else f'{v}' for v in ticks]
-        ax.set_yticklabels(fmt_ticks)
     if _standalone and save:
         _style.save_fig(fig, 'SRC-02_SunMcDonough1989_Spider.png', out_dir)
     return (fig, ax)

@@ -46,7 +46,20 @@ metadata:
 **`style_ax()` 变更（2026-06-21）：** `top=True, right=True` → `top=False, right=False`。所有二元图的刻度仅出现在左/下两边，上/右保留框线但无刻度。标准科学出版格式。
 
 **Spider X 轴刻度交替内外（2026-06-21 修复）：**
-**Spider X 轴刻度交替内外（2026-06-21 修复，第三次正确）：**\n`plot_spider()` 顶部元素名下方新增了：\n- `t.tick1line.set_marker(3 if i % 2 else 2)` — 刻度标记内外交替。marker=2=向上(向内)、marker=3=向下(向外)。**必须紧跟 `fig.canvas.draw()` 之后**，且放在 `plt.tight_layout()` 之后（否则 tick1line 未初始化）。\n- `lbl.set_y(-0.03)` for odd labels — 标签偏移防止 29 个元素名重叠。\n\n> **matplotlib ≥3.8 踩坑（三次才修对）：**\n> 1. `Tick._direction` — 存值但不渲染 ❌\n> 2. `tick1line.set_ydata([0, ±length])` — 改了坐标但渲染器不认（用 marker 渲染） ❌\n> 3. `tick1line.set_marker(2/3)` — ✅ 这是唯一有效的方式\n> 详见 figkit 的 `references/matplotlib-tick-workarounds.md`。
+**Spider X 轴刻度交替内外（2026-06-21 修复，第三次才正确）：**
+
+`plot_spider()` 内 `if _standalone:` 块中放 `tight_layout + fig.canvas.draw()` 之后：
+
+- `ax.xaxis.set_minor_locator(ticker.NullLocator())` — 关闭 X 副刻度
+- `t.tick1line.set_marker(3 if i % 2 else 2)` — 刻度标记内外交替。marker=2=向上(向内)、marker=3=向下(向外)
+- `lbl.set_y(-0.025)` for odd (向外标签) / `lbl.set_y(0.04)` for even (向内标签) — 标签跟刻度走
+- `ax.tick_params(axis='y', rotation=90)` + `set_verticalalignment('center')` — Y 轴竖排
+- `ax.axhline(y=tv, ...)` 遍历 `ticks[1:-1]` 跳过 y=1 — Y 虚线网格（除 y=1 和上下边缘外）
+
+> **matplotlib ≥3.8 踩坑（三次才修对，详见 references/matplotlib-tick-workarounds.md）：**
+> 1. `Tick._direction` — 存值但不渲染 ❌
+> 2. `tick1line.set_ydata([0, ±length])` — 改了坐标但渲染器不认（用 marker 渲染） ❌
+> 3. `tick1line.set_marker(2/3)` — ✅ 唯一有效方式，但必须 `fig.canvas.draw()` 之后设置
 
 **REE/Spider 无图名（2026-06-21）：** `plot_ree()` 和 `plot_spider()` 中 `style_ax(ax, 'Rare Earth Elements', 'Chondrite-normalized')` 改为 `style_ax(ax, '', '')`。图名由图版作曲家（figkit 或人工）在拼版时添加，不属于 IgneousWR 的职责。
 
