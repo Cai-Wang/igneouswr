@@ -139,19 +139,19 @@ def plot_spider(gd, out_dir=None, save=True, ax=None):
             ax.axhline(y=tv, color='gray', ls=(0, (4, 2)), lw=0.5, alpha=0.5)
     fmt_ticks = [f'{v:g}' if v == int(v) else f'{v}' for v in ticks]
     ax.set_yticklabels(fmt_ticks)
+    # X 轴刻度交替内外 + 标签偏移（两种模式都执行，需先 draw 初始化 tick）
+    fig.canvas.draw()
+    for i, t in enumerate(ax.xaxis.get_major_ticks()):
+        t.tick1line.set_marker(3 if i % 2 else 2)
+    for i, lbl in enumerate(ax.get_xticklabels()):
+        if i % 2:
+            lbl.set_y(-0.025)
+            lbl.set_verticalalignment('top')
+        else:
+            lbl.set_y(0.04)
+            lbl.set_verticalalignment('bottom')
     if _standalone:
         plt.tight_layout(pad=0.3)
-        fig.canvas.draw()
-        # 独立出图专用：X轴刻度交替内外 + 标签偏移
-        for i, t in enumerate(ax.xaxis.get_major_ticks()):
-            t.tick1line.set_marker(3 if i % 2 else 2)
-        for i, lbl in enumerate(ax.get_xticklabels()):
-            if i % 2:
-                lbl.set_y(-0.025)
-                lbl.set_verticalalignment('top')
-            else:
-                lbl.set_y(0.04)
-                lbl.set_verticalalignment('bottom')
     if _standalone and save:
         _style.save_fig(fig, 'SRC-02_SunMcDonough1989_Spider.png', out_dir)
     return (fig, ax)

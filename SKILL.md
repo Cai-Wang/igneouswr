@@ -46,9 +46,8 @@ metadata:
 **`style_ax()` 变更（2026-06-21）：** `top=True, right=True` → `top=False, right=False`。所有二元图的刻度仅出现在左/下两边，上/右保留框线但无刻度。标准科学出版格式。
 
 **Spider X 轴刻度交替内外（2026-06-21 修复）：**
-**Spider X 轴刻度交替内外（2026-06-21 修复，第三次才正确）：**
-
-`plot_spider()` 内 `if _standalone:` 块中放 `tight_layout + fig.canvas.draw()` 之后：
+**Spider X 轴刻度交替内外（2026-06-21 修复，第三次才正确）：**  
+**适用模式：** 独立出图（`_standalone`）— IgneousWR `plot_spider()` 内部处理。figkit 拼版模式 — figkit `apply_style()` 通过 `n_labels > 8` 启发式触发同样的交替逻辑。两种模式下实现方式相同：
 
 - `ax.xaxis.set_minor_locator(ticker.NullLocator())` — 关闭 X 副刻度
 - `t.tick1line.set_marker(3 if i % 2 else 2)` — 刻度标记内外交替。marker=2=向上(向内)、marker=3=向下(向外)
@@ -61,7 +60,7 @@ metadata:
 > 2. `tick1line.set_ydata([0, ±length])` — 改了坐标但渲染器不认（用 marker 渲染） ❌
 > 3. `tick1line.set_marker(2/3)` — ✅ 唯一有效方式，但必须 `fig.canvas.draw()` 之后设置
 
-**REE/Spider 无图名（2026-06-21）：** `plot_ree()` 和 `plot_spider()` 中 `style_ax(ax, 'Rare Earth Elements', 'Chondrite-normalized')` 改为 `style_ax(ax, '', '')`。图名由图版作曲家（figkit 或人工）在拼版时添加，不属于 IgneousWR 的职责。
+**REE/Spider 轴标签（2026-06-21 改动两次）：** 最初改为 `style_ax(ax, '', '')`（无图名），后用户要求恢复 Y 轴标签：REE 用 `'Sample/Chondrite'`（球粒陨石标准化），蛛网用 `'Sample/Primitive Mantle'`（原始地幔标准化）。X 轴标签（`'Rare Earth Elements'` / `'Trace Elements'`）保持空白。
 
 **Spider 附加刻度和标签调整（2026-06-21）：** 独立模式（`if ax is None:` 块，`tight_layout` + `draw` 之后）额外执行：
 - `ax.xaxis.set_minor_locator(ticker.NullLocator())` — 关闭 X 轴副刻度（29 个元素名不需要）
@@ -69,7 +68,7 @@ metadata:
 
 **Spider X 轴标签不再强制 45° 旋转（2026-06-21）：** `rotation=45, ha='right'` 已移除，改为水平排列。
 
-**REE / Spider Y 轴自动适配（2026-06-21 新增）：** 原硬编码 `yticks=[0.001,0.01,...,1000]` 已替换为根据数据实际最小最大值自动计算 decade 刻度的逻辑：`ymin = 10^floor(log10(min*0.8))`, `ymax = 10^ceil(log10(max*1.2))`。
+**Spider/REE Y 轴增强（2026-06-21）：** 从硬编码 `yticks=[0.001,0.01,...,1000]` 改为根据数据自动算 decade 范围：`ymin = 10^floor(log10(min*0.8))`, `ymax = 10^ceil(log10(max*1.2))`。Y 标签用 `f'{v:g}'` 整数格式（1 10 100 而不是 1.0 10.0 100.0）。Y 轴黑色虚线网格遍历 `ticks[1:-1]` 跳过 y=1 和边缘，linestyle `(0, (4, 2))`（4pt画2pt空）。y=1 参考线改为实线。这些设置在独立出图和 figkit 拼版模式下都生效（不在 `_standalone` 块内，在函数体主路径）。
 
 IgneousWR 各图函数的 `fontsize=` 硬编码已清理（`_source.py` 的 `plot_ree`/`plot_spider` 数据文本）。`_classification.py` 中的 basemap 分区名 fontsize 保留——这些属于底图内容文本，不是 figkit 该管的。
 
@@ -239,14 +238,15 @@ if _standalone:                # ← 用这个判断
     plt.tight_layout()
 ```
 
-新增图函数时必须：
-1. ✅ 支持 `ax` 参数（拼版模式）
-2. ✅ 用 `_standalone` 控制 tight_layout + save_fig（仅独立模式执行）
-3. ✅ 不设 `fontsize=`
-4. ✅ 不调 `tick_params(direction=...)`
-5. ✅ 不画图例（`add_legend` 已全部移除）
-6. ✅ 图型特有的刻度/标签放函数内（figkit 不管）
-7. ✅ 用 `_style.style_ax()` 统一轴风格（`top=False, right=False`）
+新增图函数时必须：  
+1. ✅ 支持 `ax` 参数（拼版模式）  
+2. ✅ 用 `_standalone` 控制 `tight_layout`（仅独立模式执行）和 `save_fig`  
+3. ✅ 不设 `fontsize=`  
+4. ✅ 不调 `tick_params(direction=...)`  
+5. ✅ 不画图例（`add_legend` 已全部移除）  
+6. ✅ 图型特有的刻度/标签放函数内（figkit 不管）  
+7. ✅ 用 `_style.style_ax()` 统一轴风格（`top=False, right=False`）  
+8. ✅ **Y 轴改进等通用设置放在函数体主路径（不在 `_standalone` 内）**——这样独立出图和 figkit 拼版模式都生效。只有真正的 standalone-only 操作（`tight_layout`, `fig.canvas.draw()`, 需要 draw 后的 tick 操作）才放 `_standalone` 块。
 
 ---
 
