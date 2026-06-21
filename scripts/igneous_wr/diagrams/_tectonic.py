@@ -42,7 +42,6 @@ def plot_meschede(gd, out_dir=None, save=True):
         ax.text(lx, ly, fd['sub'], fontsize=11, fontweight='bold',
                 ha='center', va='center', color=_style.TEXT_COLOR_LABEL, zorder=5)
     _style.scatter_samples(ax, x_d, y_d, labels, groups=gd.groups)
-    _style.add_legend(ax)
     ax.set_xlim(-0.08, 1.1)
     ax.set_ylim(-0.08, SQRT3_2 + 0.08)
     ax.set_aspect('equal')
@@ -91,7 +90,6 @@ def plot_wood(gd, out_dir=None, save=True):
         ax.text(lx, ly, fd['sub'], fontsize=11, fontweight='bold',
                 ha='center', va='center', color=_style.TEXT_COLOR_LABEL, zorder=5)
     _style.scatter_samples(ax, x_d, y_d, labels, groups=gd.groups)
-    _style.add_legend(ax)
     ax.set_xlim(-0.08, 1.1)
     ax.set_ylim(-0.08, SQRT3_2 + 0.08)
     ax.set_aspect('equal')
@@ -129,7 +127,6 @@ def plot_shervais(gd, out_dir=None, save=True):
     for rgl in bd.get('region_labels', []):
         ax.text(rgl['x'], rgl['y'], rgl['text'], fontsize=rgl.get('fontsize', 11), ha=rgl.get('ha', 'center'), va=rgl.get('va', 'center'), fontweight=rgl.get('fontweight', 'bold'), color=rgl['color'], zorder=5)
     _style.scatter_samples(ax, ti_1000, v_arr, labels, groups=gd.groups)
-    _style.add_legend(ax)
     _style.style_ax(ax, bd['axes']['xlabel'], bd['axes']['ylabel'])
     plt.tight_layout(pad=0.3)
     if save:

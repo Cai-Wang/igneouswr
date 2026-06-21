@@ -21,6 +21,8 @@ from igneous_wr.diagrams._classification import (
     plot_tasmiddlemostplut,
     plot_frost_fenr, plot_frost_mali, plot_frost_asi_ank,
     plot_pearce1996, plot_k2o_sio2_peccerillo,
+    plot_shand_acnk_ank,
+    plot_whalen_ga_al,
 )
 from igneous_wr.diagrams._source import (
     plot_ree, plot_spider, plot_pearce_2008,
@@ -103,6 +105,16 @@ DIAGRAM_REGISTRY = [
     DiagramSpec(plot_frost_asi_ank,   "CLS-31_Frost2001_ASI_ANK.png",
                 "Frost ASI vs A/NK 铝饱和分类",               ('Al2O3', 'CaO', 'Na2O', 'K2O'),  ('P2O5',), ("felsic",),
                 review_status="verified", source_ref="frost2001"
+                ),
+    DiagramSpec(plot_shand_acnk_ank, "CLS-32_Shand_ACNK_ANK.png",
+                "Shand A/CNK vs A/NK 铝饱和分类", ('Al2O3', 'CaO', 'Na2O', 'K2O'), None, ("felsic",),
+                review_status="verified", source_ref="shand1943",
+                review_note="源自 GCDkit Shand.r: A/CNK vs A/NK, h=1/v=1/diagonal 三条分界线"
+                ),
+    DiagramSpec(plot_whalen_ga_al, "CLS-33_Whalen_GaAl_NK.png",
+                "Whalen 10000*Ga/Al vs Na2O+K2O A型花岗岩判别", ('Ga', 'Al2O3', 'Na2O', 'K2O'), None, ("felsic",),
+                review_status="verified", source_ref="whalen1987",
+                review_note="源自 GCDkit Whalen.r Fig.1A: log-log, L形分界线 10000Ga/Al=2.6"
                 ),
 
     # ── 🔬 源区性质 ──────────────────────────────────

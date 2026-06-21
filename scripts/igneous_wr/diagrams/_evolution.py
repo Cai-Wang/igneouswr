@@ -37,7 +37,6 @@ def plot_miyashiro(gd, out_dir=None, save=True):
     ax.set_ylim(bd['axes']['ylim'])
     _style.style_ax(ax, bd['axes']['xlabel'], bd['axes']['ylabel'])
     _style.scatter_samples(ax, sio2, feot_mgo, labels, groups=gd.groups)
-    _style.add_legend(ax)
     plt.tight_layout(pad=0.3)
     if save:
         _style.save_fig(fig, 'Miyashiro1974_FeOtMgO_SiO2.png', out_dir)

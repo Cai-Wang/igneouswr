@@ -7,7 +7,7 @@ from igneous_wr.core.ternary import ternary_to_xy, ternary_corners, draw_ternary
 from igneous_wr.core.normalize import REE_ORDER, CHONDRITE, SPIDER_ORDER, PRIMITIVE_MANTLE, normalize
 from igneous_wr.boundaries.core import load_boundary
 
-def plot_ree(gd, out_dir=None, save=True):
+def plot_ree(gd, out_dir=None, save=True, ax=None):
     """
     REE 球粒陨石标准化配分模式图 📊通用
     所需元素: La,Ce,Pr,Nd,Sm,Eu,Gd,Tb,Dy,Ho,Er,Tm,Yb,Lu
@@ -19,7 +19,11 @@ def plot_ree(gd, out_dir=None, save=True):
     labels = gd.labels
     groups = gd.groups
     group_colors = _style.get_group_colors(groups)
-    fig, ax = plt.subplots(figsize=(8, 5))
+    _standalone = ax is None
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(8, 5))
+    else:
+        fig = ax.figure
     x_pos = np.arange(len(REE_ORDER))
     seen_groups = set()
     for i in range(len(labels)):
@@ -34,21 +38,45 @@ def plot_ree(gd, out_dir=None, save=True):
         ax.plot(x_pos[valid], y_vals[valid], color=c, lw=1.2, zorder=2, label=label_g)
         ax.scatter(x_pos[valid], y_vals[valid], color=c, marker='o', s=_style.MK_SIZE_SINGLE, edgecolors=_style.MK_EDGE_COLOR, linewidths=_style.MK_EDGE_WIDTH, zorder=3)
     ax.set_xticks(x_pos)
-    ax.set_xticklabels(REE_ORDER, fontsize=8.5)
+    ax.set_xticklabels(REE_ORDER)
     ax.set_xlim(x_pos[0] - 0.3, x_pos[-1] + 0.3)
     ax.set_yscale('log')
-    ax.set_yticks([0.001, 0.01, 0.1, 1, 10, 100, 1000])
-    ax.set_yticklabels(['0.001', '0.01', '0.1', '1', '10', '100', '1000'])
-    _style.style_ax(ax, 'Rare Earth Elements', 'Chondrite-normalized')
-    ax.axhline(y=1, color='gray', ls='--', lw=0.8, alpha=0.7)
+    # Y 轴范围根据数据自动适配
+    all_valid = []
+    for i in range(len(labels)):
+        raw = {e: gd.get(e)[i] for e in REE_ORDER}
+        normed = normalize(raw, CHONDRITE)
+        all_valid.extend([normed[e] for e in REE_ORDER if not np.isnan(normed[e]) and normed[e] > 0])
+    if all_valid:
+        ymin = 10 ** np.floor(np.log10(min(all_valid) * 0.8))
+        ymax = 10 ** np.ceil(np.log10(max(all_valid) * 1.2))
+        decades = np.arange(np.log10(ymin), np.log10(ymax) + 1)
+        ticks = [10 ** d for d in decades]
+    else:
+        ticks = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
+    ax.set_yticks(ticks)
+    ax.set_yticklabels([f'{v:g}' if v == int(v) else f'{v}' for v in ticks])
+    _style.style_ax(ax, '', 'Sample/Chondrite')
+    ax.axhline(y=1, color='gray', ls='-', lw=0.8, alpha=0.7)
     ax.yaxis.set_minor_locator(ticker.LogLocator(subs=np.arange(2, 10) * 0.1))
-    plt.tight_layout(pad=0.3)
-    if save:
+    if _standalone:
+        plt.tight_layout(pad=0.3)
+        fig.canvas.draw()
+        ax.xaxis.set_minor_locator(ticker.NullLocator())
+        ax.tick_params(axis='y', rotation=90)
+        for lbl in ax.get_yticklabels():
+            lbl.set_verticalalignment('center')
+        for tv in ticks[1:-1]:
+            if abs(tv - 1.0) > 1e-10:
+                ax.axhline(y=tv, color='gray', ls=(0, (4, 2)), lw=0.5, alpha=0.5)
+        fmt_ticks = [f'{v:g}' if v == int(v) else f'{v}' for v in ticks]
+        ax.set_yticklabels(fmt_ticks)
+    if _standalone and save:
         _style.save_fig(fig, 'SRC-01_SunMcDonough1989_REE.png', out_dir)
     return (fig, ax)
 
 
-def plot_spider(gd, out_dir=None, save=True):
+def plot_spider(gd, out_dir=None, save=True, ax=None):
     """
     原始地幔标准化蛛网图 📊通用
     所需元素: Rb,Ba,Th,U,Nb,Ta,La,Ce,Pb,Pr,Nd,Sr,Sm,Zr,Hf,Eu,Ti,Gd,Tb,Dy,Ho,Y,Er,Tm,Yb,Lu
@@ -60,7 +88,11 @@ def plot_spider(gd, out_dir=None, save=True):
     labels = gd.labels
     groups = gd.groups
     group_colors = _style.get_group_colors(groups)
-    fig, ax = plt.subplots(figsize=(8, 5))
+    _standalone = ax is None
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(8, 5))
+    else:
+        fig = ax.figure
     x_pos = np.arange(len(SPIDER_ORDER))
     seen_groups = set()
     for i in range(len(labels)):
@@ -75,16 +107,53 @@ def plot_spider(gd, out_dir=None, save=True):
         ax.plot(x_pos[valid], y_vals[valid], color=c, lw=1.2, zorder=2, label=label_g)
         ax.scatter(x_pos[valid], y_vals[valid], color=c, marker='o', s=_style.MK_SIZE_SINGLE, edgecolors=_style.MK_EDGE_COLOR, linewidths=_style.MK_EDGE_WIDTH, zorder=3)
     ax.set_xticks(x_pos)
-    ax.set_xticklabels(SPIDER_ORDER, fontsize=7.5, rotation=45, ha='right')
+    ax.set_xticklabels(SPIDER_ORDER)
     ax.set_xlim(x_pos[0] - 0.3, x_pos[-1] + 0.3)
     ax.set_yscale('log')
-    ax.set_yticks([0.001, 0.01, 0.1, 1, 10, 100, 1000])
-    ax.set_yticklabels(['0.001', '0.01', '0.1', '1', '10', '100', '1000'])
-    _style.style_ax(ax, 'Trace Elements', 'Primitive-mantle normalized')
-    ax.axhline(y=1, color='gray', ls='--', lw=0.8, alpha=0.7)
+    # Y 轴范围根据数据自动适配
+    all_valid = []
+    for i in range(len(labels)):
+        raw = {e: gd.get(e)[i] for e in SPIDER_ORDER}
+        normed = normalize(raw, PRIMITIVE_MANTLE)
+        all_valid.extend([normed[e] for e in SPIDER_ORDER if not np.isnan(normed[e]) and normed[e] > 0])
+    if all_valid:
+        ymin = 10 ** np.floor(np.log10(min(all_valid) * 0.8))
+        ymax = 10 ** np.ceil(np.log10(max(all_valid) * 1.2))
+        decades = np.arange(np.log10(ymin), np.log10(ymax) + 1)
+        ticks = [10 ** d for d in decades]
+    else:
+        ticks = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
+    ax.set_yticks(ticks)
+    ax.set_yticklabels([f'{v:g}' if v == int(v) else f'{v}' for v in ticks])
+    _style.style_ax(ax, '', 'Sample/Primitive Mantle')
+    ax.axhline(y=1, color='gray', ls='-', lw=0.8, alpha=0.7)
     ax.yaxis.set_minor_locator(ticker.LogLocator(subs=np.arange(2, 10) * 0.1))
-    plt.tight_layout(pad=0.3)
-    if save:
+    if _standalone:
+        plt.tight_layout(pad=0.3)
+        fig.canvas.draw()
+        # 蛛网图特有（放 tight_layout + draw 之后）：
+        ax.xaxis.set_minor_locator(ticker.NullLocator())
+        for i, t in enumerate(ax.xaxis.get_major_ticks()):
+            t.tick1line.set_marker(3 if i % 2 else 2)
+        for i, lbl in enumerate(ax.get_xticklabels()):
+            if i % 2:
+                # 向外：标签在轴线下方（默认，间距补足向内时的文字高度）
+                lbl.set_y(-0.025)
+                lbl.set_verticalalignment('top')
+            else:
+                # 向内：标签在轴线上方（因文字高度占空间，y 值更大才视觉等距）
+                lbl.set_y(0.04)
+                lbl.set_verticalalignment('bottom')
+        ax.tick_params(axis='y', rotation=90)
+        for lbl in ax.get_yticklabels():
+            lbl.set_verticalalignment('center')
+        # Y轴虚线网格：所有主刻度位置，跳过 y=1 和最上最下
+        for tv in ticks[1:-1]:
+            if abs(tv - 1.0) > 1e-10:
+                ax.axhline(y=tv, color='gray', ls=(0, (4, 2)), lw=0.5, alpha=0.5)
+        fmt_ticks = [f'{v:g}' if v == int(v) else f'{v}' for v in ticks]
+        ax.set_yticklabels(fmt_ticks)
+    if _standalone and save:
         _style.save_fig(fig, 'SRC-02_SunMcDonough1989_Spider.png', out_dir)
     return (fig, ax)
 
@@ -130,7 +199,6 @@ def plot_pearce_2008(gd, out_dir=None, save=True):
         oy = rp.get('offset_y', 1.2)
         ax.text(rp['x'] * ox, rp['y'] * oy, rp['name'], fontsize=9.5, fontweight='bold', color=rp['color'], va='bottom', ha='left', zorder=11)
     _style.scatter_samples(ax, nb_yb, th_yb, labels, groups=gd.groups)
-    _style.add_legend(ax)
     _style.style_ax(ax, bd['axes']['xlabel'], bd['axes']['ylabel'])
     plt.tight_layout(pad=0.3)
     if save:

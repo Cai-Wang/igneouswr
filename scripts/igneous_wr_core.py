@@ -49,6 +49,8 @@ from igneous_wr.diagrams.registry import (
     plot_tasmiddlemostplut,
     plot_frost_fenr, plot_frost_mali, plot_frost_asi_ank, plot_pearce1996,
     plot_k2o_sio2_peccerillo,
+    plot_shand_acnk_ank,
+    plot_whalen_ga_al,
     plot_ree, plot_spider, plot_pearce_2008,
     plot_miyashiro,
     plot_meschede, plot_wood, plot_shervais,

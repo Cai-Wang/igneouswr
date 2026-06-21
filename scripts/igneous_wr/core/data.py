@@ -410,11 +410,21 @@ class GeochemData:
         groups = []
         for lbl in self.labels:
             lbl_str = str(lbl).strip()
+
+            # 1) 连字符前缀: MT-01-A1 → MT
             m = re.match(r'^([A-Za-z0-9]+)-', lbl_str)
             if m:
                 groups.append(m.group(1))
-            else:
-                groups.append(lbl_str)
+                continue
+
+            # 2) 字母+数字+字母核心，去掉末尾点号数字: MT01A1 → MT01A
+            m = re.match(r'^([A-Za-z]+[0-9]+[A-Za-z]+)\d*$', lbl_str)
+            if m:
+                groups.append(m.group(1))
+                continue
+
+            # 3) 回退: 整个样品名作组名
+            groups.append(lbl_str)
         return groups
 
     def _init_groups(self):

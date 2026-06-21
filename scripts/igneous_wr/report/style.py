@@ -509,10 +509,10 @@ def plot_samples_ternary(ax, x_arr, y_arr, labels, ms=None,
 
 # ── 坐标轴风格 ─────────────────────────────────────────────
 def style_ax(ax, xlabel='', ylabel='', xlabel_size=12, ylabel_size=12):
-    """统一坐标轴风格：刻度向内、边框。"""
-    ax.tick_params(direction='in', length=TICK_LENGTH, width=TICK_WIDTH, top=True, right=True, labelsize=9)
+    """统一坐标轴风格：刻度向内、四边有框（刻度仅左和下）。"""
+    ax.tick_params(direction='in', length=TICK_LENGTH, width=TICK_WIDTH, top=False, right=False, labelsize=9)
     ax.minorticks_on()
-    ax.tick_params(direction='in', which='minor', length=TICK_LENGTH_M, width=TICK_WIDTH*0.6, top=True, right=True)
+    ax.tick_params(direction='in', which='minor', length=TICK_LENGTH_M, width=TICK_WIDTH*0.6, top=False, right=False)
     for spine in ax.spines.values():
         spine.set_linewidth(SPINE_WIDTH)
     if xlabel:

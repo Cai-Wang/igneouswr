@@ -56,7 +56,6 @@ def plot_co_th(gd, out_dir=None, save=True):
             ha='center', va='center')
 
     _style.scatter_samples(ax, co, th, labels, groups=gd.groups)
-    _style.add_legend(ax)
     ax.set_xticks(range(0, 71, 10))
     ax.set_yticks([0.01, 0.1, 1, 10, 100])
     ax.set_yticklabels(['0.01', '0.1', '1', '10', '100'])
@@ -99,7 +98,6 @@ def plot_tas(gd, out_dir=None, save=True):
         label = _TAS_LABELS.get(name, name)
         ax.text(cx, cy, label, ha='center', va='center', fontsize=8.5, fontweight='bold', color=_style.TEXT_COLOR_LABEL, zorder=5)
     _style.scatter_samples(ax, sio2, alk, labels, groups=gd.groups)
-    _style.add_legend(ax)
     ax.set_xlim(34, 90)
     ax.set_ylim(0, 19)
     ax.set_xticks(range(35, 95, 5))
@@ -133,7 +131,6 @@ def plot_k2o_sio2(gd, out_dir=None, save=True):
     ax.text(80, 5.7, 'High-K\nCalc-alkaline', fontsize=10, ha='right', va='center', color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=4)
     ax.text(44, 7.4, 'Shoshonitic', fontsize=10, ha='left', va='center', color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=4)
     _style.scatter_samples(ax, sio2, k2o, labels, groups=gd.groups)
-    _style.add_legend(ax)
     ax.set_xlim(42, 82)
     ax.set_ylim(0, 8)
     _style.style_ax(ax, 'SiO$_2$ (wt.%)', 'K$_2$O (wt.%)')
@@ -174,7 +171,6 @@ def plot_k2o_sio2_peccerillo(gd, out_dir=None, save=True):
     ax.text(47, 4.5, 'Shoshonite Series', fontsize=10, ha='left', va='center',
             color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=4)
     _style.scatter_samples(ax, sio2, k2o, labels, groups=gd.groups)
-    _style.add_legend(ax)
     ax.set_xlim(45, 78)
     ax.set_ylim(0, 7)
     _style.style_ax(ax, 'SiO$_2$ (wt.%)', 'K$_2$O (wt.%)')
@@ -221,7 +217,6 @@ def plot_afm(gd, out_dir=None, save=True):
     ax.text(0.5, 0.1, 'Calc-Alkaline Series', fontsize=11, ha='center', va='center', color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=6)
     label_ternary_vertices(ax, 'FeO*', 'Na$_2$O+K$_2$O', 'MgO')
     _style.scatter_samples(ax, x_d, y_d, labels, groups=gd.groups)
-    _style.add_legend(ax)
     ax.set_xlim(-0.08, 1.1)
     ax.set_ylim(-0.08, 0.95)
     ax.set_aspect('equal')
@@ -259,7 +254,6 @@ def plot_winchester_floyd(gd, out_dir=None, save=True):
         rx, ry, text = (label['x'], label['y'], label['text'])
         ax.text(rx, ry, text, fontsize=9.5, color=_style.TEXT_COLOR_LABEL, ha='center', va='center', fontweight='normal', zorder=3)
     _style.scatter_samples(ax, nb_yi, zr_tio2, labels, groups=gd.groups)
-    _style.add_legend(ax)
     ax.set_xscale('log')
     ax.set_yscale('log')
     ax.set_xlim(0.01, 15)
@@ -335,7 +329,6 @@ def plot_mullen(gd, out_dir=None, save=True):
     ax.text(lbl_bon[0][0], lbl_bon[1][0], 'Bon', fontsize=11, ha='center', va='center', color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=5)
     label_ternary_vertices(ax, 'TiO$_2$', '10×MnO', '10×P$_2$O$_5$')
     _style.scatter_samples(ax, x_d, y_d, labels, groups=gd.groups)
-    _style.add_legend(ax)
     ax.set_xlim(-0.08, 1.1)
     ax.set_ylim(-0.08, 0.95)
     ax.set_aspect('equal')
@@ -372,7 +365,6 @@ def plot_tasmiddlemostplut(gd, out_dir=None, save=True):
         label = _MM_LABELS.get(name, name)
         ax.text(cx, cy, label, ha='center', va='center', fontsize=8.5, fontweight='bold', color=_style.TEXT_COLOR_LABEL, zorder=6)
     _style.scatter_samples(ax, sio2, alk, labels, groups=gd.groups)
-    _style.add_legend(ax)
     ax.set_xlim(34, 90)
     ax.set_ylim(0, 19)
     ax.set_xticks(range(35, 95, 5))
@@ -416,7 +408,6 @@ def plot_frost_fenr(gd, out_dir=None, save=True):
     ax.text(60, 0.6, 'magnesian', fontsize=10, ha='center', va='center',
             color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=5)
     _style.scatter_samples(ax, sio2, fe_num, labels, groups=gd.groups)
-    _style.add_legend(ax)
     _style.style_ax(ax, 'SiO$_2$ (wt.%)', 'FeO$_t$/(FeO$_t$+MgO)')
     plt.tight_layout(pad=0.3)
     if save:
@@ -463,7 +454,6 @@ def plot_frost_mali(gd, out_dir=None, save=True):
     ax.text(65, -2.5, 'calcic', fontsize=10, ha='center', va='center',
             color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=5)
     _style.scatter_samples(ax, sio2, mali, labels, groups=gd.groups)
-    _style.add_legend(ax)
     _style.style_ax(ax, 'SiO$_2$ (wt.%)', 'MALI (Na$_2$O+K$_2$O-CaO)')
     plt.tight_layout(pad=0.3)
     if save:
@@ -517,7 +507,6 @@ def plot_frost_asi_ank(gd, out_dir=None, save=True):
     ax.text(0.55, 0.8, 'peralkaline', fontsize=10, ha='left', va='center',
             color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=3)
     _style.scatter_samples(ax, asi_val, a_nk, labels, groups=gd.groups)
-    _style.add_legend(ax)
     _style.style_ax(ax, 'ASI', 'A/NK')
     plt.tight_layout(pad=0.3)
     if save:
@@ -574,9 +563,99 @@ def plot_pearce1996(gd, out_dir=None, save=True):
     for txt, x, y, rot, ha in text_cfgs:
         ax.text(x, y, txt, fontsize=10, ha=ha, va='center', color=_style.TEXT_COLOR_LABEL, fontweight='bold', rotation=rot, zorder=5)
     _style.scatter_samples(ax, nb_y, zr_ti, labels, groups=gd.groups)
-    _style.add_legend(ax)
     _style.style_ax(ax, 'Nb/Y', 'Zr/Ti')
     plt.tight_layout(pad=0.3)
     if save:
         _style.save_fig(fig, 'Pearce1996_NbY_ZrTi.png', out_dir)
+    return (fig, ax)
+
+
+def plot_shand_acnk_ank(gd, out_dir=None, save=True, ax=None):
+    """Shand (1943) A/CNK vs A/NK 铝饱和分类
+    A/CNK = Al₂O₃/(CaO+Na₂O+K₂O) 摩尔比
+    A/NK  = Al₂O₃/(Na₂O+K₂O) 摩尔比
+    h=1, v=1, 对角线 三条分界线
+    所需元素: Al2O3, CaO, Na2O, K2O
+    """
+    missing = gd.check_elements('Al2O3', 'CaO', 'Na2O', 'K2O', strict=True)
+    if missing:
+        return (None, None)
+    al2o3 = gd.get('Al2O3')
+    cao = gd.get('CaO')
+    na2o = gd.get('Na2O')
+    k2o = gd.get('K2O')
+    labels = gd.labels
+    MW = {'Al2O3': 101.96, 'CaO': 56.08, 'Na2O': 61.98, 'K2O': 94.20}
+    al_m = al2o3 / MW['Al2O3']
+    ca_m = cao / MW['CaO']
+    na_m = na2o / MW['Na2O']
+    k_m = k2o / MW['K2O']
+    acnk = al_m / (ca_m + na_m + k_m)
+    a_nk = al_m / (na_m + k_m)
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(9, 7))
+    else:
+        fig = ax.figure
+    ax.set_xlim(0.5, 3.0)
+    ax.set_ylim(0.5, 4.0)
+    # 分界线
+    ax.axhline(y=1.0, color=_style.LINE_COLOR_SECONDARY, ls='--', lw=0.8, zorder=2)
+    ax.axvline(x=1.0, color=_style.LINE_COLOR_SECONDARY, ls='--', lw=0.8, zorder=2)
+    x_diag = np.linspace(0.5, 3.0, 100)
+    ax.plot(x_diag, x_diag, color=_style.LINE_COLOR_SECONDARY, ls='--', lw=0.8, zorder=2)
+    # 分区标注
+    ax.text(0.55, 3.5, 'metaluminous', fontsize=10, ha='left', va='center',
+            color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=3)
+    ax.text(2.5, 3.5, 'peraluminous', fontsize=10, ha='right', va='center',
+            color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=3)
+    ax.text(0.55, 0.7, 'peralkaline', fontsize=10, ha='left', va='center',
+            color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=3)
+    _style.scatter_samples(ax, acnk, a_nk, labels, groups=gd.groups)
+    _style.style_ax(ax, 'A/CNK', 'A/NK')
+    if ax is None:
+        plt.tight_layout(pad=0.3)
+    if save and ax is None:
+        _style.save_fig(fig, 'Shand_ACNK_ANK.png', out_dir)
+    return (fig, ax)
+
+
+def plot_whalen_ga_al(gd, out_dir=None, save=True, ax=None):
+    """Whalen et al. (1987) 10000*Ga/Al vs Na₂O+K₂O A型花岗岩判别
+    log-log 图，垂直分界线 10000Ga/Al = 2.6
+    所需元素: Ga, Al2O3, Na2O, K2O
+    """
+    missing = gd.check_elements('Ga', 'Al2O3', 'Na2O', 'K2O', strict=True)
+    if missing:
+        return (None, None)
+    ga = gd.get('Ga')
+    al2o3 = gd.get('Al2O3')
+    na2o = gd.get('Na2O')
+    k2o = gd.get('K2O')
+    labels = gd.labels
+    # 10000*Ga/Al = 10000 * Ga(ppm) / (Al2O3(wt%) * 10000/101.96)
+    # Ga/Al (ppm/wt%) = Ga * 101.96 / (Al2O3 * 10000)
+    ga_al = 10000 * ga * 101.96 / (al2o3 * 10000)
+    nk = na2o + k2o
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(9, 7))
+    else:
+        fig = ax.figure
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    ax.set_xlim(0.5, 20)
+    ax.set_ylim(0.5, 15)
+    # 分界线 10000*Ga/Al = 2.6
+    ax.axvline(x=2.6, color=_style.LINE_COLOR_SECONDARY, ls='--', lw=0.8, zorder=2)
+    ax.text(2.6, 0.6, '2.6', fontsize=9, ha='center', va='top',
+            color=_style.TEXT_COLOR_LABEL, zorder=3)
+    ax.text(1.0, 8, 'I- & S- & M-type', fontsize=10, ha='center', va='center',
+            color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=3)
+    ax.text(10, 8, 'A-type', fontsize=10, ha='center', va='center',
+            color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=3)
+    _style.scatter_samples(ax, ga_al, nk, labels, groups=gd.groups)
+    _style.style_ax(ax, '10000×Ga/Al', 'Na₂O+K₂O (wt.%)')
+    if ax is None:
+        plt.tight_layout(pad=0.3)
+    if save and ax is None:
+        _style.save_fig(fig, 'Whalen_GaAl_NK.png', out_dir)
     return (fig, ax)
