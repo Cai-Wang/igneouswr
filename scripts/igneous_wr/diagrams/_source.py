@@ -43,33 +43,37 @@ def plot_ree(gd, ax=None, *, linewidth=1.2, markersize=8,
         ax.scatter(x_pos[valid], y_vals[valid], color=c, marker='o', s=markersize,
                    edgecolors=marker_edge_color, linewidths=marker_edge_width, zorder=3)
 
-    # Y 轴自适应范围（内容级）
+    # Y 轴自适应范围 + ticks（对数，和 plot_spider 保持一致）
     if all_y:
         ymin = 10 ** np.floor(np.log10(min(all_y) * 0.8))
         ymax = 10 ** np.ceil(np.log10(max(all_y) * 1.2))
+        decades = np.arange(np.log10(ymin), np.log10(ymax) + 1)
+        ticks = [10 ** d for d in decades]
     else:
-        ymin, ymax = 0.001, 1000
-    ax.set_ylim(ymin, ymax)
+        ticks = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
 
     # 统一轴风格（内容级）
     _style.style_ax(ax)
 
+    from matplotlib.ticker import FuncFormatter, FixedLocator, NullLocator
+
     ax.set_xticks(x_pos)
     ax.set_xticklabels(REE_ORDER)
     ax.set_xlim(x_pos[0] - 0.3, x_pos[-1] + 0.3)
+    ax.xaxis.set_minor_locator(NullLocator())
     ax.set_yscale('log')
-    ax.set_yticks([0.001, 0.01, 0.1, 1, 10, 100, 1000])
-    ax.set_yticklabels(['0.001', '0.01', '0.1', '1', '10', '100', '1000'])
+    ax.set_ylim(ticks[0], ticks[-1])
+    ax.yaxis.set_major_locator(FixedLocator(ticks))
+    ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: f'{v:g}'))
+    ax.yaxis.set_minor_locator(NullLocator())
 
     # Y 参考线 + 网格（内容级）
     ax.axhline(y=1, color='black', linewidth=0.6, zorder=1)
-    yticks = ax.get_yticks()
-    for tv in yticks[1:-1]:
+    for tv in ticks[1:-1]:
         if not np.isclose(tv, 1.0):
             ax.axhline(y=tv, color='gray', linewidth=0.4,
                        linestyle=(0, (4, 2)), zorder=0.5)
 
-    ax.set_xlabel('Rare Earth Elements')
     ax.set_ylabel('Chondrite-normalized')
     return (fig, ax)
 
@@ -109,13 +113,14 @@ def plot_spider(gd, ax=None, *, linewidth=1.2, markersize=8,
         ax.scatter(x_pos[valid], y_vals[valid], color=c, marker='o', s=markersize,
                    edgecolors=marker_edge_color, linewidths=marker_edge_width, zorder=3)
 
-    # Y 轴自适应范围（内容级）
+    # Y 轴自适应范围 + ticks（对数，和 plot_ree 一致不额外延伸）
     if all_y:
         ymin = 10 ** np.floor(np.log10(min(all_y) * 0.8))
         ymax = 10 ** np.ceil(np.log10(max(all_y) * 1.2))
+        decades = np.arange(np.log10(ymin), np.log10(ymax) + 1)
+        ticks = [10 ** d for d in decades]
     else:
-        ymin, ymax = 0.001, 1000
-    ax.set_ylim(ymin, ymax)
+        ticks = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
 
     # 统一轴风格（内容级）
     _style.style_ax(ax)
@@ -124,18 +129,26 @@ def plot_spider(gd, ax=None, *, linewidth=1.2, markersize=8,
     ax.set_xticklabels(SPIDER_ORDER)
     ax.set_xlim(x_pos[0] - 0.3, x_pos[-1] + 0.3)
     ax.set_yscale('log')
-    ax.set_yticks([0.001, 0.01, 0.1, 1, 10, 100, 1000])
-    ax.set_yticklabels(['0.001', '0.01', '0.1', '1', '10', '100', '1000'])
+    from matplotlib.ticker import FuncFormatter, FixedLocator, NullLocator
+    ax.set_ylim(ticks[0], ticks[-1])
+    ax.yaxis.set_major_locator(FixedLocator(ticks))
+    # 超过 7 个 decade 时跳显标签（按指数奇偶，网格线保留全部）
+    if len(ticks) > 7:
+        def _sparse_fmt(v, _):
+            exp = round(np.log10(v))
+            return f'{v:g}' if exp % 2 == 0 else ''
+        ax.yaxis.set_major_formatter(FuncFormatter(_sparse_fmt))
+    else:
+        ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: f'{v:g}'))
+    ax.yaxis.set_minor_locator(NullLocator())
 
-    # Y 参考线 + 网格（内容级）
+    # Y 参考线 + 网格
     ax.axhline(y=1, color='black', linewidth=0.6, zorder=1)
-    yticks = ax.get_yticks()
-    for tv in yticks[1:-1]:
+    for tv in ticks[1:-1]:
         if not np.isclose(tv, 1.0):
             ax.axhline(y=tv, color='gray', linewidth=0.4,
                        linestyle=(0, (4, 2)), zorder=0.5)
 
-    ax.set_xlabel('Trace Elements')
     ax.set_ylabel('Primitive-mantle normalized')
     return (fig, ax)
 
@@ -222,8 +235,8 @@ def apply_spider_axis_style(ax):
 
     # X 标签跟随刻度偏移（用 points 绝对单位，不随画布高度变化）
     from matplotlib.transforms import ScaledTranslation
-    offset_inner = ScaledTranslation(0, 6/72., fig.dpi_scale_trans)   # 轴内 6pt ≈ 2.1mm
-    offset_outer = ScaledTranslation(0, -4/72., fig.dpi_scale_trans)  # 轴外 4pt ≈ 1.4mm
+    offset_inner = ScaledTranslation(0, 7/72., fig.dpi_scale_trans)   # 轴内 7pt（tick 5pt + 2pt 间隙）
+    offset_outer = ScaledTranslation(0, -7/72., fig.dpi_scale_trans)  # 轴外 7pt（对称）
     trans = ax.get_xaxis_transform()
     for i, lbl in enumerate(ax.get_xticklabels()):
         if i % 2:
@@ -235,10 +248,11 @@ def apply_spider_axis_style(ax):
 
 
 def apply_ree_axis_style(ax):
-    """REE 图 Y 竖排。
+    """REE 图 Y 竖排 + X 轴刻度交替内外 + 标签偏移。
 
     Y 网格已放在 plot_ree 主路径（内容级）。
-    此处只处理 Tick 对象级：Y 竖排。
+    此处处理 Tick 对象级：Y 竖排、X 轴刻度交替和标签偏移。
+    和 apply_spider_axis_style 保持相同格式，使两图 X 轴视觉对齐。
     """
     fig = ax.figure
     fig.canvas.draw()
@@ -247,3 +261,70 @@ def apply_ree_axis_style(ax):
     ax.tick_params(axis='y', rotation=90)
     for lbl in ax.get_yticklabels():
         lbl.set_verticalalignment('center')
+
+    # X 轴副刻度关闭（已在 plot_ree 主路径设过，此处防御）
+    ax.xaxis.set_minor_locator(NullLocator())
+
+    # X 轴刻度交替内外
+    for i, t in enumerate(ax.xaxis.get_major_ticks()):
+        t.tick1line.set_marker(3 if i % 2 else 2)
+
+    # X 标签跟随刻度偏移（和 spider 相同 ±7pt）
+    from matplotlib.transforms import ScaledTranslation
+    offset_inner = ScaledTranslation(0, 7/72., fig.dpi_scale_trans)
+    offset_outer = ScaledTranslation(0, -7/72., fig.dpi_scale_trans)
+    trans = ax.get_xaxis_transform()
+    for i, lbl in enumerate(ax.get_xticklabels()):
+        if i % 2:
+            lbl.set_transform(trans + offset_outer)
+            lbl.set_verticalalignment('top')
+        else:
+            lbl.set_transform(trans + offset_inner)
+            lbl.set_verticalalignment('bottom')
+
+
+def auto_xlim_padding(ax, extra_mm=0.5):
+    """实测首尾 xticklabel bbox，自适应扩大 xlim 防止标签溢出边框。
+
+    内容级函数（和 plot_* 同级，不是 Tick 对象级）。
+    必须在 finalize() 之后、apply_*_axis_style() 之前调用。
+    裸图和拼版都要调。
+
+    Parameters
+    ----------
+    ax : matplotlib Axes
+    extra_mm : float
+        额外安全 padding，毫米。
+    """
+    fig = ax.figure
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+
+    labels = ax.get_xticklabels()
+    if len(labels) < 2:
+        return
+
+    xlim = ax.get_xlim()
+    inv = ax.transData.inverted()
+
+    # 首标签向左溢出
+    first_bbox = labels[0].get_window_extent(renderer=renderer)
+    x_data_left = inv.transform([(first_bbox.x0, first_bbox.y0)])[0][0]
+    overflow_left = xlim[0] - x_data_left
+
+    # 末标签向右溢出
+    last_bbox = labels[-1].get_window_extent(renderer=renderer)
+    x_data_right = inv.transform([(last_bbox.x1, last_bbox.y0)])[0][0]
+    overflow_right = x_data_right - xlim[1]
+
+    # 毫米转数据坐标（X 轴是线性的）
+    x_range = xlim[1] - xlim[0]
+    ax_width_mm = ax.get_position().width * fig.get_size_inches()[0] * 25.4
+    mm_per_data = ax_width_mm / x_range if x_range > 0 else 1.0
+    extra_data = extra_mm / mm_per_data
+
+    new_left = xlim[0] - max(overflow_left, 0) - extra_data
+    new_right = xlim[1] + max(overflow_right, 0) + extra_data
+
+    if new_left < xlim[0] or new_right > xlim[1]:
+        ax.set_xlim(new_left, new_right)

@@ -10,7 +10,7 @@ from igneous_wr.core.chem import feot_calc
 from igneous_wr.core.ternary import ternary_to_xy, ternary_corners, draw_ternary_frame, draw_ternary_grid, draw_ternary_ticks, label_ternary_vertices
 from igneous_wr.boundaries.core import load_boundary
 
-def plot_co_th(gd, out_dir=None, save=True):
+def plot_co_th(gd, out_dir=None, save=True, ax=None):
     """Th–Co 岩浆系列+岩性判别图（Hastie et al., 2007, Fig. 7）
     X=Co (ppm), 反向坐标（70→0 高Co在左）
     Y=Th (ppm), 对数坐标（GCDkit 标准）
@@ -25,7 +25,12 @@ def plot_co_th(gd, out_dir=None, save=True):
     co = gd.get('Co')
     th = gd.get('Th')
     labels = gd.labels
-    fig, ax = plt.subplots(figsize=(9, 8))
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(9, 8))
+        new_fig = True
+    else:
+        fig = ax.figure
+        new_fig = False
 
     # Y轴对数，X轴反向（与 GCDkit Hastie.r 一致）
     ax.set_yscale('log')
@@ -60,12 +65,13 @@ def plot_co_th(gd, out_dir=None, save=True):
     ax.set_yticks([0.01, 0.1, 1, 10, 100])
     ax.set_yticklabels(['0.01', '0.1', '1', '10', '100'])
     _style.style_ax(ax, 'Co (ppm)', 'Th (ppm)')
-    plt.tight_layout(pad=0.3)
-    if save:
+    if new_fig:
+        plt.tight_layout(pad=0.3)
+    if save and new_fig:
         _style.save_fig(fig, 'Co_Th_Hastie2007.png', out_dir)
     return (fig, ax)
 
-def plot_tas(gd, out_dir=None, save=True):
+def plot_tas(gd, out_dir=None, save=True, ax=None):
     """TAS 全碱-硅分类图（Middlemost 1994，改编自 Le Bas & Streckeisen 1991）
     多边形坐标源自 GCDkit TASMiddlemostVolc.r
     所需元素: SiO2, Na2O, K2O
@@ -78,7 +84,12 @@ def plot_tas(gd, out_dir=None, save=True):
     k2o = gd.get('K2O')
     alk = na2o + k2o
     labels = gd.labels
-    fig, ax = plt.subplots(figsize=(10, 7))
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(10, 7))
+        new_fig = True
+    else:
+        fig = ax.figure
+        new_fig = False
     _tas_data = load_boundary('cls', 'tas')
     _TAS_FIELDS = {k: [tuple(p) for p in v] for k, v in _tas_data['fields'].items()}
     _TAS_LABELS = _tas_data['labels']
@@ -102,12 +113,13 @@ def plot_tas(gd, out_dir=None, save=True):
     ax.set_ylim(0, 19)
     ax.set_xticks(range(35, 95, 5))
     _style.style_ax(ax, 'SiO$_2$ (wt.%)', 'Na$_2$O+K$_2$O (wt.%)')
-    plt.tight_layout(pad=0.3)
-    if save:
+    if new_fig:
+        plt.tight_layout(pad=0.3)
+    if save and new_fig:
         _style.save_fig(fig, 'CLS-01_TAS_Middlemost1994_Volcanic.png', out_dir)
     return (fig, ax)
 
-def plot_k2o_sio2(gd, out_dir=None, save=True):
+def plot_k2o_sio2(gd, out_dir=None, save=True, ax=None):
     """K₂O–SiO₂ 钾系列分类图（Middlemost, 1985, 图9）
     所需元素: SiO2, K2O
     分界线: Low-K, Medium-K, High-K, Shoshonitic
@@ -119,7 +131,12 @@ def plot_k2o_sio2(gd, out_dir=None, save=True):
     sio2 = gd.get('SiO2')
     k2o = gd.get('K2O')
     labels = gd.labels
-    fig, ax = plt.subplots(figsize=(8, 7))
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(8, 7))
+        new_fig = True
+    else:
+        fig = ax.figure
+        new_fig = False
     ax.plot([45, 75], [0.5, 2.5], color=_style.LINE_COLOR_MAIN, lw=1.5, zorder=3)
     ax.plot([50, 75], [1.5, 4.0], color=_style.LINE_COLOR_SECONDARY, lw=1.2, linestyle='--', zorder=3)
     ax.plot([55, 75], [2.5, 6.0], color=_style.LINE_COLOR_SECONDARY, lw=1.2, linestyle='-.', zorder=3)
@@ -139,7 +156,7 @@ def plot_k2o_sio2(gd, out_dir=None, save=True):
         _style.save_fig(fig, 'Middlemost1985_K2O_SiO2.png', out_dir)
     return (fig, ax)
 
-def plot_k2o_sio2_peccerillo(gd, out_dir=None, save=True):
+def plot_k2o_sio2_peccerillo(gd, out_dir=None, save=True, ax=None):
     """K₂O–SiO₂ 钾系列分类图（Peccerillo & Taylor, 1976, Fig.2）
     多段折线边界，源自 GCDkit PeceTaylor.r extrapolated=TRUE 坐标
     所需元素: SiO2, K2O
@@ -151,7 +168,17 @@ def plot_k2o_sio2_peccerillo(gd, out_dir=None, save=True):
     sio2 = gd.get('SiO2')
     k2o = gd.get('K2O')
     labels = gd.labels
-    fig, ax = plt.subplots(figsize=(8, 7))
+    if ax is None:
+
+        fig, ax = plt.subplots(figsize=(8, 7))
+
+        new_fig = True
+
+    else:
+
+        fig = ax.figure
+
+        new_fig = False
     # Tholeiite / Calc-alkaline boundary
     ax.plot([48, 52, 56, 63, 70, 78], [0.3, 0.5, 0.7, 1, 1.3, 1.6],
             color=_style.LINE_COLOR_MAIN, lw=1.5, zorder=3)
@@ -174,12 +201,14 @@ def plot_k2o_sio2_peccerillo(gd, out_dir=None, save=True):
     ax.set_xlim(45, 78)
     ax.set_ylim(0, 7)
     _style.style_ax(ax, 'SiO$_2$ (wt.%)', 'K$_2$O (wt.%)')
-    plt.tight_layout(pad=0.3)
-    if save:
+    if new_fig:
+
+        plt.tight_layout(pad=0.3)
+    if save and new_fig:
         _style.save_fig(fig, 'CLS-04_PeccerilloTaylor1976_K2O_SiO2.png', out_dir)
     return (fig, ax)
 
-def plot_afm(gd, out_dir=None, save=True):
+def plot_afm(gd, out_dir=None, save=True, ax=None):
     """AFM 三角图（Irvine & Baragar, 1971）
     A=Na₂O+K₂O, F=FeO*, M=MgO
     布局：F 顶角，A 左下，M 右下
@@ -205,7 +234,17 @@ def plot_afm(gd, out_dir=None, save=True):
     m_p = np.where(valid, m / total * 100, 0)
     x_d = np.where(valid, ternary_to_xy(f_p, a_p, m_p)[0], np.nan)
     y_d = np.where(valid, ternary_to_xy(f_p, a_p, m_p)[1], np.nan)
-    fig, ax = plt.subplots(figsize=(10, 9))
+    if ax is None:
+
+        fig, ax = plt.subplots(figsize=(10, 9))
+
+        new_fig = True
+
+    else:
+
+        fig = ax.figure
+
+        new_fig = False
     corners = ternary_corners()
     draw_ternary_frame(ax, corners)
     draw_ternary_grid(ax)
@@ -221,12 +260,14 @@ def plot_afm(gd, out_dir=None, save=True):
     ax.set_ylim(-0.08, 0.95)
     ax.set_aspect('equal')
     ax.axis('off')
-    plt.tight_layout(pad=0.3)
-    if save:
+    if new_fig:
+
+        plt.tight_layout(pad=0.3)
+    if save and new_fig:
         _style.save_fig(fig, 'AFM_IB1971.png', out_dir)
     return (fig, ax)
 
-def plot_winchester_floyd(gd, out_dir=None, save=True):
+def plot_winchester_floyd(gd, out_dir=None, save=True, ax=None):
     """Winchester & Floyd (1977) Zr/TiO2–Nb/Y 火山岩分类图
     精细底图 v11 — 67 节点 × 9 条校正边界线
     所需元素: Zr, TiO2, Nb, Y
@@ -241,7 +282,17 @@ def plot_winchester_floyd(gd, out_dir=None, save=True):
     labels = gd.labels
     zr_tio2 = np.where(tio2 > 0, zr / tio2, np.nan)
     nb_yi = np.where(yi > 0, nb / yi, np.nan)
-    fig, ax = plt.subplots(figsize=(10, 7))
+    if ax is None:
+
+        fig, ax = plt.subplots(figsize=(10, 7))
+
+        new_fig = True
+
+    else:
+
+        fig = ax.figure
+
+        new_fig = False
     _wf_data = load_boundary('cls', 'winchester_floyd')
     _WF_NODES = {int(k): v for k, v in _wf_data['nodes'].items()}
     _WF_EDGES = _wf_data['edges']
@@ -263,12 +314,14 @@ def plot_winchester_floyd(gd, out_dir=None, save=True):
     ax.set_yticks([0.001, 0.01, 0.1, 1, 10])
     ax.set_yticklabels(['0.001', '0.01', '0.1', '1', '10'])
     _style.style_ax(ax, 'Nb/Y', 'Zr/TiO$_2$')
-    plt.tight_layout(pad=0.3)
-    if save:
+    if new_fig:
+
+        plt.tight_layout(pad=0.3)
+    if save and new_fig:
         _style.save_fig(fig, 'Winchester_Floyd1977_NbY_ZrTiO2.png', out_dir)
     return (fig, ax)
 
-def plot_mullen(gd, out_dir=None, save=True):
+def plot_mullen(gd, out_dir=None, save=True, ax=None):
     """Mullen (1983) TiO₂-10×MnO-10×P₂O₅ 基性岩构造判别三角图
     三条实线(L1 L2)+一条虚线(L4)划分6个区:
       OIT / MORB / IAT / CAB / OIA / BON
@@ -300,7 +353,17 @@ def plot_mullen(gd, out_dir=None, save=True):
     c_p = np.where(valid, c / total * 100, 0)
     x_d = np.where(valid, ternary_to_xy(a_p, b_p, c_p)[0], np.nan)
     y_d = np.where(valid, ternary_to_xy(a_p, b_p, c_p)[1], np.nan)
-    fig, ax = plt.subplots(figsize=(10, 9))
+    if ax is None:
+
+        fig, ax = plt.subplots(figsize=(10, 9))
+
+        new_fig = True
+
+    else:
+
+        fig = ax.figure
+
+        new_fig = False
     corners = ternary_corners()
     draw_ternary_frame(ax, corners)
     draw_ternary_grid(ax)
@@ -333,12 +396,14 @@ def plot_mullen(gd, out_dir=None, save=True):
     ax.set_ylim(-0.08, 0.95)
     ax.set_aspect('equal')
     ax.axis('off')
-    plt.tight_layout(pad=0.3)
-    if save:
+    if new_fig:
+
+        plt.tight_layout(pad=0.3)
+    if save and new_fig:
         _style.save_fig(fig, 'Mullen1983_TiO2_MnO_P2O5.png', out_dir)
     return (fig, ax)
 
-def plot_tasmiddlemostplut(gd, out_dir=None, save=True):
+def plot_tasmiddlemostplut(gd, out_dir=None, save=True, ax=None):
     """TAS Plutonic (Middlemost 1994) — 深成岩全碱-硅分类图
     多边形坐标源自 GCDkit 6.3.0 TASMiddlemostPlut.r 源码翻译
     16 个主分类区，无叠加层
@@ -350,7 +415,12 @@ def plot_tasmiddlemostplut(gd, out_dir=None, save=True):
     sio2 = gd.get('SiO2')
     alk = gd.get('Na2O') + gd.get('K2O')
     labels = gd.labels
-    fig, ax = plt.subplots(figsize=(10, 7.5))
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(10, 7.5))
+        new_fig = True
+    else:
+        fig = ax.figure
+        new_fig = False
     _mm_data = load_boundary('cls', 'tas_middlemost_plut')
     _MM_FIELDS = {k: [tuple(p) for p in v] for k, v in _mm_data['fields'].items()}
     _MM_LABELS = _mm_data['labels']
@@ -370,12 +440,14 @@ def plot_tasmiddlemostplut(gd, out_dir=None, save=True):
     ax.set_xticks(range(35, 95, 5))
     ax.set_yticks(range(0, 21, 3))
     _style.style_ax(ax, 'SiO$_2$ (wt.%)', 'Na$_2$O+K$_2$O (wt.%)')
-    plt.tight_layout(pad=0.3)
-    if save:
+    if new_fig:
+
+        plt.tight_layout(pad=0.3)
+    if save and new_fig:
         _style.save_fig(fig, 'TAS_Middlemost1994_Plutonic.png', out_dir)
     return (fig, ax)
 
-def plot_frost_fenr(gd, out_dir=None, save=True):
+def plot_frost_fenr(gd, out_dir=None, save=True, ax=None):
     """Frost et al. (2001) SiO₂ vs Fe# (FeOt/(FeOt+MgO)) 铁质-镁质花岗岩分类
     精确还原 GCDkit Frost.r Plot 1:
       边界: y = 0.486 + 0.0046 * SiO₂ (FeOt 模式)
@@ -397,7 +469,17 @@ def plot_frost_fenr(gd, out_dir=None, save=True):
     labels = gd.labels
     denom = feo_t + mgo
     fe_num = np.where(denom > 0, feo_t / denom, np.nan)
-    fig, ax = plt.subplots(figsize=(9, 7))
+    if ax is None:
+
+        fig, ax = plt.subplots(figsize=(9, 7))
+
+        new_fig = True
+
+    else:
+
+        fig = ax.figure
+
+        new_fig = False
     ax.set_xlim(50, 80)
     ax.set_ylim(0, 1)
     x_line = np.linspace(50, 77, 50)
@@ -409,13 +491,15 @@ def plot_frost_fenr(gd, out_dir=None, save=True):
             color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=5)
     _style.scatter_samples(ax, sio2, fe_num, labels, groups=gd.groups)
     _style.style_ax(ax, 'SiO$_2$ (wt.%)', 'FeO$_t$/(FeO$_t$+MgO)')
-    plt.tight_layout(pad=0.3)
-    if save:
+    if new_fig:
+
+        plt.tight_layout(pad=0.3)
+    if save and new_fig:
         _style.save_fig(fig, 'Frost2001_Fenum_SiO2.png', out_dir)
     return (fig, ax)
 
 
-def plot_frost_mali(gd, out_dir=None, save=True):
+def plot_frost_mali(gd, out_dir=None, save=True, ax=None):
     """Frost et al. (2001) SiO₂ vs MALI (Na₂O+K₂O-CaO) 碱-钙分类
     精确还原 GCDkit Frost.r Plot 2:
       3 条二次曲线边界:
@@ -434,7 +518,17 @@ def plot_frost_mali(gd, out_dir=None, save=True):
     cao = gd.get('CaO')
     labels = gd.labels
     mali = na2o + k2o - cao
-    fig, ax = plt.subplots(figsize=(9, 7))
+    if ax is None:
+
+        fig, ax = plt.subplots(figsize=(9, 7))
+
+        new_fig = True
+
+    else:
+
+        fig = ax.figure
+
+        new_fig = False
     ax.set_xlim(50, 80)
     ax.set_ylim(-8, 12)
     x_line = np.linspace(50, 77, 50)
@@ -455,13 +549,15 @@ def plot_frost_mali(gd, out_dir=None, save=True):
             color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=5)
     _style.scatter_samples(ax, sio2, mali, labels, groups=gd.groups)
     _style.style_ax(ax, 'SiO$_2$ (wt.%)', 'MALI (Na$_2$O+K$_2$O-CaO)')
-    plt.tight_layout(pad=0.3)
-    if save:
+    if new_fig:
+
+        plt.tight_layout(pad=0.3)
+    if save and new_fig:
         _style.save_fig(fig, 'Frost2001_MALI_SiO2.png', out_dir)
     return (fig, ax)
 
 
-def plot_frost_asi_ank(gd, out_dir=None, save=True):
+def plot_frost_asi_ank(gd, out_dir=None, save=True, ax=None):
     """Frost et al. (2001) ASI vs A/NK 铝饱和分类
     精确还原 GCDkit Frost.r Plot 3:
       ASI = Al₂O₃ / (2*CaO - 3.33*P₂O₅ + Na₂O + K₂O)
@@ -495,7 +591,17 @@ def plot_frost_asi_ank(gd, out_dir=None, save=True):
     denom = ca_m - 3.33 * p_m + na_m + k_m
     asi_val = np.where(denom > 0, al_m / denom, np.nan)
     a_nk = al_m / (na_m + k_m)
-    fig, ax = plt.subplots(figsize=(9, 7))
+    if ax is None:
+
+        fig, ax = plt.subplots(figsize=(9, 7))
+
+        new_fig = True
+
+    else:
+
+        fig = ax.figure
+
+        new_fig = False
     ax.set_xlim(0.5, 1.9)
     ax.set_ylim(0.6, 3.5)
     ax.axhline(y=1.0, color=_style.LINE_COLOR_SECONDARY, ls='--', lw=0.8, zorder=2)
@@ -508,13 +614,15 @@ def plot_frost_asi_ank(gd, out_dir=None, save=True):
             color=_style.TEXT_COLOR_LABEL, fontweight='bold', zorder=3)
     _style.scatter_samples(ax, asi_val, a_nk, labels, groups=gd.groups)
     _style.style_ax(ax, 'ASI', 'A/NK')
-    plt.tight_layout(pad=0.3)
-    if save:
+    if new_fig:
+
+        plt.tight_layout(pad=0.3)
+    if save and new_fig:
         _style.save_fig(fig, 'Frost2001_ASI_ANK.png', out_dir)
     return (fig, ax)
 
 
-def plot_pearce1996(gd, out_dir=None, save=True):
+def plot_pearce1996(gd, out_dir=None, save=True, ax=None):
     """Pearce (1996) Nb/Y–Zr/Ti 火山岩分类图
     基于 GCDkit 源码 Pearce1996.r 的精确边界坐标
     所需元素: Nb, Y, Zr, Ti
@@ -529,7 +637,17 @@ def plot_pearce1996(gd, out_dir=None, save=True):
     labels = gd.labels
     nb_y = np.where(yi > 0, nb / yi, np.nan)
     zr_ti = np.where(ti > 0, zr / ti, np.nan)
-    fig, ax = plt.subplots(figsize=(10, 8))
+    if ax is None:
+
+        fig, ax = plt.subplots(figsize=(10, 8))
+
+        new_fig = True
+
+    else:
+
+        fig = ax.figure
+
+        new_fig = False
     ax.set_xscale('log', base=10)
     ax.set_yscale('log', base=10)
     ax.set_xlim(0.01, 100)
@@ -564,8 +682,10 @@ def plot_pearce1996(gd, out_dir=None, save=True):
         ax.text(x, y, txt, fontsize=10, ha=ha, va='center', color=_style.TEXT_COLOR_LABEL, fontweight='bold', rotation=rot, zorder=5)
     _style.scatter_samples(ax, nb_y, zr_ti, labels, groups=gd.groups)
     _style.style_ax(ax, 'Nb/Y', 'Zr/Ti')
-    plt.tight_layout(pad=0.3)
-    if save:
+    if new_fig:
+
+        plt.tight_layout(pad=0.3)
+    if save and new_fig:
         _style.save_fig(fig, 'Pearce1996_NbY_ZrTi.png', out_dir)
     return (fig, ax)
 
@@ -593,7 +713,17 @@ def plot_shand_acnk_ank(gd, out_dir=None, save=True, ax=None):
     acnk = al_m / (ca_m + na_m + k_m)
     a_nk = al_m / (na_m + k_m)
     if ax is None:
-        fig, ax = plt.subplots(figsize=(9, 7))
+        if ax is None:
+
+            fig, ax = plt.subplots(figsize=(9, 7))
+
+            new_fig = True
+
+        else:
+
+            fig = ax.figure
+
+            new_fig = False
     else:
         fig = ax.figure
     ax.set_xlim(0.5, 3.0)
@@ -613,7 +743,9 @@ def plot_shand_acnk_ank(gd, out_dir=None, save=True, ax=None):
     _style.scatter_samples(ax, acnk, a_nk, labels, groups=gd.groups)
     _style.style_ax(ax, 'A/CNK', 'A/NK')
     if ax is None:
-        plt.tight_layout(pad=0.3)
+        if new_fig:
+
+            plt.tight_layout(pad=0.3)
     if save and ax is None:
         _style.save_fig(fig, 'Shand_ACNK_ANK.png', out_dir)
     return (fig, ax)
@@ -637,7 +769,17 @@ def plot_whalen_ga_al(gd, out_dir=None, save=True, ax=None):
     ga_al = 10000 * ga * 101.96 / (al2o3 * 10000)
     nk = na2o + k2o
     if ax is None:
-        fig, ax = plt.subplots(figsize=(9, 7))
+        if ax is None:
+
+            fig, ax = plt.subplots(figsize=(9, 7))
+
+            new_fig = True
+
+        else:
+
+            fig = ax.figure
+
+            new_fig = False
     else:
         fig = ax.figure
     ax.set_xscale('log')
@@ -655,7 +797,9 @@ def plot_whalen_ga_al(gd, out_dir=None, save=True, ax=None):
     _style.scatter_samples(ax, ga_al, nk, labels, groups=gd.groups)
     _style.style_ax(ax, '10000×Ga/Al', 'Na₂O+K₂O (wt.%)')
     if ax is None:
-        plt.tight_layout(pad=0.3)
+        if new_fig:
+
+            plt.tight_layout(pad=0.3)
     if save and ax is None:
         _style.save_fig(fig, 'Whalen_GaAl_NK.png', out_dir)
     return (fig, ax)

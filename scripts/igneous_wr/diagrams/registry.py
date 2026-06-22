@@ -29,7 +29,7 @@ from igneous_wr.diagrams._source import (
     apply_spider_axis_style, apply_ree_axis_style,
 )
 from igneous_wr.diagrams._evolution import (
-    plot_miyashiro,
+    plot_miyashiro, plot_mgo_sio2, plot_p2o5_sio2,
 )
 from igneous_wr.diagrams._tectonic import (
     plot_meschede, plot_wood, plot_shervais,
@@ -136,6 +136,12 @@ DIAGRAM_REGISTRY = [
     # ── 🗺️ 演化 / 协变
     DiagramSpec(plot_miyashiro, "EVO-02_Miyashiro1974_FeOtMgO_SiO2.png", "Miyashiro FeOt/MgO–SiO₂ 构造判别", ('SiO2', 'MgO'), ('FeO', 'TFe2O3'),                    ("mafic",),
                 review_status="verified", source_ref="miyashiro1974"
+                ),
+    DiagramSpec(plot_mgo_sio2, "EVO-03_MgO_SiO2.png", "MgO–SiO₂ 哈克图解", ('SiO2', 'MgO'), None, ("mafic", "felsic"),
+                review_status="needs_review", source_ref=""
+                ),
+    DiagramSpec(plot_p2o5_sio2, "EVO-04_P2O5_SiO2.png", "P₂O₅–SiO₂ 哈克图解", ('SiO2', 'P2O5'), None, ("mafic", "felsic"),
+                review_status="needs_review", source_ref=""
                 ),
 
     # ── 🌍 构造环境判别 ──────────────────────────────
