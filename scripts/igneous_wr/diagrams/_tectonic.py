@@ -39,7 +39,7 @@ def plot_meschede(gd, out_dir=None, save=True):
     }
     for name, fd in FIELDS_M.items():
         lx, ly = MESCHEDE_LABELS.get(name, (0, 0))
-        ax.text(lx, ly, fd['sub'], fontsize=11, fontweight='bold',
+        ax.text(lx, ly, fd['sub'], fontsize=_style.label_fs(), fontweight='bold',
                 ha='center', va='center', color=_style.TEXT_COLOR_LABEL, zorder=5)
     _style.scatter_samples(ax, x_d, y_d, labels, groups=gd.groups)
     ax.set_xlim(-0.08, 1.1)
@@ -87,7 +87,7 @@ def plot_wood(gd, out_dir=None, save=True):
     }
     for name, fd in FIELDS_W.items():
         lx, ly = WOOD_LABELS.get(name, (0, 0))
-        ax.text(lx, ly, fd['sub'], fontsize=11, fontweight='bold',
+        ax.text(lx, ly, fd['sub'], fontsize=_style.label_fs(), fontweight='bold',
                 ha='center', va='center', color=_style.TEXT_COLOR_LABEL, zorder=5)
     _style.scatter_samples(ax, x_d, y_d, labels, groups=gd.groups)
     ax.set_xlim(-0.08, 1.1)

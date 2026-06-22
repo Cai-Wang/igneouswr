@@ -187,6 +187,29 @@ MK_SIZE_SINGLE  = 60
 MK_SIZE_TERNARY = 15
 MK_MARKER       = 'o'
 MK_EDGE_COLOR   = 'none'
+
+# 底图文字字号基准（裸图 8.5pt，拼版时可通过 scaling_factor 缩放）
+_BASE_FONTSIZE = 8.5
+_LABEL_FONTSIZE = 10.0   # 分区标签大字号
+_NOTE_FONTSIZE  = 9.0    # 注释字号
+_SCALING = 1.0  # 全局缩放因子——拼版脚本设为 <1.0
+
+def base_fs():
+    """底图标签基准字号（已缩放）"""
+    return _BASE_FONTSIZE * _SCALING
+
+def label_fs():
+    """分区标签大字基准字号（已缩放）"""
+    return _LABEL_FONTSIZE * _SCALING
+
+def note_fs():
+    """注释字号（已缩放）"""
+    return _NOTE_FONTSIZE * _SCALING
+
+def set_font_scale(scale):
+    """拼版时设置全局字体缩放因子"""
+    global _SCALING
+    _SCALING = scale
 MK_EDGE_WIDTH   = 0.0
 MK_EDGE_WIDTH_T = 0.0
 ANNOTATE_OFFSET = (6, 4)
@@ -414,7 +437,7 @@ def scatter_samples(ax, x_arr, y_arr, labels, s=None, edgecolors=None, lw=None,
             group_colors = get_group_colors(groups)
         seen_groups = set()
         n = len(labels)
-        do_annotate = n <= 25
+        do_annotate = False  # 不再自动标注样品名
         for i in range(n):
             if np.isnan(x_arr[i]) or np.isnan(y_arr[i]) or np.isinf(x_arr[i]) or np.isinf(y_arr[i]):
                 continue
@@ -425,24 +448,16 @@ def scatter_samples(ax, x_arr, y_arr, labels, s=None, edgecolors=None, lw=None,
             ax.scatter(x_arr[i], y_arr[i], marker=MK_MARKER, color=c, s=s,
                        edgecolors=edgecolors, linewidths=lw, zorder=6,
                        label=label, **kw)
-            if do_annotate:
-                ax.annotate(labels[i], (x_arr[i], y_arr[i]),
-                            textcoords='offset points', xytext=ANNOTATE_OFFSET,
-                            fontsize=ANNOTATE_FONTSIZE, color=TEXT_COLOR_LABEL)
     else:
         # 原始模式：每个样品单独颜色 + label
         n = len(labels)
-        do_annotate = n <= 25
+        do_annotate = False  # 不再自动标注样品名
         for i in range(n):
             if np.isnan(x_arr[i]) or np.isnan(y_arr[i]) or np.isinf(x_arr[i]) or np.isinf(y_arr[i]):
                 continue
             ax.scatter(x_arr[i], y_arr[i], marker=MK_MARKER, color=get_color(i), s=s,
                        edgecolors=edgecolors, linewidths=lw, zorder=6,
                        label=labels[i], **kw)
-            if do_annotate:
-                ax.annotate(labels[i], (x_arr[i], y_arr[i]),
-                            textcoords='offset points', xytext=ANNOTATE_OFFSET,
-                            fontsize=ANNOTATE_FONTSIZE, color=TEXT_COLOR_LABEL)
 
 
 def scatter_groups(ax, x_arr, y_arr, labels, groups, s=None, edgecolors=None, lw=None,

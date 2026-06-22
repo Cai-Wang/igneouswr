@@ -24,6 +24,7 @@ from igneous_wr.report.style import (times_prop, get_color, set_palette, set_sty
                      ANNOTATE_FONTSIZE, LEGEND_LOC,
                      TICK_LENGTH, TICK_LENGTH_M, TICK_WIDTH, SPINE_WIDTH, GRID_LW,
                      STYLE_PRESETS, COLOR_PALETTES, get_group_colors,
+                     set_font_scale,
                      DEFAULT_OUT_DIR)
 
 # ── 从新结构 re-export ────────────────────────────────────────
