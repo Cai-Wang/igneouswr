@@ -69,6 +69,13 @@ def plot_mgo_sio2(gd, out_dir=None, save=True, ax=None):
     ax.set_xlim(40, 82)
     ax.set_ylim(0, 25)
     _style.scatter_samples(ax, sio2, mgo, labels, groups=gd.groups)
+    # 动态轴范围：数据 ±5% padding
+    x_min, x_max = np.nanmin(sio2), np.nanmax(sio2)
+    y_min, y_max = np.nanmin(mgo), np.nanmax(mgo)
+    x_pad = (x_max - x_min) * 0.05
+    y_pad = (y_max - y_min) * 0.05
+    ax.set_xlim(x_min - x_pad, x_max + x_pad)
+    ax.set_ylim(max(0, y_min - y_pad), y_max + y_pad)
     _style.style_ax(ax, 'SiO$_2$', 'MgO')
     if new_fig:
         plt.tight_layout(pad=0.3)
@@ -97,6 +104,13 @@ def plot_p2o5_sio2(gd, out_dir=None, save=True, ax=None):
     ax.set_xlim(40, 82)
     ax.set_ylim(0, 2)
     _style.scatter_samples(ax, sio2, p2o5, labels, groups=gd.groups)
+    # 动态轴范围：数据 ±5% padding
+    x_min, x_max = np.nanmin(sio2), np.nanmax(sio2)
+    y_min, y_max = np.nanmin(p2o5), np.nanmax(p2o5)
+    x_pad = (x_max - x_min) * 0.05
+    y_pad = (y_max - y_min) * 0.05
+    ax.set_xlim(x_min - x_pad, x_max + x_pad)
+    ax.set_ylim(max(0, y_min - y_pad), y_max + y_pad)
     _style.style_ax(ax, 'SiO$_2$', 'P$_2$O$_5$')
     if new_fig:
         plt.tight_layout(pad=0.3)
