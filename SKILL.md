@@ -142,9 +142,9 @@ plot_ree(gd, ax=ax, **style)
 
 **ax 参数支持状态（v2.3）：** 以下函数接受 `ax=None` 参数用于 figkit 拼版：
 `plot_tas`, `plot_k2o_sio2`, `plot_shand_acnk_ank`, `plot_whalen_ga_al`,
-`plot_ree`, `plot_spider`。
-其余 17 个函数签名为 `(gd, out_dir=None, save=True)`，暂不支持外部 ax。
-不要轻信 SKILL.md 的过时描述——以代码实际签名为准。
+`plot_ree`, `plot_spider`, `plot_pearce_2008`。
+其余 16 个函数签名为 `(gd, out_dir=None, save=True)`，暂不支持外部 ax。
+**不要轻信"全部23图支持ax"**——以代码实际签名为准，通过 `search_files pattern="def plot_.*\(gd,"` 验证。
 
 ### A4 拼版示例（新流程 v2.1）
 
@@ -270,39 +270,41 @@ ax.xaxis.set_minor_locator(NullLocator())   # 现在 NullLocator 是局部变量
 不能统一用一个字号——这是旧 apply_format 做的事，现在由调用方自己根据 layout 尺寸设。
 
 
-### REE / Spider 拼版出图清单（checklist，2026-06-23）
+### REE / Spider 裸图出图清单（checklist，2026-06-23）
 
-出 REE+Spider 1×2 或任何含 REE/Spider 的拼版，必须走完整流程：
-1. `plot_ree(gd, ax=ax)` / `plot_spider(gd, ax=ax)` — 只画内容
-2. `layout.finalize()` — 排版定型
-3. **后置 xlim padding**（finalize 后 cell 尺寸定型才能测溢出）
-4. **刻度交替 + 标签旋转**（Tick 对象级，famize 之后调）
-5. `layout.save()`
+裸图出 REE 或 Spider 必须走完整流程，缺一步格式就错：
+1. `fig, ax = plt.subplots(figsize=(8, 5))` — 建画布
+2. `plot_ree(gd, ax=ax)` / `plot_spider(gd, ax=ax)` — 只画内容，no fontsize set
+3. `auto_xlim_padding(ax)` — 防首尾标签溢出（必须先于 apply_*_axis_style）
+4. `apply_ree_axis_style(ax)` / `apply_spider_axis_style(ax)` — Tick对象级：刻度交替+标签偏移+Y轴竖排
+5. `fig.savefig('output.png')`
 
-**常见错误：** 跳过步骤 3-4 直接 save，导致刻度全朝同向、首尾标签被边框切掉。
+**常见错误：**
+- 跳过步骤 3-4 直接 save → 刻度全朝同向、首尾标签被边框切掉
+- 先 apply_axis_style 再 auto_xlim_padding → padding 失效（Tick 已锁定）
+- 调用时传 linewidth=1.0, markersize=8 作为关键字参数（非 `**kwargs` 吞掉）
+
+### 双机协作：WSL + Deepin 代码同步规则（2026-06-23）
+
+WSL和Deepin共享同一仓库。Deepin可能在没有任何沟通的情况下推送改动。**在WSL上做任何改动前必须先 `git pull --rebase`，冲突时优先保留双方改动后再提交**。
+
+**关键事故 2026-06-23：** WSL 实现了 `base_fs(ax)` 动态缩放（`_style.py`），Deepin 同日推送了 `set_font_scale()` 全局缩放（也放在 `_style.py`，同时改了 `_source.py` 的 fontsize 调用）。rebase 自动合并导致 `_source.py` 出现双重缩放——既调了 `set_font_scale(0.55)` 残留代码，又运行了 `base_fs(ax)` 新逻辑——最终字体极小。
+
+**正确操作：** rebase 后手动检查 `_source.py`、`_style.py`、`_classification.py`、`_tectonic.py` 是否有冲突/双重改动。如果 Deepin 先推了 `set_font_scale` 方案，必须清理旧引用（`_SCALING` 变量、`set_font_scale()` 函数、`base_fs()/label_fs()/note_fs()` 三个旧函数），确保只有一套缩放逻辑生效。
 
 ### 批量正则替换要慎用（2026-06-23）
 
-给多个函数加 ax 参数时，用 `re.sub` 批量替换 `plt.subplots(figsize=` 在不同函数中写法不一（换行、缩进、后面跟的代码），极易产生 <ku>SyntaxError</ku>。
+给多个函数加 ax 参数时，用 `re.sub` 批量替换 `plt.subplots(figsize=` 在不同函数中写法不一（换行、缩进、三元图没有 tight_layout、co_th 的 figsize 括号被正则切散），极易产生 SyntaxError。
 
-**正确做法：** 用 `skill_manage patch` 逐函数打补丁。每次改一个函数——签名 → plt.subplots → tight_layout → if save。只改当前出图需要的函数（2-4 个），不改全量。
+**正确做法：** 用 patch 工具逐个函数精确改——每个函数的二处改动（签名、plt.subplots）用独立的 old_string/new_string。最多改当前需要出图的函数。
 
-**反例：** 试图一次性用正则改 17 个函数，结果反复 `git checkout` + 重做，浪费大量时间。
+### 底图文字硬编码 fontsize → 动态缩放（v2.3 已修复，2026-06-23）
 
-裸图 `figsize=(8,6)=203×152mm` 时 8.5pt 正常。拼版 `cell=75mm` 时相同字号相对大了约 2.7 倍。
+**根因：** 分类图底图分区标注（"Gabbro"、"metaluminous"等）历史上用硬编码 fontsize，不受 rcParams 控制。裸图 203mm 宽正常，拼版 75mm cell 大了 2.7 倍。
 
-**v2.3 修复：** 所有 `ax.text(fontsize=N)` 改为 `fontsize=N * _style.base_fs(ax)`，自动按 ax 物理宽度缩放。
+**v2.3 修复：** `_style.base_fs(ax)` 返回 `ax_width_mm / 203.0`（下限 0.25）。所有 `ax.text(fontsize=N)` 改为 `N * base_fs(ax)`。裸图不变，拼版自动缩小。四个 diagram 文件共 49 处改动。调用方无需传额外参数——传 ax 即可自动适配。
 
-`_style.base_fs(ax)` 实现：`ax_width_mm / 203.0`（裸图基准 8 英寸=203mm）。
-- ax 宽 203mm → 返回 ≈1.0（裸图不变）
-- ax 宽 75mm  → 返回 ≈0.37（拼版自动缩小）
-- 下限 0.25（极小 cell 也不丢标签）
-
-受影响的文件：`_classification.py`（42处）、`_source.py`（2处）、`_evolution.py`（1处）、`_tectonic.py`（4处）。JSON 驱动的 annotation fontsize 默认值也同步缩放（`ann.get('fontsize', 10) * base_fs(ax)`）。
-
-调用方无需任何额外操作——传 ax 进 IgneousWR，底图文字自动适配 cell 尺寸。
-
-JSON 边界数据中的 fontsize 字段也走同一条缩放路径（`json_val * base_fs(ax)`），不增加复杂度。详见 `references/json-fontsize-convention.md`。
+**不要做的事情：** 不要再引入 `set_font_scale(0.55)` 全局缩放因子——base_fs 方案已覆盖。两种方案共存会导致双重缩放、字号异常。
 
 ### scatter_samples 不再自动标注样品名（2026-07-02）
 
