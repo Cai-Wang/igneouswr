@@ -7,7 +7,7 @@ description: >
 license: MIT
 compatibility: Requires Python 3.10+, matplotlib, numpy, openpyxl
 metadata:
-  version: "2.2.0"
+  version: "2.3.0"
   author: Chen Yuyang
   email: asukswpu@163.com
   repository: https://github.com/Cai-Wang/igneouswr
@@ -139,7 +139,12 @@ plot_ree(gd, ax=ax, **style)
 
 **视觉参数：** `linewidth`（默认 1.2）、`markersize`（默认 8）、`marker_edge_color`、`marker_edge_width`。不传则用默认值。
 
-**全部 23 个图函数均已支持 ax 参数（v2.2，2026-07-02）。** 旧签名 `(gd, out_dir, save)` 可ax，新签名 `(gd, ax=None, out_dir=None, save=True)` 可接受外部 ax 进行拼版。`new_fig` 标志门控 `tight_layout` 和 `save` 的调用——使用外部 ax 时不调这两个。
+**ax 参数支持状态（v2.3）：** 以下函数接受 `ax=None` 参数用于 figkit 拼版：
+`plot_tas`, `plot_k2o_sio2`, `plot_shand_acnk_ank`, `plot_whalen_ga_al`,
+`plot_ree`, `plot_spider`。
+
+其余 17 个函数签名为 `(gd, out_dir=None, save=True)`，暂不支持外部 ax。
+SKILL.md 中"全部 23 图支持 ax"的表述已过时——实际进度 6/23。
 
 ### A4 拼版示例（新流程 v2.1）
 
@@ -264,7 +269,11 @@ ax.xaxis.set_minor_locator(NullLocator())   # 现在 NullLocator 是局部变量
 
 不能统一用一个字号——这是旧 apply_format 做的事，现在由调用方自己根据 layout 尺寸设。
 
-### 底图文字硬编码 fontsize → 动态缩放（2026-06-23 已修复）
+### 批量正则替换要慎用——先精确方案再动手（2026-06-23）
+
+**教训：** 用 `re.sub` 批量给 17 个函数加 ax 参数时，`plt.subplots(figsize=` 的正则在某些函数中被拆开（括号跑到了下一行），产生 SyntaxError。反复 `git checkout` 恢复 + 重做导致大量时间浪费。
+
+**正确做法：** 用 `skill_manage patch` 对每个函数单独打补丁——old_string 和 new_string 都是手写的精确字符串。只改当前需要的函数（TAS、K2O），不奢求"一次性改完所有函数"。
 
 **根因：** 分类图（TAS、Shand、K₂O、Frost 系列等）的底图分区标注（"Gabbro"、"Diorite"、"metaluminous" 等）历史上用硬编码 `fontsize=8.5`~`11` 写在 plot 函数里——不受 `plt.rcParams['font.size']` 控制。
 

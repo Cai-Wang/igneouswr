@@ -57,19 +57,10 @@ from igneous_wr.diagrams.registry import (
     plot_meschede, plot_wood, plot_shervais,
 )
 
-# ── 后置轴样式函数（时序敏感：finalize + apply_format 之后调用） ──
-from igneous_wr.diagrams._source import (
-    apply_spider_axis_style, apply_ree_axis_style, auto_xlim_padding,
-)
+# ── 后置轴样式函数（时序敏感：finalize 之后调用；当前实现在出图脚本中） ──
+# apply_spider_axis_style, apply_ree_axis_style, auto_xlim_padding 暂未入库
 
 from igneous_wr.batch.recommend import (
     recommended_diagrams,
     plot_recommended,
-)
-
-# ── 后置轴样式函数（排版最后一步调用） ──
-from igneous_wr.diagrams._source import (
-    apply_spider_axis_style,
-    apply_ree_axis_style,
-    auto_xlim_padding,
 )

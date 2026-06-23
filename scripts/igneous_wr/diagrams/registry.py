@@ -25,8 +25,7 @@ from igneous_wr.diagrams._classification import (
     plot_whalen_ga_al,
 )
 from igneous_wr.diagrams._source import (
-    plot_ree, plot_spider, plot_pearce_2008,
-    apply_spider_axis_style, apply_ree_axis_style,
+    plot_ree, plot_spider, plot_pearce_2008
 )
 from igneous_wr.diagrams._evolution import (
     plot_miyashiro, plot_mgo_sio2, plot_p2o5_sio2,
