@@ -193,3 +193,55 @@ def plot_pearce_2008(gd, out_dir=None, save=True):
     if save:
         _style.save_fig(fig, 'Pearce2008_ThYb_NbYb.png', out_dir)
     return (fig, ax)
+
+
+# ════════════════════════════════════════════════════════════
+# 后置函数（figkit finalize 之后调用，Tick 对象级样式）
+# ════════════════════════════════════════════════════════════
+
+def auto_xlim_padding(ax, padding_frac=0.3):
+    """自适应扩大 xlim，防止首尾标签溢出边框。
+    必须在 finalize（cell 定型）之后、apply_*_axis_style 之前调用。
+    """
+    fig = ax.figure
+    try:
+        fig.canvas.draw()
+    except Exception:
+        pass
+    xticks = ax.get_xticks()
+    if len(xticks) >= 2:
+        xlim = list(ax.get_xlim())
+        step = xticks[1] - xticks[0]
+        xlim[0] = xticks[0] - step * padding_frac
+        xlim[1] = xticks[-1] + step * padding_frac
+        ax.set_xlim(xlim)
+
+
+def apply_ree_axis_style(ax):
+    """finalize 之后：REE X轴刻度交替内外 + 标签偏移（和 Spider 同格式）。"""
+    fig = ax.figure
+    fig.canvas.draw()
+    for i, t in enumerate(ax.xaxis.get_major_ticks()):
+        t.tick1line.set_marker(3 if i % 2 else 2)
+    for i, lbl in enumerate(ax.get_xticklabels()):
+        if i % 2:
+            lbl.set_y(-0.025)
+            lbl.set_verticalalignment('top')
+        else:
+            lbl.set_y(0.04)
+            lbl.set_verticalalignment('bottom')
+
+
+def apply_spider_axis_style(ax):
+    """finalize 之后：Spider X轴刻度交替内外 + 标签偏移。"""
+    fig = ax.figure
+    fig.canvas.draw()
+    for i, t in enumerate(ax.xaxis.get_major_ticks()):
+        t.tick1line.set_marker(3 if i % 2 else 2)
+    for i, lbl in enumerate(ax.get_xticklabels()):
+        if i % 2:
+            lbl.set_y(-0.025)
+            lbl.set_verticalalignment('top')
+        else:
+            lbl.set_y(0.04)
+            lbl.set_verticalalignment('bottom')
