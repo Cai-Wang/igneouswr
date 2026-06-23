@@ -37,7 +37,7 @@ def plot_miyashiro(gd, out_dir=None, save=True, ax=None):
     for fr in bd.get('fill_regions', []):
         pass
     for ann in bd.get('annotations', []):
-        ax.text(ann['x'], ann['y'], ann['text'], fontsize=ann.get('fontsize', 10), fontstyle=ann.get('fontstyle', 'italic'), ha=ann.get('ha', 'center'), va=ann.get('va', 'center'), color=ann['color'], fontproperties=_style.times_prop)
+        ax.text(ann['x'], ann['y'], ann['text'], fontsize=ann.get('fontsize', 10) * _style.base_fs(ax), fontstyle=ann.get('fontstyle', 'italic'), ha=ann.get('ha', 'center'), va=ann.get('va', 'center'), color=ann['color'], fontproperties=_style.times_prop)
     ax.set_xlim(bd['axes']['xlim'])
     ax.set_ylim(bd['axes']['ylim'])
     _style.style_ax(ax, bd['axes']['xlabel'], bd['axes']['ylabel'])

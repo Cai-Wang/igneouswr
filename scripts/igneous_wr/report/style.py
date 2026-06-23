@@ -522,6 +522,28 @@ def plot_samples_ternary(ax, x_arr, y_arr, labels, ms=None,
                             fontsize=ANNOTATE_FONTSIZE, color=TEXT_COLOR_LABEL)
 
 
+# ── 字体缩放（根据 ax 物理尺寸动态计算，解决拼版图底图文字比例失调）──
+# 裸图基准宽度：8英寸（203mm），所有硬编码 fontsize 以此为准
+# 拼版 cell 宽度较小（如 75mm），base_fs 返回 <1 的值自动缩小底图文字
+_REF_WIDTH_MM = 203.0   # matplotlib figsize=(8,6) 的物理宽度
+
+def base_fs(ax, scale=1.0):
+    """返回字体缩放因子 = ax_width_mm / REF_WIDTH_MM。
+    ax 宽度 ~203mm → 返回 ~1.0（裸图不变）
+    ax 宽度 ~75mm  → 返回 ~0.37（拼版自动缩小）
+    """
+    fig = ax.figure
+    fig_w_inch = fig.get_size_inches()[0]
+    ax_bbox = ax.get_position()
+    ax_w_inch = fig_w_inch * ax_bbox.width
+    ax_w_mm = ax_w_inch * 25.4
+    return max(ax_w_mm / _REF_WIDTH_MM * scale, 0.25)
+
+def label_fs(ax):
+    """分区标注字号缩放（带下限保护，极小 cell 也不可读）。"""
+    return max(base_fs(ax) * 0.85, 0.25)
+
+
 # ── 坐标轴风格 ─────────────────────────────────────────────
 def style_ax(ax, xlabel='', ylabel=''):
     """统一坐标轴风格：刻度向内、四边有框（刻度仅左和下）。

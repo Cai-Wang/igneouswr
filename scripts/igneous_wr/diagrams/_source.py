@@ -1,15 +1,13 @@
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.ticker import NullLocator
-
+import matplotlib.ticker as ticker
 import igneous_wr.report.style as _style
-from igneous_wr.core.ternary import ternary_to_xy, ternary_corners, draw_ternary_frame, draw_ternary_ticks, label_ternary_vertices
+from igneous_wr.core.ternary import ternary_to_xy, ternary_corners, draw_ternary_frame, draw_ternary_grid, draw_ternary_ticks, label_ternary_vertices
 from igneous_wr.core.normalize import REE_ORDER, CHONDRITE, SPIDER_ORDER, PRIMITIVE_MANTLE, normalize
 from igneous_wr.boundaries.core import load_boundary
 
-
-def plot_ree(gd, ax=None, *, linewidth=1.2, markersize=8,
-             marker_edge_color=None, marker_edge_width=0, **kwargs):
+def plot_ree(gd, ax=None, **kwargs):
     """
     REE 球粒陨石标准化配分模式图 📊通用
     所需元素: La,Ce,Pr,Nd,Sm,Eu,Gd,Tb,Dy,Ho,Er,Tm,Yb,Lu
@@ -22,64 +20,59 @@ def plot_ree(gd, ax=None, *, linewidth=1.2, markersize=8,
     groups = gd.groups
     group_colors = _style.get_group_colors(groups)
     if ax is None:
-        raise ValueError("plot_ree 需要 ax 参数。请调用方先建好画布。")
-    fig = ax.figure
+        fig, ax = plt.subplots(figsize=(8, 5))
+    else:
+        fig = ax.figure
     x_pos = np.arange(len(REE_ORDER))
     seen_groups = set()
-
-    # 收集所有 Y 值用于自动范围计算
-    all_y = []
     for i in range(len(labels)):
         raw = {e: gd.get(e)[i] for e in REE_ORDER}
         normed = normalize(raw, CHONDRITE)
         y_vals = np.array([normed[e] if not np.isnan(normed[e]) else np.nan for e in REE_ORDER])
         valid = np.isfinite(y_vals) & (y_vals > 0)
-        all_y.extend(y_vals[valid].tolist())
         g = groups[i] if i < len(groups) else labels[i]
-        c = group_colors.get(g, plt.cm.tab10(i))
+        c = group_colors.get(g, _style.get_color(i))
         label_g = g if g not in seen_groups else None
         seen_groups.add(g)
-        ax.plot(x_pos[valid], y_vals[valid], color=c, lw=linewidth, zorder=2, label=label_g)
-        ax.scatter(x_pos[valid], y_vals[valid], color=c, marker='o', s=markersize,
-                   edgecolors=marker_edge_color, linewidths=marker_edge_width, zorder=3)
-
-    # Y 轴自适应范围 + ticks（对数，和 plot_spider 保持一致）
-    if all_y:
-        ymin = 10 ** np.floor(np.log10(min(all_y) * 0.8))
-        ymax = 10 ** np.ceil(np.log10(max(all_y) * 1.2))
+        ax.plot(x_pos[valid], y_vals[valid], color=c, lw=1.2, zorder=2, label=label_g)
+        ax.scatter(x_pos[valid], y_vals[valid], color=c, marker='o', s=_style.MK_SIZE_SINGLE, edgecolors=_style.MK_EDGE_COLOR, linewidths=_style.MK_EDGE_WIDTH, zorder=3)
+    ax.set_xticks(x_pos)
+    ax.set_xticklabels(REE_ORDER)
+    ax.set_xlim(x_pos[0] - 0.3, x_pos[-1] + 0.3)
+    ax.set_yscale('log')
+    # Y 轴范围根据数据自动适配
+    all_valid = []
+    for i in range(len(labels)):
+        raw = {e: gd.get(e)[i] for e in REE_ORDER}
+        normed = normalize(raw, CHONDRITE)
+        all_valid.extend([normed[e] for e in REE_ORDER if not np.isnan(normed[e]) and normed[e] > 0])
+    if all_valid:
+        ymin = 10 ** np.floor(np.log10(min(all_valid) * 0.8))
+        ymax = 10 ** np.ceil(np.log10(max(all_valid) * 1.2))
         decades = np.arange(np.log10(ymin), np.log10(ymax) + 1)
         ticks = [10 ** d for d in decades]
     else:
         ticks = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
-
-    # 统一轴风格（内容级）
-    _style.style_ax(ax)
-
-    from matplotlib.ticker import FuncFormatter, FixedLocator, NullLocator
-
-    ax.set_xticks(x_pos)
-    ax.set_xticklabels(REE_ORDER)
-    ax.set_xlim(x_pos[0] - 0.3, x_pos[-1] + 0.3)
-    ax.xaxis.set_minor_locator(NullLocator())
-    ax.set_yscale('log')
-    ax.set_ylim(ticks[0], ticks[-1])
-    ax.yaxis.set_major_locator(FixedLocator(ticks))
-    ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: f'{v:g}'))
-    ax.yaxis.set_minor_locator(NullLocator())
-
-    # Y 参考线 + 网格（内容级）
-    ax.axhline(y=1, color='black', linewidth=0.6, zorder=1)
+    ax.set_yticks(ticks)
+    ax.set_yticklabels([f'{v:g}' if v == int(v) else f'{v}' for v in ticks])
+    _style.style_ax(ax, '', 'Sample/Chondrite')
+    ax.axhline(y=1, color='gray', ls='-', lw=0.8, alpha=0.7)
+    ax.yaxis.set_minor_locator(ticker.LogLocator(subs=np.arange(2, 10) * 0.1))
+    # 以下设置独立出图和 figkit 拼版共用
+    ax.xaxis.set_minor_locator(ticker.NullLocator())
+    ax.tick_params(axis='y', rotation=90)
+    for lbl in ax.get_yticklabels():
+        lbl.set_verticalalignment('center')
     for tv in ticks[1:-1]:
-        if not np.isclose(tv, 1.0):
-            ax.axhline(y=tv, color='gray', linewidth=0.4,
-                       linestyle=(0, (4, 2)), zorder=0.5)
-
-    ax.set_ylabel('Chondrite-normalized')
+        if abs(tv - 1.0) > 1e-10:
+            ax.axhline(y=tv, color='gray', ls=(0, (4, 2)), lw=0.5, alpha=0.5)
+    fmt_ticks = [f'{v:g}' if v == int(v) else f'{v}' for v in ticks]
+    ax.set_yticklabels(fmt_ticks)
+    fig.canvas.draw()
     return (fig, ax)
 
 
-def plot_spider(gd, ax=None, *, linewidth=1.2, markersize=8,
-                marker_edge_color=None, marker_edge_width=0, **kwargs):
+def plot_spider(gd, ax=None, **kwargs):
     """
     原始地幔标准化蛛网图 📊通用
     所需元素: Rb,Ba,Th,U,Nb,Ta,La,Ce,Pb,Pr,Nd,Sr,Sm,Zr,Hf,Eu,Ti,Gd,Tb,Dy,Ho,Y,Er,Tm,Yb,Lu
@@ -92,69 +85,68 @@ def plot_spider(gd, ax=None, *, linewidth=1.2, markersize=8,
     groups = gd.groups
     group_colors = _style.get_group_colors(groups)
     if ax is None:
-        raise ValueError("plot_spider 需要 ax 参数。请调用方先建好画布。")
-    fig = ax.figure
+        fig, ax = plt.subplots(figsize=(8, 5))
+    else:
+        fig = ax.figure
     x_pos = np.arange(len(SPIDER_ORDER))
     seen_groups = set()
-
-    # 收集所有 Y 值用于自动范围计算
-    all_y = []
     for i in range(len(labels)):
         raw = {e: gd.get(e)[i] for e in SPIDER_ORDER}
         normed = normalize(raw, PRIMITIVE_MANTLE)
         y_vals = np.array([normed[e] if not np.isnan(normed[e]) else np.nan for e in SPIDER_ORDER])
         valid = np.isfinite(y_vals) & (y_vals > 0)
-        all_y.extend(y_vals[valid].tolist())
         g = groups[i] if i < len(groups) else labels[i]
-        c = group_colors.get(g, plt.cm.tab10(i))
+        c = group_colors.get(g, _style.get_color(i))
         label_g = g if g not in seen_groups else None
         seen_groups.add(g)
-        ax.plot(x_pos[valid], y_vals[valid], color=c, lw=linewidth, zorder=2, label=label_g)
-        ax.scatter(x_pos[valid], y_vals[valid], color=c, marker='o', s=markersize,
-                   edgecolors=marker_edge_color, linewidths=marker_edge_width, zorder=3)
-
-    # Y 轴自适应范围 + ticks（对数，和 plot_ree 一致不额外延伸）
-    if all_y:
-        ymin = 10 ** np.floor(np.log10(min(all_y) * 0.8))
-        ymax = 10 ** np.ceil(np.log10(max(all_y) * 1.2))
-        decades = np.arange(np.log10(ymin), np.log10(ymax) + 1)
-        ticks = [10 ** d for d in decades]
-    else:
-        ticks = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
-
-    # 统一轴风格（内容级）
-    _style.style_ax(ax)
-
+        ax.plot(x_pos[valid], y_vals[valid], color=c, lw=1.2, zorder=2, label=label_g)
+        ax.scatter(x_pos[valid], y_vals[valid], color=c, marker='o', s=_style.MK_SIZE_SINGLE, edgecolors=_style.MK_EDGE_COLOR, linewidths=_style.MK_EDGE_WIDTH, zorder=3)
     ax.set_xticks(x_pos)
     ax.set_xticklabels(SPIDER_ORDER)
     ax.set_xlim(x_pos[0] - 0.3, x_pos[-1] + 0.3)
     ax.set_yscale('log')
-    from matplotlib.ticker import FuncFormatter, FixedLocator, NullLocator
-    ax.set_ylim(ticks[0], ticks[-1])
-    ax.yaxis.set_major_locator(FixedLocator(ticks))
-    # 超过 7 个 decade 时跳显标签（按指数奇偶，网格线保留全部）
-    if len(ticks) > 7:
-        def _sparse_fmt(v, _):
-            exp = round(np.log10(v))
-            return f'{v:g}' if exp % 2 == 0 else ''
-        ax.yaxis.set_major_formatter(FuncFormatter(_sparse_fmt))
+    # Y 轴范围根据数据自动适配
+    all_valid = []
+    for i in range(len(labels)):
+        raw = {e: gd.get(e)[i] for e in SPIDER_ORDER}
+        normed = normalize(raw, PRIMITIVE_MANTLE)
+        all_valid.extend([normed[e] for e in SPIDER_ORDER if not np.isnan(normed[e]) and normed[e] > 0])
+    if all_valid:
+        ymin = 10 ** np.floor(np.log10(min(all_valid) * 0.8))
+        ymax = 10 ** np.ceil(np.log10(max(all_valid) * 1.2))
+        decades = np.arange(np.log10(ymin), np.log10(ymax) + 1)
+        ticks = [10 ** d for d in decades]
     else:
-        ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: f'{v:g}'))
-    ax.yaxis.set_minor_locator(NullLocator())
-
-    # Y 参考线 + 网格
-    ax.axhline(y=1, color='black', linewidth=0.6, zorder=1)
+        ticks = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
+    ax.set_yticks(ticks)
+    ax.set_yticklabels([f'{v:g}' if v == int(v) else f'{v}' for v in ticks])
+    _style.style_ax(ax, '', 'Sample/Primitive Mantle')
+    ax.axhline(y=1, color='gray', ls='-', lw=0.8, alpha=0.7)
+    ax.yaxis.set_minor_locator(ticker.LogLocator(subs=np.arange(2, 10) * 0.1))
+    # 以下设置部分独立出图和 figkit 拼版共用
+    ax.xaxis.set_minor_locator(ticker.NullLocator())
+    ax.tick_params(axis='y', rotation=90)
+    for lbl in ax.get_yticklabels():
+        lbl.set_verticalalignment('center')
     for tv in ticks[1:-1]:
-        if not np.isclose(tv, 1.0):
-            ax.axhline(y=tv, color='gray', linewidth=0.4,
-                       linestyle=(0, (4, 2)), zorder=0.5)
-
-    ax.set_ylabel('Primitive-mantle normalized')
+        if abs(tv - 1.0) > 1e-10:
+            ax.axhline(y=tv, color='gray', ls=(0, (4, 2)), lw=0.5, alpha=0.5)
+    fmt_ticks = [f'{v:g}' if v == int(v) else f'{v}' for v in ticks]
+    ax.set_yticklabels(fmt_ticks)
+    # X 轴刻度交替内外 + 标签偏移（两种模式都执行，需先 draw 初始化 tick）
+    fig.canvas.draw()
+    for i, t in enumerate(ax.xaxis.get_major_ticks()):
+        t.tick1line.set_marker(3 if i % 2 else 2)
+    for i, lbl in enumerate(ax.get_xticklabels()):
+        if i % 2:
+            lbl.set_y(-0.025)
+            lbl.set_verticalalignment('top')
+        else:
+            lbl.set_y(0.04)
+            lbl.set_verticalalignment('bottom')
     return (fig, ax)
 
-
-def plot_pearce_2008(gd, ax=None, *, linewidth=1.2, markersize=8,
-                     marker_edge_color=None, marker_edge_width=0, **kwargs):
+def plot_pearce_2008(gd, out_dir=None, save=True):
     """Th/Yb vs Nb/Yb 源区判别图（Pearce, 2008）🔥基性岩
     底图数据来自 boundaries/src/pearce_2008.json
     所需元素: Th, Nb, Yb
@@ -171,9 +163,7 @@ def plot_pearce_2008(gd, ax=None, *, linewidth=1.2, markersize=8,
     mask = (yb > 0) & ~np.isnan(yb)
     th_yb[mask] = th[mask] / yb[mask]
     nb_yb[mask] = nb[mask] / yb[mask]
-    if ax is None:
-        raise ValueError("plot_pearce_2008 需要 ax 参数。请调用方先建好画布。")
-    fig = ax.figure
+    fig, ax = plt.subplots(figsize=(8, 7))
     bd = load_boundary('src', 'pearce_2008')
     ax.set_xlim(bd['axes']['xlim'])
     ax.set_ylim(bd['axes']['ylim'])
@@ -191,140 +181,15 @@ def plot_pearce_2008(gd, ax=None, *, linewidth=1.2, markersize=8,
     y_line = 10 ** f['a_intercept'] * x_line ** f['b']
     ax.plot(x_line, y_line, arr['line_style'], color=arr['color'], linewidth=arr['linewidth'], zorder=arr.get('zorder', 3))
     for ann in bd.get('annotations', []):
-        ax.text(ann['x'], ann['y'], ann['text'], color=ann.get('color', 'gray'), rotation=ann.get('rotation', 0), ha=ann.get('ha', 'left'), va=ann.get('va', 'bottom'), rotation_mode='anchor', zorder=5)
+        ax.text(ann['x'], ann['y'], ann['text'], fontsize=ann.get('fontsize', 10) * _style.base_fs(ax), color=ann.get('color', 'gray'), rotation=ann.get('rotation', 0), ha=ann.get('ha', 'left'), va=ann.get('va', 'bottom'), rotation_mode='anchor', zorder=5)
     for rp in bd.get('reference_points', []):
         ax.scatter([rp['x']], [rp['y']], marker=rp.get('marker', 's'), s=rp.get('size', 80), color=rp['color'], edgecolors='black', linewidths=0.8, zorder=10)
         ox = rp.get('offset_x', 1.2)
         oy = rp.get('offset_y', 1.2)
-        ax.text(rp['x'] * ox, rp['y'] * oy, rp['name'], fontweight='bold', color=rp['color'], va='bottom', ha='left', zorder=11)
-    _style.scatter_samples(ax, nb_yb, th_yb, labels, groups=gd.groups, s=markersize, edgecolors=marker_edge_color, linewidths=marker_edge_width)
-    ax.set_xlabel(bd['axes']['xlabel'])
-    ax.set_ylabel(bd['axes']['ylabel'])
+        ax.text(rp['x'] * ox, rp['y'] * oy, rp['name'], fontsize=9.5 * _style.base_fs(ax), fontweight='bold', color=rp['color'], va='bottom', ha='left', zorder=11)
+    _style.scatter_samples(ax, nb_yb, th_yb, labels, groups=gd.groups)
+    _style.style_ax(ax, bd['axes']['xlabel'], bd['axes']['ylabel'])
+    plt.tight_layout(pad=0.3)
+    if save:
+        _style.save_fig(fig, 'Pearce2008_ThYb_NbYb.png', out_dir)
     return (fig, ax)
-
-
-def apply_spider_axis_style(ax):
-    """蛛网图 X 轴刻度交替内外 + 标签偏移 + Y 竖排。
-
-    位置敏感：必须在 finalize() 和 apply_format() **之后**调用。
-    finalize 内部的 fig.canvas.draw() 会重建 Tick 对象，set_marker 会丢失。
-    此函数是最后一次碰 Tick 对象的地方。
-
-    用法：
-        layout.finalize(pairs=[...])
-        apply_format(layout, fmt)
-        apply_style(layout, 'ree')
-        apply_spider_axis_style(layout.get_ax('sp0'))
-        apply_spider_axis_style(layout.get_ax('sp1'))
-        layout.save(...)
-    """
-    fig = ax.figure
-    fig.canvas.draw()
-
-    # Y 竖排
-    ax.tick_params(axis='y', rotation=90)
-    for lbl in ax.get_yticklabels():
-        lbl.set_verticalalignment('center')
-
-    # X 轴副刻度关闭
-    ax.xaxis.set_minor_locator(NullLocator())
-
-    # X 轴刻度交替内外
-    for i, t in enumerate(ax.xaxis.get_major_ticks()):
-        t.tick1line.set_marker(3 if i % 2 else 2)
-
-    # X 标签跟随刻度偏移（用 points 绝对单位，不随画布高度变化）
-    from matplotlib.transforms import ScaledTranslation
-    offset_inner = ScaledTranslation(0, 7/72., fig.dpi_scale_trans)   # 轴内 7pt（tick 5pt + 2pt 间隙）
-    offset_outer = ScaledTranslation(0, -7/72., fig.dpi_scale_trans)  # 轴外 7pt（对称）
-    trans = ax.get_xaxis_transform()
-    for i, lbl in enumerate(ax.get_xticklabels()):
-        if i % 2:
-            lbl.set_transform(trans + offset_outer)
-            lbl.set_verticalalignment('top')
-        else:
-            lbl.set_transform(trans + offset_inner)
-            lbl.set_verticalalignment('bottom')
-
-
-def apply_ree_axis_style(ax):
-    """REE 图 Y 竖排 + X 轴刻度交替内外 + 标签偏移。
-
-    Y 网格已放在 plot_ree 主路径（内容级）。
-    此处处理 Tick 对象级：Y 竖排、X 轴刻度交替和标签偏移。
-    和 apply_spider_axis_style 保持相同格式，使两图 X 轴视觉对齐。
-    """
-    fig = ax.figure
-    fig.canvas.draw()
-
-    # Y 竖排
-    ax.tick_params(axis='y', rotation=90)
-    for lbl in ax.get_yticklabels():
-        lbl.set_verticalalignment('center')
-
-    # X 轴副刻度关闭（已在 plot_ree 主路径设过，此处防御）
-    ax.xaxis.set_minor_locator(NullLocator())
-
-    # X 轴刻度交替内外
-    for i, t in enumerate(ax.xaxis.get_major_ticks()):
-        t.tick1line.set_marker(3 if i % 2 else 2)
-
-    # X 标签跟随刻度偏移（和 spider 相同 ±7pt）
-    from matplotlib.transforms import ScaledTranslation
-    offset_inner = ScaledTranslation(0, 7/72., fig.dpi_scale_trans)
-    offset_outer = ScaledTranslation(0, -7/72., fig.dpi_scale_trans)
-    trans = ax.get_xaxis_transform()
-    for i, lbl in enumerate(ax.get_xticklabels()):
-        if i % 2:
-            lbl.set_transform(trans + offset_outer)
-            lbl.set_verticalalignment('top')
-        else:
-            lbl.set_transform(trans + offset_inner)
-            lbl.set_verticalalignment('bottom')
-
-
-def auto_xlim_padding(ax, extra_mm=0.5):
-    """实测首尾 xticklabel bbox，自适应扩大 xlim 防止标签溢出边框。
-
-    内容级函数（和 plot_* 同级，不是 Tick 对象级）。
-    必须在 finalize() 之后、apply_*_axis_style() 之前调用。
-    裸图和拼版都要调。
-
-    Parameters
-    ----------
-    ax : matplotlib Axes
-    extra_mm : float
-        额外安全 padding，毫米。
-    """
-    fig = ax.figure
-    fig.canvas.draw()
-    renderer = fig.canvas.get_renderer()
-
-    labels = ax.get_xticklabels()
-    if len(labels) < 2:
-        return
-
-    xlim = ax.get_xlim()
-    inv = ax.transData.inverted()
-
-    # 首标签向左溢出
-    first_bbox = labels[0].get_window_extent(renderer=renderer)
-    x_data_left = inv.transform([(first_bbox.x0, first_bbox.y0)])[0][0]
-    overflow_left = xlim[0] - x_data_left
-
-    # 末标签向右溢出
-    last_bbox = labels[-1].get_window_extent(renderer=renderer)
-    x_data_right = inv.transform([(last_bbox.x1, last_bbox.y0)])[0][0]
-    overflow_right = x_data_right - xlim[1]
-
-    # 毫米转数据坐标（X 轴是线性的）
-    x_range = xlim[1] - xlim[0]
-    ax_width_mm = ax.get_position().width * fig.get_size_inches()[0] * 25.4
-    mm_per_data = ax_width_mm / x_range if x_range > 0 else 1.0
-    extra_data = extra_mm / mm_per_data
-
-    new_left = xlim[0] - max(overflow_left, 0) - extra_data
-    new_right = xlim[1] + max(overflow_right, 0) + extra_data
-
-    if new_left < xlim[0] or new_right > xlim[1]:
-        ax.set_xlim(new_left, new_right)

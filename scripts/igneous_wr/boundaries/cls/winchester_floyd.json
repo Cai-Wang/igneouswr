@@ -383,7 +383,7 @@
       "x": 4.5,
       "y": 0.8,
       "text": "Phonolite",
-      "fontsize": 11
+      "fontsize": 10
     },
     {
       "x": 4.5,
@@ -407,7 +407,7 @@
       "x": 0.195,
       "y": 0.05,
       "text": "Rhyodacite Dacite",
-      "fontsize": 9
+      "fontsize": 10
     },
     {
       "x": 1.5,
@@ -425,13 +425,13 @@
       "x": 0.19,
       "y": 0.002,
       "text": "Sub-alkaline basalt",
-      "fontsize": 9
+      "fontsize": 10
     },
     {
       "x": 0.095,
       "y": 0.007,
       "text": "Andesite Basalt",
-      "fontsize": 8
+      "fontsize": 10
     },
     {
       "x": 1.18,
