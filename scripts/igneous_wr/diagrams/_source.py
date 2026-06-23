@@ -37,7 +37,7 @@ def plot_ree(gd, ax=None, **kwargs):
         ax.plot(x_pos[valid], y_vals[valid], color=c, lw=1.2, zorder=2, label=label_g)
         ax.scatter(x_pos[valid], y_vals[valid], color=c, marker='o', s=_style.MK_SIZE_SINGLE, edgecolors=_style.MK_EDGE_COLOR, linewidths=_style.MK_EDGE_WIDTH, zorder=3)
     ax.set_xticks(x_pos)
-    ax.set_xticklabels(REE_ORDER)
+    ax.set_xticklabels(REE_ORDER, fontsize=6 * _style.base_fs(ax))
     ax.set_xlim(x_pos[0] - 0.3, x_pos[-1] + 0.3)
     ax.set_yscale('log')
     # Y 轴范围根据数据自动适配
@@ -102,7 +102,7 @@ def plot_spider(gd, ax=None, **kwargs):
         ax.plot(x_pos[valid], y_vals[valid], color=c, lw=1.2, zorder=2, label=label_g)
         ax.scatter(x_pos[valid], y_vals[valid], color=c, marker='o', s=_style.MK_SIZE_SINGLE, edgecolors=_style.MK_EDGE_COLOR, linewidths=_style.MK_EDGE_WIDTH, zorder=3)
     ax.set_xticks(x_pos)
-    ax.set_xticklabels(SPIDER_ORDER)
+    ax.set_xticklabels(SPIDER_ORDER, fontsize=6 * _style.base_fs(ax))
     ax.set_xlim(x_pos[0] - 0.3, x_pos[-1] + 0.3)
     ax.set_yscale('log')
     # Y 轴范围根据数据自动适配
