@@ -8,12 +8,26 @@ from igneous_wr.core.normalize import REE_ORDER, CHONDRITE, SPIDER_ORDER, PRIMIT
 from igneous_wr.boundaries.core import load_boundary
 
 
-def plot_ree(gd, ax=None, *, linewidth=1.2, markersize=8,
-             marker_edge_color=None, marker_edge_width=0, **kwargs):
+def plot_ree(gd, ax=None, *, linewidth=None, markersize=None,
+             marker_edge_color=None, marker_edge_width=None, **kwargs):
     """
     REE 球粒陨石标准化配分模式图 📊通用
     所需元素: La,Ce,Pr,Nd,Sm,Eu,Gd,Tb,Dy,Ho,Er,Tm,Yb,Lu
+
+    视觉参数可通过 plt.rcParams 全局设置：
+      lines.linewidth → linewidth  (默认 1.2)
+      lines.markersize → markersize (默认 8)
+    marker_edge_color / marker_edge_width 为可选参数，不设则无边。
     """
+    if linewidth is None:
+        linewidth = plt.rcParams.get('lines.linewidth', 1.2)
+    if markersize is None:
+        markersize = plt.rcParams.get('lines.markersize', 8)
+    if marker_edge_color is None:
+        _ec = plt.rcParams.get('lines.markeredgecolor', None)
+        marker_edge_color = None if _ec == 'auto' else _ec
+    if marker_edge_width is None:
+        marker_edge_width = plt.rcParams.get('lines.markeredgewidth', 0)
     missing = gd.check_elements('La', 'Ce', 'Nd', 'Sm', 'Yb', strict=True)
     if missing:
         return (None, None)
@@ -78,12 +92,26 @@ def plot_ree(gd, ax=None, *, linewidth=1.2, markersize=8,
     return (fig, ax)
 
 
-def plot_spider(gd, ax=None, *, linewidth=1.2, markersize=8,
-                marker_edge_color=None, marker_edge_width=0, **kwargs):
+def plot_spider(gd, ax=None, *, linewidth=None, markersize=None,
+                marker_edge_color=None, marker_edge_width=None, **kwargs):
     """
     原始地幔标准化蛛网图 📊通用
     所需元素: Rb,Ba,Th,U,Nb,Ta,La,Ce,Pb,Pr,Nd,Sr,Sm,Zr,Hf,Eu,Ti,Gd,Tb,Dy,Ho,Y,Er,Tm,Yb,Lu
+
+    视觉参数可通过 plt.rcParams 全局设置：
+      lines.linewidth → linewidth  (默认 1.2)
+      lines.markersize → markersize (默认 8)
+    marker_edge_color / marker_edge_width 为可选参数，不设则无边。
     """
+    if linewidth is None:
+        linewidth = plt.rcParams.get('lines.linewidth', 1.2)
+    if markersize is None:
+        markersize = plt.rcParams.get('lines.markersize', 8)
+    if marker_edge_color is None:
+        _ec = plt.rcParams.get('lines.markeredgecolor', None)
+        marker_edge_color = None if _ec == 'auto' else _ec
+    if marker_edge_width is None:
+        marker_edge_width = plt.rcParams.get('lines.markeredgewidth', 0)
     missing = gd.check_elements('Th', 'Nb', 'La', 'Ce', 'Nd', 'Sm', 'Yb', strict=True)
     if missing:
         return (None, None)
@@ -153,12 +181,25 @@ def plot_spider(gd, ax=None, *, linewidth=1.2, markersize=8,
     return (fig, ax)
 
 
-def plot_pearce_2008(gd, ax=None, *, linewidth=1.2, markersize=8,
-                     marker_edge_color=None, marker_edge_width=0, **kwargs):
+def plot_pearce_2008(gd, ax=None, *, linewidth=None, markersize=None,
+                     marker_edge_color=None, marker_edge_width=None, **kwargs):
     """Th/Yb vs Nb/Yb 源区判别图（Pearce, 2008）🔥基性岩
     底图数据来自 boundaries/src/pearce_2008.json
     所需元素: Th, Nb, Yb
+
+    视觉参数可通过 plt.rcParams 全局设置：
+      lines.linewidth → linewidth  (默认 1.2)
+      lines.markersize → markersize (默认 8)
     """
+    if linewidth is None:
+        linewidth = plt.rcParams.get('lines.linewidth', 1.2)
+    if markersize is None:
+        markersize = plt.rcParams.get('lines.markersize', 8)
+    if marker_edge_color is None:
+        _ec = plt.rcParams.get('lines.markeredgecolor', None)
+        marker_edge_color = None if _ec == 'auto' else _ec
+    if marker_edge_width is None:
+        marker_edge_width = plt.rcParams.get('lines.markeredgewidth', 0)
     missing = gd.check_elements('Th', 'Nb', 'Yb', strict=True)
     if missing:
         return (None, None)
@@ -197,7 +238,7 @@ def plot_pearce_2008(gd, ax=None, *, linewidth=1.2, markersize=8,
         ox = rp.get('offset_x', 1.2)
         oy = rp.get('offset_y', 1.2)
         ax.text(rp['x'] * ox, rp['y'] * oy, rp['name'], fontweight='bold', color=rp['color'], va='bottom', ha='left', zorder=11)
-    _style.scatter_samples(ax, nb_yb, th_yb, labels, groups=gd.groups, s=markersize, edgecolors=marker_edge_color, linewidths=marker_edge_width)
+    _style.scatter_samples(ax, nb_yb, th_yb, labels, groups=gd.groups, s=markersize, edgecolors=marker_edge_color, lw=marker_edge_width)
     ax.set_xlabel(bd['axes']['xlabel'])
     ax.set_ylabel(bd['axes']['ylabel'])
     return (fig, ax)
