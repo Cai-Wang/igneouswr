@@ -522,26 +522,46 @@ def plot_samples_ternary(ax, x_arr, y_arr, labels, ms=None,
                             fontsize=ANNOTATE_FONTSIZE, color=TEXT_COLOR_LABEL)
 
 
-# ── 字体缩放（根据 ax 物理尺寸动态计算，解决拼版图底图文字比例失调）──
-# 裸图基准宽度：8英寸（203mm），所有硬编码 fontsize 以此为准
-# 拼版 cell 宽度较小（如 75mm），base_fs 返回 <1 的值自动缩小底图文字
+# ── 字体缩放（根据 ax 物理尺寸 + rcParams 全局字号动态计算）──
+# GCDkit 风格：底图文字不硬编码 pt 值，而是相对全局字号的 cex 比例
+# ax.text(fontsize=base_fs(ax, scale=1.0))   → 正常，100% 全局字号
+# ax.text(fontsize=base_fs(ax, scale=0.8))   → 小号，80%
+# ax.text(fontsize=base_fs(ax, scale=1.1))   → 大号，110%
 _REF_WIDTH_MM = 203.0   # matplotlib figsize=(8,6) 的物理宽度
 
 def base_fs(ax, scale=1.0):
-    """返回字体缩放因子 = ax_width_mm / REF_WIDTH_MM。
-    ax 宽度 ~203mm → 返回 ~1.0（裸图不变）
-    ax 宽度 ~75mm  → 返回 ~0.37（拼版自动缩小）
+    """返回当前 ax 下适配的有效字号（pt）。
+
+    读取 plt.rcParams['font.size'] 作为基础字号，
+    乘以 ax 物理宽度比例 × scale 因子。
+
+    ax 宽度 203mm, font.size=8, scale=1.0 → 返回 8pt（裸图基准）
+    ax 宽度 75mm,  font.size=8, scale=1.0 → 返回 7pt（下限保护）
+    ax 宽度 75mm,  font.size=9, scale=1.0 → 返回 9×0.37 = 3.3→7pt
+
+    绝对下限 7pt（期刊最小字号要求），
+    同时保持裸图到拼版的比例关系（>7pt 时）。
+
+    Returns:
+        有效字号（pt），可直接作为 ax.text(fontsize=...) 的参数。
     """
+    import matplotlib.pyplot as _plt
     fig = ax.figure
     fig_w_inch = fig.get_size_inches()[0]
     ax_bbox = ax.get_position()
     ax_w_inch = fig_w_inch * ax_bbox.width
     ax_w_mm = ax_w_inch * 25.4
-    return max(ax_w_mm / _REF_WIDTH_MM * scale, 0.25)
+
+    target_fs = _plt.rcParams.get('font.size', 10)
+    ratio = ax_w_mm / _REF_WIDTH_MM
+    raw_fs = target_fs * ratio * scale
+
+    # 下限：不低于 7pt（期刊最小字号要求）
+    return max(raw_fs, 7.0)
 
 def label_fs(ax):
-    """分区标注字号缩放（带下限保护，极小 cell 也不可读）。"""
-    return max(base_fs(ax) * 0.85, 0.25)
+    """分区标注字号（略小于正文，scale=0.85）。"""
+    return base_fs(ax, scale=0.85)
 
 
 # ── 坐标轴风格 ─────────────────────────────────────────────

@@ -39,7 +39,7 @@ def plot_meschede(gd, out_dir=None, save=True):
     }
     for name, fd in FIELDS_M.items():
         lx, ly = MESCHEDE_LABELS.get(name, (0, 0))
-        ax.text(lx, ly, fd['sub'], fontsize=11 * _style.base_fs(ax), fontweight='bold',
+        ax.text(lx, ly, fd['sub'], fontsize=_style.base_fs(ax, scale=1.10), fontweight='bold',
                 ha='center', va='center', color=_style.TEXT_COLOR_LABEL, zorder=5)
     _style.scatter_samples(ax, x_d, y_d, labels, groups=gd.groups)
     ax.set_xlim(-0.08, 1.1)
@@ -87,7 +87,7 @@ def plot_wood(gd, out_dir=None, save=True):
     }
     for name, fd in FIELDS_W.items():
         lx, ly = WOOD_LABELS.get(name, (0, 0))
-        ax.text(lx, ly, fd['sub'], fontsize=11 * _style.base_fs(ax), fontweight='bold',
+        ax.text(lx, ly, fd['sub'], fontsize=_style.base_fs(ax, scale=1.10), fontweight='bold',
                 ha='center', va='center', color=_style.TEXT_COLOR_LABEL, zorder=5)
     _style.scatter_samples(ax, x_d, y_d, labels, groups=gd.groups)
     ax.set_xlim(-0.08, 1.1)
@@ -123,9 +123,9 @@ def plot_shervais(gd, out_dir=None, save=True):
     for ray in bd.get('rays', []):
         ax.plot(_xt, ray['slope'] * _xt, ray['ls'], color=ray['color'], lw=ray['lw'], zorder=3)
     for rl in bd.get('ray_labels', []):
-        ax.text(rl['x'], rl['y'], rl['text'], fontsize=rl.get('fontsize', 7.5) * _style.base_fs(ax), ha=rl.get('ha', 'center'), va=rl.get('va', 'center'), color=rl['color'], fontstyle=rl.get('fontstyle', 'italic'))
+        ax.text(rl['x'], rl['y'], rl['text'], fontsize=_style.base_fs(ax, scale=0.75), ha=rl.get('ha', 'center'), va=rl.get('va', 'center'), color=rl['color'], fontstyle=rl.get('fontstyle', 'italic'))
     for rgl in bd.get('region_labels', []):
-        ax.text(rgl['x'], rgl['y'], rgl['text'], fontsize=rgl.get('fontsize', 11) * _style.base_fs(ax), ha=rgl.get('ha', 'center'), va=rgl.get('va', 'center'), fontweight=rgl.get('fontweight', 'bold'), color=rgl['color'], zorder=5)
+        ax.text(rgl['x'], rgl['y'], rgl['text'], fontsize=_style.base_fs(ax, scale=1.1), ha=rgl.get('ha', 'center'), va=rgl.get('va', 'center'), fontweight=rgl.get('fontweight', 'bold'), color=rgl['color'], zorder=5)
     _style.scatter_samples(ax, ti_1000, v_arr, labels, groups=gd.groups)
     _style.style_ax(ax, bd['axes']['xlabel'], bd['axes']['ylabel'])
     plt.tight_layout(pad=0.3)
